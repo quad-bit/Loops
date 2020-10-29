@@ -1,3 +1,5 @@
+#if 0
+
 #pragma once
 #include "System.h"
 #include <string>
@@ -56,3 +58,5 @@ inline void MeshFilterSystem::CreateMesh(ComponentHandle<t>& filterHandle)
 		}
 	}
 }
+
+#endif

@@ -1,0 +1,36 @@
+
+# Gives all the subdirectories recursively
+MACRO(HEADER_DIRECTORIES return_list curDir)
+
+    get_filename_component(ABSOLUTE_PATH ${curDir} ABSOLUTE)
+    #message(${curDir})
+
+    FILE(GLOB_RECURSE new_list "${curDir}/*.h" "${curDir}/*.cpp" "${curDir}/*.txt" )
+    SET(dir_list "")
+    FOREACH(file_path ${new_list})
+        GET_FILENAME_COMPONENT(dir_path ${file_path} DIRECTORY)
+        file(RELATIVE_PATH dir_path ${CMAKE_CURRENT_SOURCE_DIR} ${dir_path})
+        SET(dir_list ${dir_list} ${dir_path})
+    ENDFOREACH()
+
+    list(LENGTH dir_list size)
+    IF(NOT ${size} EQUAL 0)
+        LIST(REMOVE_DUPLICATES dir_list)
+    ENDIF()
+
+    SET(${return_list} ${dir_list})
+ENDMACRO()
+
+# Gives all the subdirectories (one level)... actually not that effective.
+MACRO(SUBDIRLIST result curdir)
+  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
+  SET(dirlist "")
+  FOREACH(child ${children})
+    message(${child})
+    IF(IS_DIRECTORY ${curdir}/${child})
+      LIST(APPEND dirlist ${child})
+    ENDIF()
+
+  ENDFOREACH()
+  SET(${result} ${dirlist})
+ENDMACRO()

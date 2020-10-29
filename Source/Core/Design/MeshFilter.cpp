@@ -1,11 +1,11 @@
 #include "MeshFilter.h"
-#include <Mesh.h>
-#include <VulkanObjectSpace\VertexBuffer.h>
-#include <VulkanObjectSpace\IndexBuffer.h>
+//#include <Mesh.h>
+//#include <VulkanObjectSpace\VertexBuffer.h>
+//#include <VulkanObjectSpace\IndexBuffer.h>
 
-using namespace VulkanObjectSpace;
+//using namespace VulkanObjectSpace;
 
-using namespace MeshManagement;
+//using namespace MeshManagement;
 using namespace ComponentSpace;
 
 string ComponentSpace::MeshFilter::availableMeshTypes[6] { "LINE", "TRIANGLE", "PLANE", "CUBE", "SPHERE", "COMPLEX" };
@@ -41,12 +41,12 @@ MeshFilter::MeshFilter(bool hasNormals, bool hasUVs, bool hasColors, string& mes
 MeshFilter::MeshFilter(MeshFilter const & obj)
 {
 	this->hasColors = obj.hasColors;
-	this->meshObj = obj.meshObj;
+	//this->meshObj = obj.meshObj;
 }
 
 MeshFilter::~MeshFilter()
 {
-	delete indexBufferObj;
-	delete vertexBufferObj;
-	delete meshObj; 
+	//delete indexBufferObj;
+	//delete vertexBufferObj;
+	//delete meshObj; 
 }

@@ -4,16 +4,16 @@
 #include <string>
 //#include <Mesh.h>
 
-namespace MeshManagement
-{
-	class Mesh;
-}
-
-namespace VulkanObjectSpace
-{
-	class VertexBuffer;
-	class IndexBuffer;
-}
+//namespace MeshManagement
+//{
+//	class Mesh;
+//}
+//
+//namespace VulkanObjectSpace
+//{
+//	class VertexBuffer;
+//	class IndexBuffer;
+//}
 
 namespace ComponentSpace
 {
@@ -22,9 +22,9 @@ namespace ComponentSpace
 	private:
 
 	public :
-		MeshManagement::Mesh * meshObj;
-		VulkanObjectSpace::VertexBuffer * vertexBufferObj;
-		VulkanObjectSpace::IndexBuffer * indexBufferObj;
+		//MeshManagement::Mesh * meshObj;
+        //VulkanObjectSpace::VertexBuffer * vertexBufferObj;
+		//VulkanObjectSpace::IndexBuffer * indexBufferObj;
 		
 		uint8_t attribMask{ 0b00000001 };
 		static string availableMeshTypes[6];// { "LINE", "TRIANGLE", "PLANE", "CUBE", "SPHERE", "COMPLEX" };

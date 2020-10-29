@@ -1,54 +1,59 @@
 
 ##  file list creation Begin
 
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-      LIST(APPEND dirlist "${child}")
-    ENDIF()
-  ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../Util.cmake")
 
-SUBDIRLIST(SUBDIRS "${CMAKE_CURRENT_SOURCE_DIR}/Rendering")
+HEADER_DIRECTORIES(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
 
 Set ( SourceList "")
 
 FOREACH(subdir ${SUBDIRS})
     #message(${subdir})
 
+    string(FIND ${subdir} "Drivers" result)
+
+    IF(NOT result EQUAL -1 )
+      CONTINUE()
+    ENDIF()
+
     file(GLOB fileListInDir
-        "Rendering/${subdir}/*.h"
-        "Rendering/${subdir}/*.cpp"
-        "Rendering/${subdir}/*.txt"
+        "${subdir}/*.h"
+        "${subdir}/*.cpp"
+        "${subdir}/*.txt"
     )
+
     LIST(APPEND SourceList ${fileListInDir})
 
     source_group(${subdir} FILES ${fileListInDir})
 
 ENDFOREACH()
 
-message("\n")
-
-#get all the source files
 file(GLOB filesInParentDir
-    "Rendering/*.h"
-    "Rendering/*.cpp"
-    "Rendering/*.txt"
+    "*.h"
+    "*.cpp"
+    "*.txt"
 )
 
 LIST(APPEND SourceList ${filesInParentDir})
+source_group("" FILES ${filesInParentDir})
 
-##  file list creation ends
+message("\n")
+
 #create library
 add_library(Renderer
 ${SourceList} )
 
 FOREACH(subdir ${SUBDIRS})
     # forces anyone who uses this lib to include the below mentioned source dir into their project props
-    target_include_directories(Renderer PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/Rendering/${subdir}")
+
+    string(FIND ${subdir} "Drivers" result)
+
+    IF(NOT result EQUAL -1 )
+      CONTINUE()
+    ENDIF()
+
+    target_include_directories(Renderer PUBLIC "${subdir}")
+    #target_include_directories(Renderer PUBLIC "${subdir}")
 
 ENDFOREACH()
 

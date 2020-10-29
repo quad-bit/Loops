@@ -4,7 +4,7 @@
 #include "Plane.h"
 #include <glm\glm.hpp>
 
-using namespace Loops::Core::Container;
+using namespace Loops::Core::Utils::Container;
 
 namespace Loops::Core::Math
 {

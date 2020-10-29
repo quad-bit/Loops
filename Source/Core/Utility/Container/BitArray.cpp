@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-using Loops::Core::Utils::Container;
+using namespace Loops::Core::Utils::Container;
 
 BitArray::BitArray(unsigned int size)
 {

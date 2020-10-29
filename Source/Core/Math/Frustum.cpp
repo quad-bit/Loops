@@ -1,7 +1,7 @@
 #include "Frustum.h"
 
 using namespace Loops::Core::Math;
-using namespace Loops::Core::Container;
+using namespace Loops::Core::Utils::Container;
 
 Frustum::Frustum()
 {

@@ -1,17 +1,19 @@
+#if 0
+
 #include "MeshFilterSystem.h"
 #include "Component.h"
 #include "Entity.h"
 #include "World.h"
-#include <MeshManager.h>
+//#include <MeshManager.h>
 #include "MeshFilter.h"
 #include <assert.h>
-#include <Mesh.h>
-#include <VulkanObjectSpace\VertexBuffer.h>
-#include <VulkanObjectSpace\IndexBuffer.h>
+//#include <Mesh.h>
+//#include <VulkanObjectSpace\VertexBuffer.h>
+//#include <VulkanObjectSpace\IndexBuffer.h>
 
 
 //using namespace COMPONENTS;
-using namespace VulkanObjectSpace;
+//using namespace VulkanObjectSpace;
 
 void MeshFilterSystem::Init()
 {
@@ -31,8 +33,8 @@ void MeshFilterSystem::RegisterEntity(Entity * entity)
 	
 	CreateMesh<ComponentSpace::MeshFilter>(filterHandle);
 
-	filterHandle->vertexBufferObj = new VertexBuffer(filterHandle->meshObj);
-	filterHandle->indexBufferObj = new IndexBuffer(filterHandle->meshObj);
+	//filterHandle->vertexBufferObj = new VertexBuffer(filterHandle->meshObj);
+	//filterHandle->indexBufferObj = new IndexBuffer(filterHandle->meshObj);
 }
 
 void MeshFilterSystem::UnRegisterEntity(Entity * entity)
@@ -47,3 +49,6 @@ MeshFilterSystem::MeshFilterSystem()
 MeshFilterSystem::~MeshFilterSystem()
 {
 }
+
+
+#endif

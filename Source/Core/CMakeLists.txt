@@ -1,23 +1,16 @@
 
 ##  file list creation Begin
 
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-      LIST(APPEND dirlist ${child})
-    ENDIF()
-  ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../Util.cmake")
 
-SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
+HEADER_DIRECTORIES(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
 
 Set ( SourceList "")
 
 FOREACH(subdir ${SUBDIRS})
-    message(${subdir})
+    #message(${subdir})
+    #file(RELATIVE_PATH test ${CMAKE_CURRENT_SOURCE_DIR} ${subdir})
+    #message(${test})
 
     file(GLOB fileListInDir
         "${subdir}/*.h"
@@ -40,6 +33,7 @@ file(GLOB filesInParentDir
 )
 
 LIST(APPEND SourceList ${filesInParentDir})
+source_group("" FILES ${filesInParentDir})
 
 ##  file list creation ends
 
@@ -76,5 +70,6 @@ ${SourceList})
 
 # forces anyone who uses this lib to include the below mentioned source dir into their project props
 target_include_directories(Core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(Core PUBLIC ${SUBDIRS})
 target_include_directories(Core PUBLIC ${glm_INCLUDE_DIR})
 target_include_directories(Core PUBLIC ${glfw3_INCLUDE_DIR})
