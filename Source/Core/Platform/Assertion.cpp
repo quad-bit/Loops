@@ -2,7 +2,7 @@
 
 using namespace Loops::Core;
 
-void AssertWithMsg(const char* expr_str, bool expr, const char* file, int line, const char* msg)
+void Loops::Core::AssertWithMsg(const char* expr_str, bool expr, const char* file, int line, const char* msg)
 {
 	if (!expr)
 	{
@@ -13,7 +13,7 @@ void AssertWithMsg(const char* expr_str, bool expr, const char* file, int line, 
 	}
 }
 
-void Assert(const char* expr_str, bool expr, const char* file, int line)
+void Loops::Core::Assert(const char* expr_str, bool expr, const char* file, int line)
 {
 	if (!expr)
 	{

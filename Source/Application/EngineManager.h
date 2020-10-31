@@ -4,11 +4,19 @@ namespace Loops::Application
 {
     class EngineManager
     {
+
     private:
+        EngineManager(){}
+        EngineManager(EngineManager const &) {}
+        EngineManager const & operator= (EngineManager const &) {}
+
+        static EngineManager* instance;
 
     public:
-        bool Init();
-        void Run();
-        bool DeInit();
+        void Init();
+        void DeInit();
+        void Update();
+        static EngineManager* GetInstance();
+        ~EngineManager();
     };
 }

@@ -1,16 +1,34 @@
 #include "CoreManager.h"
+#include "Settings.h"
 
-bool Loops::Core::CoreManager::Init()
+using namespace Loops::Core;
+
+CoreManager* CoreManager::instance = nullptr;
+
+void CoreManager::Init()
 {
-    return false;
+    
 }
 
-bool Loops::Core::CoreManager::Update()
+void CoreManager::DeInit()
 {
-    return false;
+    
 }
 
-bool Loops::Core::CoreManager::DeInit()
+void CoreManager::Update()
 {
-    return false;
+
+}
+
+CoreManager * CoreManager::GetInstance()
+{
+    if (instance == nullptr)
+    {
+        instance = new CoreManager();
+    }
+    return instance;
+}
+
+CoreManager::~CoreManager()
+{
 }

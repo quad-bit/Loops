@@ -34,3 +34,28 @@ MACRO(SUBDIRLIST result curdir)
   ENDFOREACH()
   SET(${result} ${dirlist})
 ENDMACRO()
+
+MACRO(ADD_GLFW includeDir libDir libraries)
+    message("Adding GLFW")
+    #find glfw
+    IF( DEFINED ENV{GLFW_PATH} )
+      SET( glfw_DIR "$ENV{GLFW_PATH}" )
+    ENDIF()
+
+    #find_package(glfw HINTS "${glfw_DIR}")
+    find_package(glfw3 3.3)
+
+    IF( glfw3_FOUND )
+      message (" found glfw ")
+    ELSE()
+      message ("glfw package not found, adding it manually")
+      SET ( glfw3_INCLUDE_DIR "${glfw_DIR}/include")
+      SET ( glfw3_LIBRARY_DIR "${glfw_DIR}/Build/src/Debug")
+      SET ( glfw3_LIBRARIES "${glfw3_LIBRARY_DIR}/glfw3.lib")
+    ENDIF()
+
+    SET ( includeDir ${glfw3_INCLUDE_DIR})
+    SET ( libDir ${glfw3_LIBRARY_DIR} )
+    SET ( libraries ${glfw3_LIBRARIES} )
+
+ENDMACRO()

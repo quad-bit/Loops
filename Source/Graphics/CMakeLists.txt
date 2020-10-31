@@ -34,8 +34,12 @@ file(GLOB filesInParentDir
     "*.txt"
 )
 
-LIST(APPEND SourceList ${filesInParentDir})
-source_group("" FILES ${filesInParentDir})
+list(LENGTH filesInParentDir size)
+IF(NOT ${size} EQUAL 0)
+    LIST(APPEND SourceList ${filesInParentDir})
+    source_group("" FILES ${filesInParentDir})
+    LIST(APPEND SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
+ENDIF()
 
 message("\n")
 
@@ -45,7 +49,6 @@ ${SourceList} )
 
 FOREACH(subdir ${SUBDIRS})
     # forces anyone who uses this lib to include the below mentioned source dir into their project props
-
     string(FIND ${subdir} "Drivers" result)
 
     IF(NOT result EQUAL -1 )
@@ -53,11 +56,12 @@ FOREACH(subdir ${SUBDIRS})
     ENDIF()
 
     target_include_directories(Renderer PUBLIC "${subdir}")
-    #target_include_directories(Renderer PUBLIC "${subdir}")
-
 ENDFOREACH()
 
-target_link_libraries(Renderer PUBLIC Core)
+ADD_GLFW(includeDir libDir libraries)
+target_include_directories(Renderer PUBLIC includeDir)
+link_directories(${libDir})
+target_link_libraries(Renderer PUBLIC Core ${libraries})
 
 IF( APPLE )
   MESSAGE( STATUS "Running under MacOS X" )

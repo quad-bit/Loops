@@ -32,11 +32,14 @@ file(GLOB filesInParentDir
     "*.txt"
 )
 
-LIST(APPEND SourceList ${filesInParentDir})
-source_group("" FILES ${filesInParentDir})
+list(LENGTH filesInParentDir size)
+IF(NOT ${size} EQUAL 0)
+    LIST(APPEND SourceList ${filesInParentDir})
+    source_group("" FILES ${filesInParentDir})
+    LIST(APPEND SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
+ENDIF()
 
 ##  file list creation ends
-
 IF( glm_FOUND )
   message (" found glm ")
 ELSE()
@@ -44,7 +47,6 @@ ELSE()
   SET ( glm_INCLUDE_DIR "${glm_DIR}")
   message (" glm include directory set to : ${glm_INCLUDE_DIR}")
 ENDIF()
-
 
 #find glfw
 IF( DEFINED ENV{GLFW_PATH} )
@@ -62,7 +64,6 @@ ELSE()
   SET ( glfw3_LIBRARY_DIR "${glfw_DIR}/Build/src/Debug")
   SET ( glfw3_LIBRARIES "${glfw3_LIBRARY_DIR}/glfw3.lib")
 ENDIF()
-
 
 #create library
 add_library(Core

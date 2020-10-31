@@ -39,7 +39,12 @@ file(GLOB filesInParentDir
     "*.txt"
 )
 
-LIST(APPEND SourceList ${filesInParentDir})
+list(LENGTH filesInParentDir size)
+IF(NOT ${size} EQUAL 0)
+    LIST(APPEND SourceList ${filesInParentDir})
+    source_group("" FILES ${filesInParentDir})
+    LIST(APPEND SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
+ENDIF()
 
 ##  file list creation ends
 

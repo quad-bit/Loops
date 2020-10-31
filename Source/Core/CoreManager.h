@@ -4,11 +4,21 @@ namespace Loops::Core
 {
     class CoreManager
     {
-    private:
 
+    private:
+        CoreManager(){};
+        CoreManager(CoreManager const &) {}
+        CoreManager const & operator= (CoreManager const &) {}
+
+        static CoreManager* instance;
+        
     public:
-        bool Init();
-        bool Update();
-        bool DeInit();
+        void Init();
+        void DeInit();
+        void Update();
+        static CoreManager* GetInstance();
+        ~CoreManager();
+
+        int test;
     };
 }
