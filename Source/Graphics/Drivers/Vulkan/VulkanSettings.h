@@ -6,7 +6,10 @@ using namespace Loops::Core;
 namespace Loops::Graphics::Vulkan
 {
     #if (RENDERING_API == VULKAN)
-    
+        
+        #define BUILD_ENABLE_VULKAN_DEBUG                 1
+        #define BUILD_ENABLE_VULKAN_RUNTIME_DEBUG         1
+        
         #if defined( GLFW_ENABLED )
 
             // Define as a build option

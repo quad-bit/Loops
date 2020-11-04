@@ -18,7 +18,5 @@ namespace Loops::Core
         void Update();
         static CoreManager* GetInstance();
         ~CoreManager();
-
-        int test;
     };
 }

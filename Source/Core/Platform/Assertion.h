@@ -4,7 +4,6 @@
 
 namespace Loops::Core
 {
-
     #ifndef NDEBUG
     #define ASSERT_MSG(Expr, Msg) \
         AssertWithMsg(#Expr, Expr, __FILE__, __LINE__, Msg)

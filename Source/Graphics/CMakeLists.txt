@@ -61,7 +61,7 @@ ENDFOREACH()
 ADD_GLFW(includeDir libDir libraries)
 target_include_directories(Renderer PUBLIC includeDir)
 link_directories(${libDir})
-target_link_libraries(Renderer PUBLIC Core ${libraries})
+target_link_libraries(Renderer PUBLIC Core Vulkan ${libraries})
 
 IF( APPLE )
   MESSAGE( STATUS "Running under MacOS X" )

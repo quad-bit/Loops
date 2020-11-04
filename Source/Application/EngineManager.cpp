@@ -12,7 +12,6 @@ EngineManager* EngineManager::instance = nullptr;
 void EngineManager::Init()
 {
     CoreManager::GetInstance()->Init();
-    CoreManager::GetInstance()->test = 100;
     GraphicsManager::GetInstance()->Init(800, 600, "Loops");
 }
 

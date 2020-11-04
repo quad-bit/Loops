@@ -10,9 +10,9 @@ using namespace Loops::Core;
 void WindowManager::InitOSWindow()
 {
     glfwInit();
-    if (glfwVulkanSupported() == GLFW_FALSE) {
-        //assert(0 && " GLFW Failed to initialize with Vulkan.");
-        AssertWithMsg("0", 0, "WindowManager.cpp", __LINE__, " GLFW Failed to initialize with Vulkan.");
+    if (glfwVulkanSupported() == GLFW_FALSE) 
+    {
+        ASSERT_MSG(0, " GLFW Failed to initialize with Vulkan.");
         std::exit(-1);
     }
     glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
