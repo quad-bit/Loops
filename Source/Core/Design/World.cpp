@@ -2,6 +2,8 @@
 #include "System.h"
 #include "EntityManager.h"
 
+using namespace Loops::Core::ECS;
+
 EntityHandle* World::CreateEntity()
 {
     Entity* obj = EntityManager::GetSingleton()->CreateEntity();

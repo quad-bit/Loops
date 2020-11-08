@@ -2,7 +2,7 @@
 #include <vector>
 #include <iostream>
 #include <sstream>
-#include "VulkanUtility.h"
+#include <vulkan\vulkan.h>
 
 namespace Loops::Graphics::Vulkan
 {

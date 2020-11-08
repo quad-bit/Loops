@@ -1,7 +1,8 @@
 #include "VulkanManager.h"
 #include "ValidationManager.h"
-#include "Assertion.h"
+#include "VulkanUtility.h"
 #include <Settings.h>
+#include <Assertion.h>
 #include <algorithm>
 
 using namespace std;

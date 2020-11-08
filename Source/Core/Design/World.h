@@ -2,104 +2,110 @@
 #include <vector>
 #include <map>
 
-template<typename ComponentType>
-class ComponentManager;
-
-class BaseComponentManager;
-class Entity;
-class EntityHandle;
-class System;
-
-//#include "ComponentHandle.h"
 #include "ComponentMask.h"
 
-template<typename T>
-class ComponentHandle;
 
-
-class World
+namespace Loops::Core::ECS
 {
-private:
     template<typename ComponentType>
-    ComponentManager<ComponentType>* GetComponentManager();
+    class ComponentManager;
 
-    std::vector<BaseComponentManager*> managerList;
-    std::vector<System*> systemList;
+    class BaseComponentManager;
+    class Entity;
+    class EntityHandle;
+    class System;
 
-    std::map<Entity, ComponentMask> entityMasks;
+    //#include "ComponentHandle.h"
 
-public:
+    template<typename T>
+    class ComponentHandle;
 
-    //explicit World(std::unique_ptr<EntityManager> entityManager);
 
-    void Init();
-
-    void DestroyEntity(Entity* entityObj);
-    EntityHandle* CreateEntity();
-
-    template<typename ComponentType>
-    void AddComponent(ComponentType* componentType, Entity * entityObj);
-
-    template<typename ComponentType>
-    void RemoveComponent(ComponentType* componentType, Entity * entityObj);
-
-    void UpdateEntityMask(Entity *entity, ComponentMask oldMask);
-
-    template<typename ComponentType>
-    ComponentManager<ComponentType>* CreateManager();
-
-    void AddSystem(System* system);
-
-    template<typename ComponentType, typename... Args>
-    void Unpack(Entity* e, ComponentHandle<ComponentType>& handle, ComponentHandle<Args>&... args)
+    class World
     {
-        typedef ComponentManager<ComponentType> componentTypeManagerType;
+    private:
+        template<typename ComponentType>
+        ComponentManager<ComponentType>* GetComponentManager();
 
-        componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-        handle = *(manager->GetComponentHandle(e));
+        std::vector<BaseComponentManager*> managerList;
+        std::vector<System*> systemList;
 
-        Unpack<Args...>(e, args...);
-    }
+        std::map<Entity, ComponentMask> entityMasks;
 
-	template<typename ComponentType>
-	void Unpack(Entity* e, ComponentHandle<ComponentType>& handle)
-	{
-		typedef ComponentManager<ComponentType> componentManagerType;
+    public:
 
-		componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-		handle = *(manager->GetComponentHandle(e));
-	}
-	
-	/*
-	template<typename ComponentType, typename... Args>
-	void Unpack(Entity* e, ComponentHandle<ComponentType>* handle, ComponentHandle<Args>*... args)
-	{
-		typedef ComponentManager<ComponentType> componentTypeManagerType;
+        //explicit World(std::unique_ptr<EntityManager> entityManager);
 
-		componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-		handle = (manager->GetComponentHandle(e));
+        void Init();
 
-		Unpack<Args...>(e, args...);
-	}
+        void DestroyEntity(Entity* entityObj);
+        EntityHandle* CreateEntity();
 
-	template<typename ComponentType>
-	void Unpack(Entity* e, ComponentHandle<ComponentType>* handle)
-	{
-		typedef ComponentManager<ComponentType> componentManagerType;
+        template<typename ComponentType>
+        void AddComponent(ComponentType* componentType, Entity * entityObj);
 
-		componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-		handle = (manager->GetComponentHandle(e));
-	}
-	*/
-    
+        template<typename ComponentType>
+        void RemoveComponent(ComponentType* componentType, Entity * entityObj);
 
-    void Update(float dt);
+        void UpdateEntityMask(Entity *entity, ComponentMask oldMask);
 
-    void Render();
+        template<typename ComponentType>
+        ComponentManager<ComponentType>* CreateManager();
 
-    void DeInit();
+        void AddSystem(System* system);
 
-};
+        template<typename ComponentType, typename... Args>
+        void Unpack(Entity* e, ComponentHandle<ComponentType>& handle, ComponentHandle<Args>&... args)
+        {
+            typedef ComponentManager<ComponentType> componentTypeManagerType;
+
+            componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
+            handle = *(manager->GetComponentHandle(e));
+
+            Unpack<Args...>(e, args...);
+        }
+
+        template<typename ComponentType>
+        void Unpack(Entity* e, ComponentHandle<ComponentType>& handle)
+        {
+            typedef ComponentManager<ComponentType> componentManagerType;
+
+            componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
+            handle = *(manager->GetComponentHandle(e));
+        }
+
+        /*
+        template<typename ComponentType, typename... Args>
+        void Unpack(Entity* e, ComponentHandle<ComponentType>* handle, ComponentHandle<Args>*... args)
+        {
+            typedef ComponentManager<ComponentType> componentTypeManagerType;
+
+            componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
+            handle = (manager->GetComponentHandle(e));
+
+            Unpack<Args...>(e, args...);
+        }
+
+        template<typename ComponentType>
+        void Unpack(Entity* e, ComponentHandle<ComponentType>* handle)
+        {
+            typedef ComponentManager<ComponentType> componentManagerType;
+
+            componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
+            handle = (manager->GetComponentHandle(e));
+        }
+        */
+
+
+        void Update(float dt);
+
+        void Render();
+
+        void DeInit();
+
+    };
+}
+
 
 // =========================================     ==================================================
 
@@ -107,6 +113,8 @@ public:
 #include "EntityHandle.h"
 #include "Entity.h"
 #include "Component.h"
+
+using namespace Loops::Core::ECS;
 
 template<typename ComponentType>
 inline ComponentManager<ComponentType>* World::GetComponentManager() 

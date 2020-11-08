@@ -1,44 +1,49 @@
 #pragma once
 #include "World.h"
 
-class Entity;
-class World;
-
-template< typename ComponentType>
-class ComponentHandle;
-
-class EntityHandle
+namespace Loops::Core::ECS
 {
-private:
-    Entity * entityObj;
-    World * worldObj;
+    class Entity;
+    class World;
 
-public:
-    EntityHandle(Entity * entityObj, World * worldObj) {
-        this->entityObj = entityObj;
-        this->worldObj = worldObj;
-    }
+    template< typename ComponentType>
+    class ComponentHandle;
 
-    void Destroy()
+    class EntityHandle
     {
-        worldObj->DestroyEntity(entityObj);
-    }
+    private:
+        Entity * entityObj;
+        World * worldObj;
 
-    Entity * GetEntityHandle() { return entityObj; }
+    public:
+        EntityHandle(Entity * entityObj, World * worldObj) {
+            this->entityObj = entityObj;
+            this->worldObj = worldObj;
+        }
 
-    template<typename ComponentType>
-    void AddComponent(ComponentType* componentType);
+        void Destroy()
+        {
+            worldObj->DestroyEntity(entityObj);
+        }
 
-    template<typename ComponentType>
-    void RemoveComponent(ComponentType* componentType);
+        Entity * GetEntityHandle() { return entityObj; }
 
-    template<typename ComponentType>
-    ComponentHandle<ComponentType> GetComponent();
-    
-};
+        template<typename ComponentType>
+        void AddComponent(ComponentType* componentType);
+
+        template<typename ComponentType>
+        void RemoveComponent(ComponentType* componentType);
+
+        template<typename ComponentType>
+        ComponentHandle<ComponentType> GetComponent();
+
+    };
+}
 
 #include "Entity.h"
 #include "ComponentHandle.h"
+
+using namespace Loops::Core::ECS;
 
 template<typename ComponentType>
 inline void EntityHandle::AddComponent(ComponentType * componentType)

@@ -1,13 +1,8 @@
 #include "TransformSystem.h"
-#include "ComponentHandle.h"
+#include "Transform.h"
 #include "World.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
-
-using namespace ComponentSpace;
+using namespace Loops::Core::ECS;
 
 void TransformSystem::Init()
 {
@@ -19,7 +14,7 @@ void TransformSystem::DeInit()
 
 void TransformSystem::Update(float dt)
 {
-	for (auto & entity : registeredEntities) 
+	for (auto & entity : registeredEntities)
 	{
 		ComponentHandle<Transform> transformObj;
 		worldObj->Unpack(entity, transformObj);

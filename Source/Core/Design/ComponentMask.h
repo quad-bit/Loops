@@ -2,32 +2,34 @@
 
 #include "Component.h"
 
-class ComponentMask
+namespace Loops::Core::ECS
 {
-private:
-    unsigned int mask = 0;
-
-public:
-
-    template<typename ComponentType>
-    void AddComponent()
+    class ComponentMask
     {
-		mask |= (1 << GetComponentFamily<ComponentType>());// Component<ComponentType>::get());
-    }
+    private:
+        unsigned int mask = 0;
 
-    template<typename ComponentType>
-    void RemoveComponent()
-    {
-        mask &= ~(1 << Component<ComponentType>::Family());
-    }
+    public:
 
-    bool isNewMatch(ComponentMask oldMask, ComponentMask systemMask);
+        template<typename ComponentType>
+        void AddComponent()
+        {
+            mask |= (1 << GetComponentFamily<ComponentType>());// Component<ComponentType>::get());
+        }
 
-    bool isNoLongerMatched(ComponentMask oldMask, ComponentMask systemMask);
+        template<typename ComponentType>
+        void RemoveComponent()
+        {
+            mask &= ~(1 << Component<ComponentType>::Family());
+        }
 
-    bool matches(ComponentMask systemMask);
+        bool isNewMatch(ComponentMask oldMask, ComponentMask systemMask);
 
-    ComponentMask();
-    ~ComponentMask();
-};
+        bool isNoLongerMatched(ComponentMask oldMask, ComponentMask systemMask);
 
+        bool matches(ComponentMask systemMask);
+
+        ComponentMask();
+        ~ComponentMask();
+    };
+}

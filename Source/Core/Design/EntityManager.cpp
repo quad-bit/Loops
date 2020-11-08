@@ -2,6 +2,8 @@
 #include "Entity.h"
 #include "EntityHandle.h"
 
+using namespace Loops::Core::ECS;
+
 EntityManager* EntityManager::entityManagerInstance = nullptr;
 
 EntityManager::EntityManager()

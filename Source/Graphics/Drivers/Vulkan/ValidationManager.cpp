@@ -2,6 +2,7 @@
 #include "VulkanSettings.h"
 #include "Assertion.h"
 #include "Settings.h"
+#include "VulkanUtility.h"
 
 using namespace Loops::Graphics::Vulkan;
 using namespace Loops::Core;
