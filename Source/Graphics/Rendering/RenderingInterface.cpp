@@ -2,12 +2,11 @@
 #include "ForwardInterface.h"
 #include "VulkanInterface.h"
 
-using namespace Loops::Graphics::Rendering;
 
 void RenderingInterface::Init()
 {
 #if (RENDERING_API == VULKAN)
-    apiInterface = new ForwardRendering<Loops::Graphics::Rendering::VulkanInterface>();
+    apiInterface = new ForwardRendering<VulkanInterface>();
 #elif (RENDERING_API == DX)
     apiInterface = new ForwardRendering<DxInterface>();
 #endif

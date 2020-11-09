@@ -4,32 +4,36 @@
 
 using namespace std;
 
-namespace Loops::Graphics::Vulkan
+struct AttachmentInfo;
+class PresentationEngine
 {
-    class PresentationEngine
-    {
 
-    private:
-        PresentationEngine(){}
-        PresentationEngine(PresentationEngine const &) {}
-        PresentationEngine const & operator= (PresentationEngine const &) {}
+private:
+    PresentationEngine(){}
+    PresentationEngine(PresentationEngine const &) {}
+    PresentationEngine const & operator= (PresentationEngine const &) {}
 
-        static PresentationEngine* instance;
+    static PresentationEngine* instance;
         
-        VkSurfaceKHR* surfaceObj;
-        uint32_t swapChainImageCount;
-        VkSurfaceCapabilitiesKHR surfaceCapabilities={};
-        VkSwapchainKHR swapchainObj;
+    VkSurfaceKHR* surfaceObj;
+    VkSurfaceFormatKHR * surfaceFormat;
+    uint32_t swapChainImageCount;
+    VkSurfaceCapabilitiesKHR surfaceCapabilities={};
+    VkSwapchainKHR swapchainObj;
+    VkPresentModeKHR presentMode;
 
-        vector<VkImage> swapChainImageList;
-        vector<VkImageView> swapChainImageViewList;
+    vector<VkImage> swapChainImageList;
+    vector<VkImageView> swapChainImageViewList;
 
-    public:
-        void Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * surfaceFormat);
-        void CreateSwapchainImageViews(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * surfaceFormat);
-        void DeInit();
-        void Update();
-        static PresentationEngine* GetInstance();
-        ~PresentationEngine();
-    };
-}
+public:
+    void Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * surfaceFormat);
+    vector<VkImage> * CreateSwapchainImage(AttachmentInfo* info, uint32_t count);
+    vector<VkImageView> * CreateSwapchainImageViews(AttachmentInfo* info, uint32_t count);
+    void DestroySwapChain();
+    void DestroySwapChainImageView();
+
+    void DeInit();
+    void Update();
+    static PresentationEngine* GetInstance();
+    ~PresentationEngine();
+};

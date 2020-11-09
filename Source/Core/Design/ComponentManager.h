@@ -7,57 +7,52 @@
 
 using namespace std;
 
-namespace Loops::Core::ECS
+class EntityMap;
+class Entity;
+
+template <typename ComponentType>
+class ComponentHandle;
+
+using ComponentIndex = uint32_t;
+
+template <typename ComponentType>
+class ComponentData
 {
-    class EntityMap;
-    class Entity;
+public:
+    uint32_t size = 1;
+    std::array<ComponentType*, MAX_NUM_OF_COMPONENTS>* data;
+};
 
-    template <typename ComponentType>
-    class ComponentHandle;
+class BaseComponentManager {
+public:
+    BaseComponentManager() = default;
+    virtual ~BaseComponentManager() = default;
+    BaseComponentManager(const BaseComponentManager &) = default;
+    BaseComponentManager &operator=(const BaseComponentManager &) = default;
+    BaseComponentManager(BaseComponentManager &&) = default;
+    BaseComponentManager &operator=(BaseComponentManager &&) = default;
+};
 
-    using ComponentIndex = uint32_t;
+template <typename ComponentType>
+class ComponentManager : public BaseComponentManager
+{
+private:
+    ComponentData<ComponentType> componentDataObj;
+    EntityMap * entityMapObj;
 
-    template <typename ComponentType>
-    class ComponentData
-    {
-    public:
-        uint32_t size = 1;
-        std::array<ComponentType*, MAX_NUM_OF_COMPONENTS>* data;
-    };
+public:
 
-    class BaseComponentManager {
-    public:
-        BaseComponentManager() = default;
-        virtual ~BaseComponentManager() = default;
-        BaseComponentManager(const BaseComponentManager &) = default;
-        BaseComponentManager &operator=(const BaseComponentManager &) = default;
-        BaseComponentManager(BaseComponentManager &&) = default;
-        BaseComponentManager &operator=(BaseComponentManager &&) = default;
-    };
+    using LookupType = ComponentType;
 
-    template <typename ComponentType>
-    class ComponentManager : public BaseComponentManager
-    {
-    private:
-        ComponentData<ComponentType> componentDataObj;
-        EntityMap * entityMapObj;
+    ComponentManager();
+    ComponentIndex AddComponent(ComponentType * componentType, Entity * entity);
+    void RemoveComponent(Entity * entity);
+    ComponentType* GetComponent(Entity * entity);
+    ComponentHandle<ComponentType>* GetComponentHandle(Entity * entity);
+    void iterateAll(std::function<void(ComponentType* componentType)> lambda);
 
-    public:
-
-        using LookupType = ComponentType;
-
-        ComponentManager();
-        ComponentIndex AddComponent(ComponentType * componentType, Entity * entity);
-        void RemoveComponent(Entity * entity);
-        ComponentType* GetComponent(Entity * entity);
-        ComponentHandle<ComponentType>* GetComponentHandle(Entity * entity);
-        void iterateAll(std::function<void(ComponentType* componentType)> lambda);
-
-        ~ComponentManager();
-    };
-}
-
-using namespace Loops::Core::ECS;
+    ~ComponentManager();
+};
 
 #include "Entity.h"
 #include "EntityMap.h"

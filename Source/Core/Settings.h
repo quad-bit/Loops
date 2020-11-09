@@ -5,45 +5,43 @@
 
 using namespace std;
 
-namespace Loops::Core
-{
-    #define WINDOWS_OS 0
-    #define LINUX_OS  1
+#define WINDOWS_OS 0
+#define LINUX_OS  1
 
-    #define VULKAN 0
-    #define DX12   1
+#define VULKAN 0
+#define DX12   1
     
-    #define RENDERING_API     VULKAN
-    #define GLFW_ENABLED  
+#define RENDERING_API     VULKAN
+#define GLFW_ENABLED  
 
-    #if defined(GLFW_ENABLED)
+#if defined(GLFW_ENABLED)
         
-        // For Windows Message Box
-        #if defined( _WIN32 )
-        #undef APIENTRY
-        #include <windows.h>
-        #endif 
-
-        #include <GLFW\glfw3.h>
-
-    #endif
-
+    // For Windows Message Box
     #if defined( _WIN32 )
-    // this is always defined on windows platform
-    #define CURRENT_OS WINDOWS_OS
+    #undef APIENTRY
+    #include <windows.h>
+    #endif 
 
-    // LINUX ( Via XCB library )
-    #elif defined( __linux )
-        #define CURRENT_OS LINUX_OS
-    #else
-    // platform not yet supported
-    #error Platform not yet supported
-    #endif
+    #include <GLFW\glfw3.h>
 
-    class Settings
-    {
-    public:
-        static uint32_t windowWidth, windowHeight;
-        static string windowName;
-    };
-}
+#endif
+
+#if defined( _WIN32 )
+// this is always defined on windows platform
+#define CURRENT_OS WINDOWS_OS
+
+// LINUX ( Via XCB library )
+#elif defined( __linux )
+    #define CURRENT_OS LINUX_OS
+#else
+// platform not yet supported
+#error Platform not yet supported
+#endif
+
+class Settings
+{
+public:
+    static uint32_t windowWidth, windowHeight;
+    static string windowName;
+    static uint32_t swapBufferCount;
+};

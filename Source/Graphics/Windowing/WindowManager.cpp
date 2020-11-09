@@ -1,6 +1,5 @@
 #include "WindowManager.h"
 
-using namespace Loops::Graphics::Windowing;
 WindowManager* WindowManager::windowManagerInstance = nullptr;
 
 WindowManager::~WindowManager()

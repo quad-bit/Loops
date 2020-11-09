@@ -4,8 +4,6 @@
 #include "Settings.h"
 #include "VulkanUtility.h"
 
-using namespace Loops::Graphics::Vulkan;
-using namespace Loops::Core;
 
 void ValidationManager::AddRequiredPlatformInstanceExtensions(std::vector<const char*>* instance_extensions)
 {

@@ -3,9 +3,8 @@
 #include "TransformSystem.h"
 #include "Transform.h"
 
-using namespace Loops::Core::ECS;
 
-void Loops::Core::ECS::UnitTest()
+void UnitTest()
 {
     World worldObj;
 

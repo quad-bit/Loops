@@ -1,36 +1,33 @@
 #pragma once
 #include <vector>
 
-namespace Loops::Core::ECS
+class Entity;
+class EntityHandle;
+class World;
+
+class EntityManager
 {
-    class Entity;
-    class EntityHandle;
-    class World;
+public:
+    Entity* CreateEntity();
+    EntityHandle * CreateEntityHandle(Entity* obj, World * worldObj);
 
-    class EntityManager
-    {
-    public:
-        Entity* CreateEntity();
-        EntityHandle * CreateEntityHandle(Entity* obj, World * worldObj);
+    void DestroyEntity(Entity* entity);
 
-        void DestroyEntity(Entity* entity);
+    static EntityManager* GetSingleton();
+    void Init();
+    void DeInit();
 
-        static EntityManager* GetSingleton();
-        void Init();
-        void DeInit();
+private:
+    int lastEntity = 0;
 
-    private:
-        int lastEntity = 0;
+    std::vector <Entity*> entityList;
+    std::vector <EntityHandle*> entityHandleList;
 
-        std::vector <Entity*> entityList;
-        std::vector <EntityHandle*> entityHandleList;
+    EntityManager();
+    EntityManager(EntityManager const &) {}
+    EntityManager const & operator= (EntityManager const &) {}
 
-        EntityManager();
-        EntityManager(EntityManager const &) {}
-        EntityManager const & operator= (EntityManager const &) {}
+    static EntityManager* entityManagerInstance;
 
-        static EntityManager* entityManagerInstance;
+};
 
-    };
-
-}

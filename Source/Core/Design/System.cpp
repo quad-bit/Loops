@@ -2,8 +2,6 @@
 #include "World.h"
 #include "Entity.h"
 
-using namespace Loops::Core::ECS;
-
 void System::RegisterWorld(World * world)
 {
     worldObj = world;

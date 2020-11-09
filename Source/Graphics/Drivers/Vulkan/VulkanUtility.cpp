@@ -4,8 +4,6 @@
 #include <iostream>
 
 using namespace std;
-using namespace Loops::Graphics::Vulkan;
-using namespace Loops::Core;
 
 
 VkInstance * CoreObjects::instanceObj = nullptr;
@@ -13,7 +11,7 @@ VkPhysicalDevice * CoreObjects::physicalDeviceObj = nullptr;
 VkDevice * CoreObjects::logicalDeviceObj = nullptr;
 VkAllocationCallbacks * CoreObjects::pAllocator = nullptr;
 
-void Loops::Graphics::Vulkan::ErrorCheck(VkResult result)
+void ErrorCheck(VkResult result)
 {
 #if BUILD_ENABLE_VULKAN_RUNTIME_DEBUG
     if (result < 0) {

@@ -1,15 +1,20 @@
 #pragma once
-namespace Loops::Graphics::Rendering
+#include <stdint.h>
+#include <vector>
+
+using namespace std;
+
+struct ImageInfo;
+
+class VulkanInterface
 {
-    class VulkanInterface
-    {
-    private:
+private:
 
-    public:
-        VulkanInterface();
-        ~VulkanInterface();
+public:
+    VulkanInterface();
+    ~VulkanInterface();
 
-        void Init();
-        void DeInit();
-    };
-}
+    void Init();
+    void DeInit();
+    void CreateRenderTarget(ImageInfo * info, uint32_t count, bool defaultTarget, std::vector<uint32_t>* ids);
+};

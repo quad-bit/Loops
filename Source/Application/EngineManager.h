@@ -1,22 +1,19 @@
 #pragma once
 
-namespace Loops::Application
+class EngineManager
 {
-    class EngineManager
-    {
 
-    private:
-        EngineManager(){}
-        EngineManager(EngineManager const &) {}
-        EngineManager const & operator= (EngineManager const &) {}
+private:
+    EngineManager(){}
+    EngineManager(EngineManager const &) {}
+    EngineManager const & operator= (EngineManager const &) {}
 
-        static EngineManager* instance;
+    static EngineManager* instance;
 
-    public:
-        void Init();
-        void DeInit();
-        void Update();
-        static EngineManager* GetInstance();
-        ~EngineManager();
-    };
-}
+public:
+    void Init();
+    void DeInit();
+    void Update();
+    static EngineManager* GetInstance();
+    ~EngineManager();
+};

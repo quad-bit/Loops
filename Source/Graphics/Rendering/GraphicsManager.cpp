@@ -3,8 +3,6 @@
 #include <Settings.h>
 #include "RenderingInterface.h"
 
-using namespace Loops::Graphics;
-using namespace Loops::Graphics::Windowing;
 
 GraphicsManager* GraphicsManager::instance = nullptr;
 

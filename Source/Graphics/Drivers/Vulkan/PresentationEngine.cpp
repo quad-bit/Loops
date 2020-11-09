@@ -1,9 +1,10 @@
 #include "PresentationEngine.h"
+#include "VkAttachmentFactory.h"
 #include "VulkanUtility.h"
+#include <Settings.h>
 #include <vector>
 
 using namespace std;
-using namespace Loops::Graphics::Vulkan;
 
 PresentationEngine* PresentationEngine::instance = nullptr;
 
@@ -36,6 +37,11 @@ void PresentationEngine::Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * sur
         }
     }
 
+    Settings::swapBufferCount = swapChainImageCount;
+}
+
+vector<VkImage>* PresentationEngine::CreateSwapchainImage(AttachmentInfo * info, uint32_t count)
+{
     VkSwapchainCreateInfoKHR swapChainCreateInfo{};
     swapChainCreateInfo.clipped = VK_TRUE; // dont render parts of swapchain image that are out of the frustrum
     swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
@@ -55,11 +61,7 @@ void PresentationEngine::Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * sur
     swapChainCreateInfo.surface = *surfaceObj;
 
     ErrorCheck(vkCreateSwapchainKHR(*CoreObjects::logicalDeviceObj, &swapChainCreateInfo, CoreObjects::pAllocator, &swapchainObj));
-    CreateSwapchainImageViews(surfaceObj, surfaceFormat);
-}
 
-void PresentationEngine::CreateSwapchainImageViews(VkSurfaceKHR * surfaceObj, VkSurfaceFormatKHR * surfaceFormat)
-{
     ErrorCheck(vkGetSwapchainImagesKHR(*CoreObjects::logicalDeviceObj, swapchainObj, &swapChainImageCount, nullptr));
 
     swapChainImageList.resize(swapChainImageCount);
@@ -67,6 +69,11 @@ void PresentationEngine::CreateSwapchainImageViews(VkSurfaceKHR * surfaceObj, Vk
 
     ErrorCheck(vkGetSwapchainImagesKHR(*CoreObjects::logicalDeviceObj, swapchainObj, &swapChainImageCount, swapChainImageList.data()));
 
+    return &swapChainImageList;
+}
+
+vector<VkImageView>* PresentationEngine::CreateSwapchainImageViews(AttachmentInfo * info, uint32_t count)
+{
     for (uint32_t i = 0; i <swapChainImageCount; i++)
     {
         VkImageViewCreateInfo createInfo{};
@@ -83,15 +90,26 @@ void PresentationEngine::CreateSwapchainImageViews(VkSurfaceKHR * surfaceObj, Vk
 
         ErrorCheck(vkCreateImageView(*CoreObjects::logicalDeviceObj, &createInfo, CoreObjects::pAllocator, &swapChainImageViewList[i]));
     }
+
+    return &swapChainImageViewList;
 }
 
-void PresentationEngine::DeInit()
+void PresentationEngine::DestroySwapChain()
+{
+    vkDestroySwapchainKHR(*CoreObjects::logicalDeviceObj, swapchainObj, CoreObjects::pAllocator);
+}
+
+void PresentationEngine::DestroySwapChainImageView()
 {
     for (uint32_t i = 0; i <swapChainImageCount; i++)
     {
         vkDestroyImageView(*CoreObjects::logicalDeviceObj, swapChainImageViewList[i], CoreObjects::pAllocator);
     }
-    vkDestroySwapchainKHR(*CoreObjects::logicalDeviceObj, swapchainObj, CoreObjects::pAllocator);
+}
+
+void PresentationEngine::DeInit()
+{
+    
 }
 
 void PresentationEngine::Update()

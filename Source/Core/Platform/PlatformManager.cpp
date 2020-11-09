@@ -1,7 +1,5 @@
 #include "PlatformManager.h"
 
-using namespace Loops::Core::Platform;
-
 PlatformManager* PlatformManager::platformManagerInstance = nullptr;
 
 void PlatformManager::Init()

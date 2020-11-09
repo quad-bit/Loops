@@ -1,24 +1,21 @@
 #pragma once
 
-namespace Loops::Core::Platform
+class PlatformManager
 {
-    class PlatformManager
-    {
-    private:
+private:
 
-        PlatformManager();
-        PlatformManager(PlatformManager const &) {}
-        PlatformManager const & operator= (PlatformManager const &) {}
+    PlatformManager();
+    PlatformManager(PlatformManager const &) {}
+    PlatformManager const & operator= (PlatformManager const &) {}
 
-        static PlatformManager* platformManagerInstance;
+    static PlatformManager* platformManagerInstance;
 
-    public:
+public:
 
-        void Init();
-        void DeInit();
+    void Init();
+    void DeInit();
         
-        static PlatformManager* GetSingleton();
-        ~PlatformManager();
+    static PlatformManager* GetSingleton();
+    ~PlatformManager();
 
-    };
-}
+};

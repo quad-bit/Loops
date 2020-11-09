@@ -5,106 +5,103 @@
 #include "ComponentMask.h"
 
 
-namespace Loops::Core::ECS
+template<typename ComponentType>
+class ComponentManager;
+
+class BaseComponentManager;
+class Entity;
+class EntityHandle;
+class System;
+
+//#include "ComponentHandle.h"
+
+template<typename T>
+class ComponentHandle;
+
+
+class World
 {
+private:
     template<typename ComponentType>
-    class ComponentManager;
+    ComponentManager<ComponentType>* GetComponentManager();
 
-    class BaseComponentManager;
-    class Entity;
-    class EntityHandle;
-    class System;
+    std::vector<BaseComponentManager*> managerList;
+    std::vector<System*> systemList;
 
-    //#include "ComponentHandle.h"
+    std::map<Entity, ComponentMask> entityMasks;
 
-    template<typename T>
-    class ComponentHandle;
+public:
 
+    //explicit World(std::unique_ptr<EntityManager> entityManager);
 
-    class World
+    void Init();
+
+    void DestroyEntity(Entity* entityObj);
+    EntityHandle* CreateEntity();
+
+    template<typename ComponentType>
+    void AddComponent(ComponentType* componentType, Entity * entityObj);
+
+    template<typename ComponentType>
+    void RemoveComponent(ComponentType* componentType, Entity * entityObj);
+
+    void UpdateEntityMask(Entity *entity, ComponentMask oldMask);
+
+    template<typename ComponentType>
+    ComponentManager<ComponentType>* CreateManager();
+
+    void AddSystem(System* system);
+
+    template<typename ComponentType, typename... Args>
+    void Unpack(Entity* e, ComponentHandle<ComponentType>& handle, ComponentHandle<Args>&... args)
     {
-    private:
-        template<typename ComponentType>
-        ComponentManager<ComponentType>* GetComponentManager();
+        typedef ComponentManager<ComponentType> componentTypeManagerType;
 
-        std::vector<BaseComponentManager*> managerList;
-        std::vector<System*> systemList;
+        componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
+        handle = *(manager->GetComponentHandle(e));
 
-        std::map<Entity, ComponentMask> entityMasks;
+        Unpack<Args...>(e, args...);
+    }
 
-    public:
+    template<typename ComponentType>
+    void Unpack(Entity* e, ComponentHandle<ComponentType>& handle)
+    {
+        typedef ComponentManager<ComponentType> componentManagerType;
 
-        //explicit World(std::unique_ptr<EntityManager> entityManager);
+        componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
+        handle = *(manager->GetComponentHandle(e));
+    }
 
-        void Init();
+    /*
+    template<typename ComponentType, typename... Args>
+    void Unpack(Entity* e, ComponentHandle<ComponentType>* handle, ComponentHandle<Args>*... args)
+    {
+        typedef ComponentManager<ComponentType> componentTypeManagerType;
 
-        void DestroyEntity(Entity* entityObj);
-        EntityHandle* CreateEntity();
+        componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
+        handle = (manager->GetComponentHandle(e));
 
-        template<typename ComponentType>
-        void AddComponent(ComponentType* componentType, Entity * entityObj);
+        Unpack<Args...>(e, args...);
+    }
 
-        template<typename ComponentType>
-        void RemoveComponent(ComponentType* componentType, Entity * entityObj);
+    template<typename ComponentType>
+    void Unpack(Entity* e, ComponentHandle<ComponentType>* handle)
+    {
+        typedef ComponentManager<ComponentType> componentManagerType;
 
-        void UpdateEntityMask(Entity *entity, ComponentMask oldMask);
-
-        template<typename ComponentType>
-        ComponentManager<ComponentType>* CreateManager();
-
-        void AddSystem(System* system);
-
-        template<typename ComponentType, typename... Args>
-        void Unpack(Entity* e, ComponentHandle<ComponentType>& handle, ComponentHandle<Args>&... args)
-        {
-            typedef ComponentManager<ComponentType> componentTypeManagerType;
-
-            componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-            handle = *(manager->GetComponentHandle(e));
-
-            Unpack<Args...>(e, args...);
-        }
-
-        template<typename ComponentType>
-        void Unpack(Entity* e, ComponentHandle<ComponentType>& handle)
-        {
-            typedef ComponentManager<ComponentType> componentManagerType;
-
-            componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-            handle = *(manager->GetComponentHandle(e));
-        }
-
-        /*
-        template<typename ComponentType, typename... Args>
-        void Unpack(Entity* e, ComponentHandle<ComponentType>* handle, ComponentHandle<Args>*... args)
-        {
-            typedef ComponentManager<ComponentType> componentTypeManagerType;
-
-            componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-            handle = (manager->GetComponentHandle(e));
-
-            Unpack<Args...>(e, args...);
-        }
-
-        template<typename ComponentType>
-        void Unpack(Entity* e, ComponentHandle<ComponentType>* handle)
-        {
-            typedef ComponentManager<ComponentType> componentManagerType;
-
-            componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-            handle = (manager->GetComponentHandle(e));
-        }
-        */
+        componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
+        handle = (manager->GetComponentHandle(e));
+    }
+    */
 
 
-        void Update(float dt);
+    void Update(float dt);
 
-        void Render();
+    void Render();
 
-        void DeInit();
+    void DeInit();
 
-    };
-}
+};
 
 
 // =========================================     ==================================================
@@ -113,8 +110,6 @@ namespace Loops::Core::ECS
 #include "EntityHandle.h"
 #include "Entity.h"
 #include "Component.h"
-
-using namespace Loops::Core::ECS;
 
 template<typename ComponentType>
 inline ComponentManager<ComponentType>* World::GetComponentManager() 

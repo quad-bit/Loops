@@ -1,4 +1,4 @@
 #include "Component.h"
 
 
-int Loops::Core::ECS::ComponentCounter::counter = 0;
+int ComponentCounter::counter = 0;

@@ -1,7 +1,5 @@
 #include "EngineManager.h"
 
-using namespace Loops::Application;
-
 void main()
 {
     EngineManager::GetInstance()->Init();

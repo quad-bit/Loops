@@ -4,31 +4,27 @@
 
 using namespace std;
 
-namespace Loops::Core::ECS
+struct ComponentCounter {
+    static int counter;
+};
+
+template <typename ComponentType>
+class Component
 {
-    struct ComponentCounter {
-        static int counter;
-    };
+private:
+    static int family;
 
-    template <typename ComponentType>
-    class Component
+public:
+
+    static inline int Family()
     {
-    private:
-        static int family;
+        if (family == -1)
+            family = ComponentCounter::counter++;
 
-    public:
+        return family;
+    }
+};
 
-        static inline int Family()
-        {
-            if (family == -1)
-                family = ComponentCounter::counter++;
-
-            return family;
-        }
-    };
-}
-
-using namespace Loops::Core::ECS;
 
 template <typename ComponentType>
 int Component<ComponentType>::family = -1;

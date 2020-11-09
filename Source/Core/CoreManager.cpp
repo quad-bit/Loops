@@ -1,8 +1,6 @@
 #include "CoreManager.h"
 #include "Settings.h"
 
-using namespace Loops::Core;
-
 CoreManager* CoreManager::instance = nullptr;
 
 void CoreManager::Init()

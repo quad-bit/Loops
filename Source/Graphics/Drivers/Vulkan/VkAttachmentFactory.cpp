@@ -1,11 +1,12 @@
 #include "VkAttachmentFactory.h"
 #include "VulkanUtility.h"
+#include "PresentationEngine.h"
+#include <RenderingWrapper.h>
 
-//using namespace Loops::Graphics::Vulkan;
+VkAttachmentFactory *VkAttachmentFactory::instance = nullptr;
+uint32_t VkAttachmentFactory::imageId = 0;
 
-Loops::Graphics::Vulkan::VkAttachmentFactory *Loops::Graphics::Vulkan::VkAttachmentFactory::instance = nullptr;
-uint32_t Loops::Graphics::Vulkan::VkAttachmentFactory::imageId = 0;
-
+/*
 void Loops::Graphics::Vulkan::VkAttachmentFactory::CreateSwapChainImages()
 {
 }
@@ -20,24 +21,29 @@ void Loops::Graphics::Vulkan::VkAttachmentFactory::DestroySwapChainImages()
 
 void Loops::Graphics::Vulkan::VkAttachmentFactory::DestroySwapChainImageViews()
 {
+}*/
+
+AttachmentInfo * VkAttachmentFactory::UnwrapImageInfo(ImageInfo * imageInfo)
+{
+    return nullptr;
 }
 
-void Loops::Graphics::Vulkan::VkAttachmentFactory::Init()
+void VkAttachmentFactory::Init()
 {
 
 }
 
-void Loops::Graphics::Vulkan::VkAttachmentFactory::DeInit()
+void VkAttachmentFactory::DeInit()
 {
 
 }
 
-void Loops::Graphics::Vulkan::VkAttachmentFactory::Update()
+void VkAttachmentFactory::Update()
 {
 
 }
 
-Loops::Graphics::Vulkan::VkAttachmentFactory *Loops::Graphics::Vulkan::VkAttachmentFactory::GetInstance()
+VkAttachmentFactory *VkAttachmentFactory::GetInstance()
 {
     if (instance == nullptr)
     {
@@ -46,19 +52,19 @@ Loops::Graphics::Vulkan::VkAttachmentFactory *Loops::Graphics::Vulkan::VkAttachm
     return instance;
 }
 
-Loops::Graphics::Vulkan::VkAttachmentFactory::~VkAttachmentFactory()
+VkAttachmentFactory::~VkAttachmentFactory()
 {
 }
 
-void Loops::Graphics::Vulkan::VkAttachmentFactory::CreateColorAttachment(Loops::Core::Utility::Wrappers::ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids)
+void VkAttachmentFactory::CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids)
 {
     vector<VkImage> * imageList;
     vector<VkImageView> * imageViewList;
 
     if (defaultTarget == true)
     {
-        //imageList = PresentationEngine::GetInstance()->CreateSwapchainImage(UnwrapImageInfo (info), count);
-        //imageViewList = PresentationEngine::GetInstance()->CreateSwapchainImageViews(UnwrapImageInfo(info), count);
+        imageList = PresentationEngine::GetInstance()->CreateSwapchainImage(UnwrapImageInfo (info), count);
+        imageViewList = PresentationEngine::GetInstance()->CreateSwapchainImageViews(UnwrapImageInfo(info), count);
     }
 
     for (uint32_t i = 0; i < count; i++)
@@ -73,20 +79,20 @@ void Loops::Graphics::Vulkan::VkAttachmentFactory::CreateColorAttachment(Loops::
     }
 }
 
-void Loops::Graphics::Vulkan::VkAttachmentFactory::CreateDepthAttachment(Loops::Core::Utility::Wrappers::ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids)
+void VkAttachmentFactory::CreateDepthAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids)
 {
 }
 
-void Loops::Graphics::Vulkan::VkAttachmentFactory::DestroyAttachment(vector<uint32_t> ids, bool defaultTarget)
+void VkAttachmentFactory::DestroyAttachment(vector<uint32_t> ids, bool defaultTarget)
 {
     if (defaultTarget == true)
     {
-        //PresentationEngine::GetInstance()->DestroySwapChainImageView();
-        //PresentationEngine::GetInstance()->DestroySwapChain();
+        PresentationEngine::GetInstance()->DestroySwapChainImageView();
+        PresentationEngine::GetInstance()->DestroySwapChain();
     }
 }
 
-uint32_t Loops::Graphics::Vulkan::VkAttachmentFactory::GetId()
+uint32_t VkAttachmentFactory::GetId()
 {
     return imageId++;
 }

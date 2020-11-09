@@ -1,7 +1,5 @@
 #include "ComponentMask.h"
 
-using namespace Loops::Core::ECS;
-
 bool ComponentMask::isNewMatch(ComponentMask oldMask, ComponentMask systemMask)
 {
     return (matches(systemMask) && !oldMask.matches(systemMask));

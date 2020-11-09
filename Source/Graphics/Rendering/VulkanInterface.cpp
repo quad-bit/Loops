@@ -2,10 +2,8 @@
 #include "VulkanManager.h"
 #include "WindowManager.h"
 #include "PresentationEngine.h"
+#include <VkAttachmentFactory.h>
 
-using namespace Loops::Graphics::Rendering;
-using namespace Loops::Graphics::Vulkan;
-using namespace Loops::Graphics::Windowing;
 
 VulkanInterface::VulkanInterface()
 {
@@ -25,6 +23,12 @@ void VulkanInterface::DeInit()
     delete VulkanManager::GetInstance();
 }
 
+void VulkanInterface::CreateRenderTarget(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids)
+{
+    VkAttachmentFactory::GetInstance()->CreateColorAttachment(info, count, defaultTarget, ids);
+}
+
 VulkanInterface::~VulkanInterface()
 {
+
 }

@@ -4,35 +4,32 @@
 #include <sstream>
 #include <vulkan\vulkan.h>
 
-namespace Loops::Graphics::Vulkan
+class ValidationManager
 {
-    class ValidationManager
-    {
 
-    private:
-        VkInstance* vulkanInstanceRef;
-        VkAllocationCallbacks *pAllocatorRef;
+private:
+    VkInstance* vulkanInstanceRef;
+    VkAllocationCallbacks *pAllocatorRef;
 
-        void AddRequiredPlatformInstanceExtensions(std::vector<const char *> *instance_extensions);
+    void AddRequiredPlatformInstanceExtensions(std::vector<const char *> *instance_extensions);
 
-    public:
+public:
 
-        std::vector<const char*>        deviceLayerNameList;
-        std::vector<const char*>        deviceExtensionNameList;
-        std::vector<const char*>        instanceLayerNameList;
-        std::vector<const char*>        instanceExtensionNameList;
+    std::vector<const char*>        deviceLayerNameList;
+    std::vector<const char*>        deviceExtensionNameList;
+    std::vector<const char*>        instanceLayerNameList;
+    std::vector<const char*>        instanceExtensionNameList;
 
-        VkDebugReportCallbackEXT       debugReport;// = nullptr;
-        VkDebugReportCallbackCreateInfoEXT VkDebugReportCallbackCreateInfoEXTObj = {};
+    VkDebugReportCallbackEXT       debugReport;// = nullptr;
+    VkDebugReportCallbackCreateInfoEXT VkDebugReportCallbackCreateInfoEXTObj = {};
 
-        ValidationManager();
-        ~ValidationManager();
+    ValidationManager();
+    ~ValidationManager();
 
-        void SetupDebug();
-        void InitDebug(VkInstance * vulkanInstance, VkAllocationCallbacks* pAllocator);
-        void DeinitDebug();
+    void SetupDebug();
+    void InitDebug(VkInstance * vulkanInstance, VkAllocationCallbacks* pAllocator);
+    void DeinitDebug();
 
-        void SetupLayersAndExtensions();
-    };
-}
+    void SetupLayersAndExtensions();
+};
 

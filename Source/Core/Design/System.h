@@ -4,45 +4,42 @@
 #include <vector>
 #include "ComponentMask.h"
 
-namespace Loops::Core::ECS
+class World;
+class Entity;
+
+class System
 {
-    class World;
-    class Entity;
+private:
 
-    class System
-    {
-    private:
+protected:
+    // Specifies which components our system cares about — its size should = the number of different components
+    ComponentMask signature;
 
-    protected:
-        // Specifies which components our system cares about — its size should = the number of different components
-        ComponentMask signature;
+    // These entities fit the systemSignature and should be iterated upon for any functionality
+    std::vector<Entity*> registeredEntities;
 
-        // These entities fit the systemSignature and should be iterated upon for any functionality
-        std::vector<Entity*> registeredEntities;
+    // Reference to our parent world
+    World * worldObj;
 
-        // Reference to our parent world
-        World * worldObj;
+public:
+    // Initialize the System — This happens *before* the game starts but *after* the world has been registered.
+    virtual void Init() {};
 
-    public:
-        // Initialize the System — This happens *before* the game starts but *after* the world has been registered.
-        virtual void Init() {};
+    virtual void DeInit() {};
 
-        virtual void DeInit() {};
+    // Called every game update
+    virtual void Update(float dt) {};
 
-        // Called every game update
-        virtual void Update(float dt) {};
+    // Called every game render
+    virtual void Render() {};
 
-        // Called every game render
-        virtual void Render() {};
+    // Add a reference to the parent world
+    void RegisterWorld(World * world);
 
-        // Add a reference to the parent world
-        void RegisterWorld(World * world);
+    // This entity fits our current requirements
+    virtual void RegisterEntity(Entity * entity);
 
-        // This entity fits our current requirements
-        virtual void RegisterEntity(Entity * entity);
-
-        // This entity has stopped fitting our current requirements
-        virtual void UnRegisterEntity(Entity* entity);
-        ComponentMask GetSignature() { return signature; }
-    };
-}
+    // This entity has stopped fitting our current requirements
+    virtual void UnRegisterEntity(Entity* entity);
+    ComponentMask GetSignature() { return signature; }
+};

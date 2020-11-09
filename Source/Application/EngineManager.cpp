@@ -3,10 +3,6 @@
 #include <Settings.h>
 #include <GraphicsManager.h>
 
-using namespace Loops::Application;
-using namespace Loops::Core;
-using namespace Loops::Graphics;
-
 EngineManager* EngineManager::instance = nullptr;
 
 void EngineManager::Init()

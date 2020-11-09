@@ -6,17 +6,15 @@
 #include <algorithm>
 
 using namespace std;
-using namespace Loops::Core;
-using namespace Loops::Graphics::Vulkan;
 
 VulkanManager* VulkanManager::instance = nullptr;
 
-Loops::Graphics::Vulkan::VulkanManager::VulkanManager()
+VulkanManager::VulkanManager()
 {
     validationManagerObj = new ValidationManager();
 }
 
-void Loops::Graphics::Vulkan::VulkanManager::CreateInstance()
+void VulkanManager::CreateInstance()
 {
     VkApplicationInfo appInfo{};
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -40,7 +38,7 @@ void Loops::Graphics::Vulkan::VulkanManager::CreateInstance()
     CoreObjects::instanceObj = &vkInstanceObj;
 }
 
-void Loops::Graphics::Vulkan::VulkanManager::CreateDevice()
+void VulkanManager::CreateDevice()
 {
     GetPhysicalDevice();
     CalculateQueueFamilyIndex();
@@ -70,7 +68,7 @@ void Loops::Graphics::Vulkan::VulkanManager::CreateDevice()
 }
 
 
-void Loops::Graphics::Vulkan::VulkanManager::CreateSurface(GLFWwindow * glfwWindow)
+void VulkanManager::CreateSurface(GLFWwindow * glfwWindow)
 {
 #if defined(GLFW_ENABLED)
     if (VK_SUCCESS != glfwCreateWindowSurface(vkInstanceObj, glfwWindow, nullptr, &surface)) 
@@ -122,7 +120,7 @@ void Loops::Graphics::Vulkan::VulkanManager::CreateSurface(GLFWwindow * glfwWind
     }
 }
 
-void Loops::Graphics::Vulkan::VulkanManager::GetPhysicalDevice()
+void VulkanManager::GetPhysicalDevice()
 {
     uint32_t count = 0;
     vkEnumeratePhysicalDevices(vkInstanceObj, &count, nullptr);
@@ -170,7 +168,7 @@ void Loops::Graphics::Vulkan::VulkanManager::GetPhysicalDevice()
     */
 }
 
-void Loops::Graphics::Vulkan::VulkanManager::CalculateQueueFamilyIndex()
+void VulkanManager::CalculateQueueFamilyIndex()
 {
     uint32_t count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDeviceObj, &count, nullptr);

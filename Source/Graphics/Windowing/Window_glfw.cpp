@@ -2,8 +2,6 @@
 #include "WindowManager.h"
 #include <Assertion.h>
 
-using namespace Loops::Graphics::Windowing;
-using namespace Loops::Core;
 
 #if defined(GLFW_ENABLED)
 

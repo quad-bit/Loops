@@ -2,8 +2,6 @@
 #include "Transform.h"
 #include "World.h"
 
-using namespace Loops::Core::ECS;
-
 void TransformSystem::Init()
 {
 }
