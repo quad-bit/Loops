@@ -1,6 +1,7 @@
 #include "VulkanManager.h"
 #include "ValidationManager.h"
 #include "VulkanUtility.h"
+#include "VulkanMemoryManager.h"
 #include <Settings.h>
 #include <Assertion.h>
 #include <algorithm>
@@ -197,10 +198,14 @@ void VulkanManager::Init()
     CreateInstance();
     validationManagerObj->InitDebug(&vkInstanceObj, pAllocator);
     CreateDevice();
+    VulkanMemoryManager::GetSingleton()->Init(physicalDeviceMemProps);
 }
 
 void VulkanManager::DeInit()
 {
+    VulkanMemoryManager::GetSingleton()->DeInit();
+    delete VulkanMemoryManager::GetSingleton();
+
     vkDestroySurfaceKHR(vkInstanceObj, surface, pAllocator);
     vkDestroyDevice(vkLogicalDeviceObj, pAllocator);
     validationManagerObj->DeinitDebug();

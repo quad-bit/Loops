@@ -50,4 +50,13 @@ public:
     void CreateSurface(GLFWwindow * glfwWindow);
     VkSurfaceKHR * GetSurface() { return &surface; }
     VkSurfaceFormatKHR * GetSurfaceFormat() { return &surfaceFormat; }
+
+    const uint32_t&                                 GetQueueFamilyIndex() const { return vulkanGraphicsQueueFamilyIndex; }
+    const VkAllocationCallbacks*                    GetAllocator() const { return pAllocator; }
+    const VkPhysicalDeviceMemoryProperties&         GetPhyicalDeviceMemProps() const { return physicalDeviceMemProps; }
+    const VkQueue&                                  GetGraphicsQueue() const { return graphicsQueueObj; }
+    const VkPhysicalDeviceFeatures&                 GetPhysicalDeviceFeatures() const { return physicalDeviceFeatures; }
+
+    VkPhysicalDeviceFeatures&                       GetEnabledPhysicalDeviceFeatures() { return enabledPhysicalDeviceFeatures; }
+
 };

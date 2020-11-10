@@ -15,10 +15,13 @@ void GraphicsManager::Init(uint32_t winWidth, uint32_t winHeight, std::string wi
 
     renderingInterfaceObj = new RenderingInterface();
     renderingInterfaceObj->Init();
+    renderingInterfaceObj->SetupRenderer();
 }
 
 void GraphicsManager::DeInit()
 {
+    renderingInterfaceObj->DislogeRenderer();
+
     renderingInterfaceObj->DeInit();
     delete renderingInterfaceObj;
 

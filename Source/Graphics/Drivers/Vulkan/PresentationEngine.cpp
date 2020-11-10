@@ -2,6 +2,7 @@
 #include "VkAttachmentFactory.h"
 #include "VulkanUtility.h"
 #include <Settings.h>
+#include <Assertion.h>
 #include <vector>
 
 using namespace std;
@@ -10,6 +11,9 @@ PresentationEngine* PresentationEngine::instance = nullptr;
 
 void PresentationEngine::Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * surfaceFormat)
 {
+    this->surfaceObj = surfaceObj;
+    this->surfaceFormat = surfaceFormat;
+
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(*CoreObjects::physicalDeviceObj, *surfaceObj, &surfaceCapabilities);
 
     if (surfaceCapabilities.maxImageCount > 0)
@@ -19,7 +23,7 @@ void PresentationEngine::Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * sur
     if (swapChainImageCount < surfaceCapabilities.minImageCount + 1)
         swapChainImageCount = surfaceCapabilities.minImageCount + 1;
 
-    VkPresentModeKHR presentMode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
+    presentMode = VkPresentModeKHR::VK_PRESENT_MODE_FIFO_KHR;
     {
         uint32_t count = 0;
         ErrorCheck(vkGetPhysicalDeviceSurfacePresentModesKHR(*CoreObjects::physicalDeviceObj, *surfaceObj, &count, nullptr));
@@ -64,6 +68,8 @@ vector<VkImage>* PresentationEngine::CreateSwapchainImage(AttachmentInfo * info,
 
     ErrorCheck(vkGetSwapchainImagesKHR(*CoreObjects::logicalDeviceObj, swapchainObj, &swapChainImageCount, nullptr));
 
+    ASSERT_MSG(count == swapChainImageCount, "Swapchain count mis match");
+
     swapChainImageList.resize(swapChainImageCount);
     swapChainImageViewList.resize(swapChainImageCount);
 
@@ -97,6 +103,7 @@ vector<VkImageView>* PresentationEngine::CreateSwapchainImageViews(AttachmentInf
 void PresentationEngine::DestroySwapChain()
 {
     vkDestroySwapchainKHR(*CoreObjects::logicalDeviceObj, swapchainObj, CoreObjects::pAllocator);
+    swapChainImageList.clear();
 }
 
 void PresentationEngine::DestroySwapChainImageView()
@@ -105,6 +112,7 @@ void PresentationEngine::DestroySwapChainImageView()
     {
         vkDestroyImageView(*CoreObjects::logicalDeviceObj, swapChainImageViewList[i], CoreObjects::pAllocator);
     }
+    swapChainImageViewList.clear();
 }
 
 void PresentationEngine::DeInit()

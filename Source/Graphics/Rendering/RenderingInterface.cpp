@@ -16,12 +16,12 @@ void RenderingInterface::Init()
 
 void RenderingInterface::SetupRenderer()
 {
-
+    apiInterface->SetupRenderer();
 }
 
 void RenderingInterface::DislogeRenderer()
 {
-
+    apiInterface->DislogeRenderer();
 }
 
 void RenderingInterface::DeInit()

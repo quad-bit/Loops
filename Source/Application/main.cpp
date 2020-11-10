@@ -1,4 +1,5 @@
 #include "EngineManager.h"
+#include <stdio.h>
 
 void main()
 {
@@ -8,4 +9,6 @@ void main()
 
     EngineManager::GetInstance()->DeInit();
     delete EngineManager::GetInstance();
+
+    getchar();
 }
