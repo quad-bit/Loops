@@ -9,7 +9,8 @@ using namespace std;
 VkInstance * CoreObjects::instanceObj = nullptr;
 VkPhysicalDevice * CoreObjects::physicalDeviceObj = nullptr;
 VkDevice * CoreObjects::logicalDeviceObj = nullptr;
-VkAllocationCallbacks * CoreObjects::pAllocator = nullptr;
+VkAllocationCallbacks * CoreObjects::pAllocator = nullptr; 
+VkFormat CoreObjects::bestDepthFormat = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
 
 void ErrorCheck(VkResult result)
 {

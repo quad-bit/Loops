@@ -10,4 +10,5 @@ struct CoreObjects
     static VkPhysicalDevice * physicalDeviceObj;
     static VkDevice* logicalDeviceObj;
     static VkAllocationCallbacks * pAllocator;
+    static VkFormat bestDepthFormat;
 };

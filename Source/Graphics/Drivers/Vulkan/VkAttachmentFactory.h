@@ -5,7 +5,9 @@
 
 using namespace std;
 
+enum class ImageFormat;
 struct ImageInfo;
+
 class AttachmentWrapper
 {
 public:
@@ -35,7 +37,9 @@ struct AttachmentInfo
     VkColorSpaceKHR colorSpace;
     VkImageUsageFlags usage;
     VkSampleCountFlagBits sampleCount;
+    VkImageLayout initialLayout;
 };
+
 
 class VkAttachmentFactory
 {
@@ -46,6 +50,7 @@ private:
 
     static VkAttachmentFactory* instance;
     static uint32_t imageId;
+    VkFormat bestDepthFormat;
 
     vector<AttachmentWrapper * > attachmentList;
     vector<VkImage* > imageList;
@@ -53,6 +58,7 @@ private:
     vector<VkDeviceMemory* > memoryList;
 
     AttachmentInfo* UnwrapImageInfo(ImageInfo * imageInfo);
+    uint32_t GetId();
 
 public:
     void Init();
@@ -61,10 +67,15 @@ public:
     static VkAttachmentFactory* GetInstance();
     ~VkAttachmentFactory();
 
-    VkFormat FindBestDepthFormat(VkFormat inputFormat);
+    //VkFormat FindBestDepthFormat(VkFormat inputFormat);
+
+    uint32_t FindBestDepthFormat(ImageFormat * format, uint32_t count);
 
     void CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids);
     void CreateDepthAttachment(ImageInfo * info, uint32_t count, bool stencilRequired, bool defaultTarget, vector<uint32_t>* ids);
     void DestroyAttachment(vector<uint32_t> ids, bool defaultTarget);
-    uint32_t GetId();
+    VkFormat GetBestDepthFormat() { return bestDepthFormat;}
+
+    VkImageView * GetImageView(uint32_t id);
+
 };

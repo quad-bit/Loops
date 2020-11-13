@@ -2,6 +2,7 @@
 #include "VulkanUtility.h"
 #include "PresentationEngine.h"
 #include "VulkanMemoryManager.h"
+#include "VkRenderingUnwrapper.h"
 #include <RenderingWrapper.h>
 #include <Assertion.h>
 #include <algorithm>
@@ -13,74 +14,17 @@ AttachmentInfo * VkAttachmentFactory::UnwrapImageInfo(ImageInfo * imageInfo)
 {
     AttachmentInfo* vulkanImageInfo = new AttachmentInfo();
 
-    switch (imageInfo->colorSpace)
-    {
-    case ColorSpace::COLOR_SPACE_SRGB_NONLINEAR_KHR:
-        vulkanImageInfo->colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-        break;
-    default:
-        ASSERT_MSG(0, "Converter not found ");
-        std::exit(-1);
-    }
-
-    switch (imageInfo->degree)
-    {
-    case Dimensions::Dim1:
-        vulkanImageInfo->viewType = VK_IMAGE_VIEW_TYPE_1D;
-        vulkanImageInfo->imageType = VK_IMAGE_TYPE_1D;
-        break;
-    case Dimensions::Dim2:
-        vulkanImageInfo->viewType = VK_IMAGE_VIEW_TYPE_2D;
-        vulkanImageInfo->imageType = VK_IMAGE_TYPE_2D;
-        break;
-    default:
-        ASSERT_MSG(0, "Converter not found ");
-        std::exit(-1);
-    }
-
-    switch (imageInfo->format)
-    {
-    case ImageFormat::UNDEFINED:
-        vulkanImageInfo->format = VK_FORMAT_UNDEFINED;
-        break;
-
-    case ImageFormat::B8G8R8A8_UNORM:
-        vulkanImageInfo->format = VK_FORMAT_B8G8R8A8_UNORM;
-        break;
-
-    case ImageFormat::D16_UNORM:
-        vulkanImageInfo->format = VK_FORMAT_D16_UNORM;
-        break;
-
-    case ImageFormat::D16_UNORM_S8_UINT:
-        vulkanImageInfo->format = VK_FORMAT_D16_UNORM_S8_UINT;
-        break;
-
-    case ImageFormat::D24_UNORM_S8_UINT:
-        vulkanImageInfo->format = VK_FORMAT_D24_UNORM_S8_UINT;
-        break;
-
-    case ImageFormat::D32_SFLOAT:
-        vulkanImageInfo->format = VK_FORMAT_D32_SFLOAT;
-        break;
-
-    case ImageFormat::D32_SFLOAT_S8_UINT:
-        vulkanImageInfo->format = VK_FORMAT_D32_SFLOAT_S8_UINT;
-        break;
-
-    default:
-        ASSERT_MSG(0, "Converter not found ");
-        std::exit(-1);
-    }
-
+    vulkanImageInfo->colorSpace = UnWrapColorSpace( imageInfo->colorSpace) ;
+    vulkanImageInfo->viewType = UnWrapImageViewDegree(imageInfo->degree);
+    vulkanImageInfo->imageType = UnWrapImageDegree(imageInfo->degree);
+    vulkanImageInfo->format = UnWrapFormat(imageInfo->format);
     vulkanImageInfo->height = imageInfo->height;
     vulkanImageInfo->layers = imageInfo->layers;
     vulkanImageInfo->mips = imageInfo->mips;
     vulkanImageInfo->width = imageInfo->width;
-
-    vulkanImageInfo->sampleCount = VkSampleCountFlagBits(static_cast<int>(imageInfo->sampleCount));
-    vulkanImageInfo->usage = VkImageUsageFlagBits(static_cast<int>(imageInfo->usage));
-
+    vulkanImageInfo->sampleCount = UnWrapSampleCount(imageInfo->sampleCount);
+    vulkanImageInfo->usage = UnwrapUsage(imageInfo->usage);
+    vulkanImageInfo->initialLayout = UnWrapImageLayout(imageInfo->initialLayout);
     return vulkanImageInfo;
 }
 
@@ -116,31 +60,25 @@ VkAttachmentFactory::~VkAttachmentFactory()
 {
 }
 
-VkFormat VkAttachmentFactory::FindBestDepthFormat(VkFormat inputFormat)
+
+uint32_t VkAttachmentFactory::FindBestDepthFormat(ImageFormat * imageFormat, uint32_t count)
 {
-    VkFormatProperties formatProps{};
-    vkGetPhysicalDeviceFormatProperties(*CoreObjects::physicalDeviceObj, inputFormat, &formatProps);
-
-    if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
-    {
-        return inputFormat;
-    }
+    VkFormat * formatList = new VkFormat[count];
+    VkFormatProperties props = {};
     
-    std::vector<VkFormat> tryFormats{ VK_FORMAT_D32_SFLOAT_S8_UINT , VK_FORMAT_D24_UNORM_S8_UINT , VK_FORMAT_D16_UNORM_S8_UINT , VK_FORMAT_D32_SFLOAT , VK_FORMAT_D16_UNORM };
-    VkFormat fallback = {};
-    for (VkFormat format : tryFormats)
+    for (uint32_t i = 0; i < count; i++)
     {
-        VkFormatProperties formatProps{};
-        vkGetPhysicalDeviceFormatProperties(*CoreObjects::physicalDeviceObj, format, &formatProps);
-
-        if (formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+        formatList[i] = UnWrapFormat( imageFormat[i] );
+        vkGetPhysicalDeviceFormatProperties(*CoreObjects::physicalDeviceObj, formatList[i], &props);
+        if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
         {
-            fallback = format;
-            break;
+            return i;
         }
     }
 
-    return fallback;
+    delete [] formatList;
+
+    return -1;
 }
 
 void VkAttachmentFactory::CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids)
@@ -172,7 +110,8 @@ void VkAttachmentFactory::CreateColorAttachment(ImageInfo * info, uint32_t count
 void VkAttachmentFactory::CreateDepthAttachment(ImageInfo * info, uint32_t count, bool stencilRequired, bool defaultTarget, vector<uint32_t>* ids)
 {
     AttachmentInfo * attachmentInfo = UnwrapImageInfo(info);
-    attachmentInfo->format = FindBestDepthFormat(attachmentInfo->format);
+    //CoreObjects::bestDepthFormat = FindBestDepthFormat(attachmentInfo->format);
+    //attachmentInfo->format = CoreObjects::bestDepthFormat;
     
     bool stencilAvailable = false;
     
@@ -188,7 +127,7 @@ void VkAttachmentFactory::CreateDepthAttachment(ImageInfo * info, uint32_t count
     createInfo.flags = 0;
     createInfo.format = attachmentInfo->format;
     createInfo.imageType = attachmentInfo->imageType;
-    createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    createInfo.initialLayout = attachmentInfo->initialLayout;
     createInfo.mipLevels = 1;
     createInfo.pQueueFamilyIndices = nullptr;
     createInfo.queueFamilyIndexCount = 0;
@@ -258,6 +197,14 @@ void VkAttachmentFactory::DestroyAttachment(vector<uint32_t> ids, bool defaultTa
         else
             (*it)->DeActivateAttachment();
     }
+}
+
+VkImageView * VkAttachmentFactory::GetImageView(uint32_t id)
+{
+    std::vector<AttachmentWrapper *>::iterator it;
+    it = std::find_if(attachmentList.begin(), attachmentList.end(), [&](AttachmentWrapper * e) { return e->id == id; });
+
+    return (*it)->imageView;
 }
 
 uint32_t VkAttachmentFactory::GetId()

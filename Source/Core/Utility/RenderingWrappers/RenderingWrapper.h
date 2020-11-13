@@ -1,5 +1,6 @@
 #pragma once
 #include <stdint.h>
+#include <Settings.h>
 
 enum class ImageFormat
 {
@@ -49,12 +50,117 @@ enum class Samples
     SAMPLE_COUNT_64_BIT = 0x00000040,
 };
 
-struct ImageInfo
+enum class ImageLayout
 {
-    uint32_t width, height, mips, layers;
-    ImageFormat format;
-    Dimensions degree;
-    ColorSpace colorSpace;
-    Usage usage;
-    Samples sampleCount;
+    LAYOUT_UNDEFINED,
+    LAYOUT_GENERAL,
+    LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+    LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+    LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL,
+    LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+    LAYOUT_TRANSFER_SRC_OPTIMAL,
+    LAYOUT_TRANSFER_DST_OPTIMAL,
+    LAYOUT_PREINITIALIZED ,
+    LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL ,
+    LAYOUT_DEPTH_ATTACHMENT_STENCIL_READ_ONLY_OPTIMAL ,
+    LAYOUT_DEPTH_ATTACHMENT_OPTIMAL ,
+    LAYOUT_DEPTH_READ_ONLY_OPTIMAL,
+    LAYOUT_STENCIL_ATTACHMENT_OPTIMAL,
+    LAYOUT_STENCIL_READ_ONLY_OPTIMAL,
+    LAYOUT_PRESENT_SRC_KHR
 };
+
+enum class LoadOperation
+{
+    LOAD_OP_LOAD = 0,
+    LOAD_OP_CLEAR = 1,
+    LOAD_OP_DONT_CARE = 2,
+};
+
+enum class StoreOperation
+{
+    STORE_OP_STORE = 0,
+    STORE_OP_DONT_CARE = 1,
+};
+
+#if (RENDERING_API == VULKAN)
+
+    struct ImageInfo
+    {
+        uint32_t width, height, mips, layers;
+        ImageFormat format;
+        Dimensions degree;
+        ColorSpace colorSpace;
+        Usage usage;
+        Samples sampleCount;
+        ImageLayout initialLayout;
+    };
+
+    //////////////////////////////////////////////////////////////////////////  [
+    /////////////////////////////        RENDER PASS      ////////////////////  [
+    //////////////////////////////////////////////////////////////////////////  [
+
+    struct RenderPassAttachmentInfo
+    {
+        RenderPassAttachmentInfo()
+        {
+            static uint32_t counter = 0;
+            id = counter++;
+        }
+        uint32_t id;
+        ImageFormat format;
+        Samples sampleCount;
+        LoadOperation loadOp;
+        StoreOperation storeOp;
+        LoadOperation stencilLoadOp;
+        StoreOperation stencilLStoreOp;
+        ImageLayout initialLayout, finalLayout;
+    };
+
+    struct AttachmentRef
+    {
+        uint32_t index;
+        ImageLayout layoutInSubPass;
+    };
+
+    struct SubpassInfo
+    {
+        SubpassInfo()
+        {
+            static uint32_t counter = 0;
+            id = counter++;
+
+            inputAttachmentCount = 0;
+            pInputAttachments = nullptr;
+            colorAttachmentCount = 0;
+            pColorAttachments = nullptr;
+            pResolveAttachments = nullptr;
+            pDepthStencilAttachment = nullptr;
+        }
+        uint32_t                        id;
+        uint32_t                        inputAttachmentCount;
+        AttachmentRef *                 pInputAttachments;
+        uint32_t                        colorAttachmentCount;
+        AttachmentRef *                 pColorAttachments;
+        AttachmentRef *                 pResolveAttachments;
+        AttachmentRef *                 pDepthStencilAttachment;
+    };
+
+    struct SubpassDependency
+    {
+        SubpassDependency()
+        {
+            static uint32_t counter = 0;
+            id = counter++;
+        }
+        uint32_t id;
+    };
+
+    //////////////////////////////////////////////////////////////////////////  ]
+    /////////////////////////////        RENDER PASS      ////////////////////  ]
+    //////////////////////////////////////////////////////////////////////////  ]
+
+
+#elif (RENDERING_API == DX12)
+
+#endif
