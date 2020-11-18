@@ -28,9 +28,9 @@ private:
     uint32_t refCounter;
     std::vector<RenderpassInfo*> renderpassList;
 
-    VkAttachmentDescription* UnwrapAttachmentDesc(const RenderPassAttachmentInfo* renderpassAttachmentList, uint32_t attachmentCount);
-    VkSubpassDescription* UnwrapSubpassDesc(const SubpassInfo* subpassList, uint32_t subpassCount);
-    VkSubpassDependency* UnwrapSubpassDependency(const SubpassDependency* dependencyList, uint32_t dependencyCount);
+    //VkAttachmentDescription* UnwrapAttachmentDesc(const RenderPassAttachmentInfo* renderpassAttachmentList, uint32_t attachmentCount);
+    //VkSubpassDescription* UnwrapSubpassDesc(const SubpassInfo* subpassList, uint32_t subpassCount);
+    //VkSubpassDependency* UnwrapSubpassDependency(const SubpassDependency* dependencyList, uint32_t dependencyCount);
 
     uint32_t GetId();
 
@@ -41,20 +41,13 @@ public:
     static VkRenderPassFactory* GetInstance();
     ~VkRenderPassFactory();
 
-    /*void CreateRenderPass(
-        const std::vector<RenderPassAttachmentInfo*> & renderpassAttachmentList,
-        const std::vector<SubpassInfo*> & subpassList,
-        const std::vector<SubpassDependency*> & dependencyList,
-        uint32_t& renderPassId
-    );
-*/
-    
     void CreateRenderPass(
-        const RenderPassAttachmentInfo* renderpassAttachmentList, uint32_t attachmentCount,
-        const SubpassInfo* subpassList, uint32_t subpassCount,
-        const SubpassDependency* dependencyList, uint32_t dependencyCount,
+        const VkAttachmentDescription* renderpassAttachmentList, uint32_t attachmentCount,
+        const VkSubpassDescription* subpassList, uint32_t subpassCount,
+        const VkSubpassDependency* dependencyList, uint32_t dependencyCount,
         uint32_t& renderPassId
     );
+
 
     void DestroyRenderPass(uint32_t id);
 

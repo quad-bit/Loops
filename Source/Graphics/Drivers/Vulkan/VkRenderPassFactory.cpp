@@ -6,7 +6,7 @@
 
 VkRenderPassFactory* VkRenderPassFactory::instance = nullptr;
 uint32_t VkRenderPassFactory::renderpassId = 0;
-
+/*
 VkAttachmentDescription* VkRenderPassFactory::UnwrapAttachmentDesc(const RenderPassAttachmentInfo* renderpassAttachmentList, uint32_t attachmentCount)
 {
     VkAttachmentDescription* attachmentDescriptions = new VkAttachmentDescription[attachmentCount];
@@ -105,7 +105,7 @@ VkSubpassDependency* VkRenderPassFactory::UnwrapSubpassDependency(const SubpassD
 {
     return nullptr;
 }
-
+*/
 uint32_t VkRenderPassFactory::GetId()
 {
     return renderpassId++;
@@ -143,7 +143,7 @@ VkRenderPassFactory::~VkRenderPassFactory()
 {
 
 }
-
+/*
 void VkRenderPassFactory::CreateRenderPass(
     const RenderPassAttachmentInfo* renderpassAttachmentList, uint32_t attachmentCount,
     const SubpassInfo* subpassList, uint32_t subpassCount,
@@ -192,6 +192,27 @@ void VkRenderPassFactory::CreateRenderPass(
     if (subpassDescList != nullptr)
         delete[] subpassDescList;
 
+}
+*/
+
+void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * renderpassAttachmentList, uint32_t attachmentCount, const VkSubpassDescription * subpassList, uint32_t subpassCount, const VkSubpassDependency * dependencyList, uint32_t dependencyCount, uint32_t & renderPassId)
+{
+    RenderpassInfo * info = new RenderpassInfo();
+    info->id = GetId();
+
+    VkRenderPassCreateInfo renderPassCreateInfo{};
+    renderPassCreateInfo.attachmentCount = attachmentCount;
+    renderPassCreateInfo.dependencyCount = dependencyCount;
+    renderPassCreateInfo.pAttachments = renderpassAttachmentList;
+    renderPassCreateInfo.pDependencies = nullptr;
+    renderPassCreateInfo.pSubpasses = subpassList;
+    renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassCreateInfo.subpassCount = subpassCount;
+
+    ErrorCheck(vkCreateRenderPass(*CoreObjects::logicalDeviceObj, &renderPassCreateInfo, CoreObjects::pAllocator, &info->renderPass));
+
+    renderpassList.push_back(info);
+    renderpassId = info->id;
 }
 
 void VkRenderPassFactory::DestroyRenderPass(uint32_t id)

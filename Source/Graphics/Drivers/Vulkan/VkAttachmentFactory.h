@@ -67,12 +67,12 @@ public:
     static VkAttachmentFactory* GetInstance();
     ~VkAttachmentFactory();
 
-    //VkFormat FindBestDepthFormat(VkFormat inputFormat);
-
     uint32_t FindBestDepthFormat(ImageFormat * format, uint32_t count);
 
     void CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids);
-    void CreateDepthAttachment(ImageInfo * info, uint32_t count, bool stencilRequired, bool defaultTarget, vector<uint32_t>* ids);
+    //void CreateDepthAttachment(ImageInfo * info, uint32_t count, bool stencilRequired, bool defaultTarget, vector<uint32_t>* ids);
+    void CreateDepthAttachment(VkImageCreateInfo * info, uint32_t count, VkImageViewCreateInfo * viewInfo,
+        bool stencilRequired, bool defaultTarget, vector<uint32_t>* ids);
     void DestroyAttachment(vector<uint32_t> ids, bool defaultTarget);
     VkFormat GetBestDepthFormat() { return bestDepthFormat;}
 

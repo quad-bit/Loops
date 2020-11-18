@@ -106,7 +106,7 @@ void VkAttachmentFactory::CreateColorAttachment(ImageInfo * info, uint32_t count
 
     delete attachmentInfo;
 }
-
+/*
 void VkAttachmentFactory::CreateDepthAttachment(ImageInfo * info, uint32_t count, bool stencilRequired, bool defaultTarget, vector<uint32_t>* ids)
 {
     AttachmentInfo * attachmentInfo = UnwrapImageInfo(info);
@@ -170,6 +170,47 @@ void VkAttachmentFactory::CreateDepthAttachment(ImageInfo * info, uint32_t count
     }
 
     delete attachmentInfo;
+}
+*/
+
+void VkAttachmentFactory::CreateDepthAttachment(VkImageCreateInfo * info, uint32_t count, 
+    VkImageViewCreateInfo * viewInfo, bool stencilRequired, bool defaultTarget, vector<uint32_t>* ids)
+{
+    if (info == nullptr)
+    {
+        ASSERT_MSG(0, " Info null");
+        std::exit(-1);
+    }
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        AttachmentWrapper * temp = new AttachmentWrapper;
+        temp->id = GetId();
+        temp->image = new VkImage();
+        temp->imageView = new VkImageView();
+        temp->imageMemory = new VkDeviceMemory();
+        temp->usage = info[i].usage;
+        ids->push_back(temp->id);
+
+        ErrorCheck(vkCreateImage(*CoreObjects::logicalDeviceObj, &info[i], CoreObjects::pAllocator, temp->image));
+
+        VulkanMemoryManager::GetSingleton()->AllocateImageMemory(temp->image, 
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, temp->imageMemory);
+        vkBindImageMemory(*CoreObjects::logicalDeviceObj, *temp->image, *temp->imageMemory, 0);
+
+        bool stencilAvailable = false;
+        if (stencilRequired)
+            if (info[i].format == VK_FORMAT_D32_SFLOAT_S8_UINT || info[i].format == VK_FORMAT_D24_UNORM_S8_UINT
+                || info[i].format == VK_FORMAT_D16_UNORM_S8_UINT)
+                stencilAvailable = true;
+
+        viewInfo[i].image = *temp->image;
+        viewInfo[i].subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | (stencilAvailable ? VK_IMAGE_ASPECT_STENCIL_BIT : 0);
+
+        ErrorCheck(vkCreateImageView(*CoreObjects::logicalDeviceObj, &viewInfo[i], CoreObjects::pAllocator, temp->imageView));
+
+        attachmentList.push_back(temp);
+    }
 }
 
 void VkAttachmentFactory::DestroyAttachment(vector<uint32_t> ids, bool defaultTarget)

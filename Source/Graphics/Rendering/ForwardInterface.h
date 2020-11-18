@@ -17,6 +17,7 @@ private:
 
 public:
     void Init();
+    void Init(T * apiInterface);
     void SetupRenderer();
     void DislogeRenderer();
     void DeInit();
@@ -29,6 +30,13 @@ template<typename T>
 inline void ForwardRendering<T>::Init()
 {
     apiInterface = new T();
+    apiInterface->Init();
+}
+
+template<typename T>
+inline void ForwardRendering<T>::Init(T * apiInterface)
+{
+    this->apiInterface = apiInterface;
     apiInterface->Init();
 }
 
@@ -153,5 +161,5 @@ template<typename T>
 inline void ForwardRendering<T>::DeInit()
 {
     apiInterface->DeInit();
-    delete apiInterface;
+    //delete apiInterface;
 }

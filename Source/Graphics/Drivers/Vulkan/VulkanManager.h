@@ -32,7 +32,7 @@ private:
     VkPhysicalDeviceProperties                      physicalDeviceProps{};
     VkPhysicalDeviceMemoryProperties                physicalDeviceMemProps{};
     VkPhysicalDeviceFeatures                        physicalDeviceFeatures{}, enabledPhysicalDeviceFeatures{};
-    uint32_t                                        vulkanGraphicsQueueFamilyIndex;
+    //uint32_t                                        vulkanGraphicsQueueFamilyIndex;
 
     void CreateInstance();
     void CreateDevice();
@@ -51,7 +51,7 @@ public:
     VkSurfaceKHR * GetSurface() { return &surface; }
     VkSurfaceFormatKHR * GetSurfaceFormat() { return &surfaceFormat; }
 
-    const uint32_t&                                 GetQueueFamilyIndex() const { return vulkanGraphicsQueueFamilyIndex; }
+    //const uint32_t&                                 GetQueueFamilyIndex() const { return vulkanGraphicsQueueFamilyIndex; }
     const VkAllocationCallbacks*                    GetAllocator() const { return pAllocator; }
     const VkPhysicalDeviceMemoryProperties&         GetPhyicalDeviceMemProps() const { return physicalDeviceMemProps; }
     const VkQueue&                                  GetGraphicsQueue() const { return graphicsQueueObj; }

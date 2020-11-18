@@ -83,6 +83,33 @@ enum class StoreOperation
     STORE_OP_DONT_CARE = 1,
 };
 
+enum class CommandPoolProperty
+{
+    TRANSIENT_BIT = 0x00000001,
+    RESET_COMMAND_BUFFER_BIT = 0x00000002,
+    TRANS_RESET = 0x00000003
+};
+
+enum class CommandBufferLevel
+{
+    PRIMARY = 0,
+    SECONDARY = 1
+};
+
+enum class CommandBufferProperty
+{
+    SHORT_LIVED = 0,
+    RESET_ALLOWED = 1
+};
+
+enum class PipelineType
+{
+    GRAPHICS,
+    COMPUTE,
+    TRANSFER,
+};
+
+
 #if (RENDERING_API == VULKAN)
 
     struct ImageInfo

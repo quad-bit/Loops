@@ -2,6 +2,8 @@
 #include "ValidationManager.h"
 #include "VulkanUtility.h"
 #include "VulkanMemoryManager.h"
+#include "VkQueueFactory.h"
+#include "VkCommandBufferFactory.h"
 #include <Settings.h>
 #include <Assertion.h>
 #include <algorithm>
@@ -42,14 +44,17 @@ void VulkanManager::CreateInstance()
 void VulkanManager::CreateDevice()
 {
     GetPhysicalDevice();
-    CalculateQueueFamilyIndex();
+    //CalculateQueueFamilyIndex();
 
-    float priority{ 1.0f };
+    VkDeviceQueueCreateInfo VkDeviceQueueCreateInfoObj = VkQueueFactory::GetInstance()->FindQueue();
+
+    /*float priority{ 1.0f };
     VkDeviceQueueCreateInfo VkDeviceQueueCreateInfoObj{};
     VkDeviceQueueCreateInfoObj.queueCount = 1;
     VkDeviceQueueCreateInfoObj.pQueuePriorities = &priority;
     VkDeviceQueueCreateInfoObj.queueFamilyIndex = vulkanGraphicsQueueFamilyIndex;
     VkDeviceQueueCreateInfoObj.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    */
 
     VkDeviceCreateInfo vkDeviceCreateInfoObj{};
     vkDeviceCreateInfoObj.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -65,7 +70,11 @@ void VulkanManager::CreateDevice()
 
     CoreObjects::logicalDeviceObj = &vkLogicalDeviceObj;
 
-    vkGetDeviceQueue(vkLogicalDeviceObj, vulkanGraphicsQueueFamilyIndex, 0, &graphicsQueueObj);
+    //vkGetDeviceQueue(vkLogicalDeviceObj, vulkanGraphicsQueueFamilyIndex, 0, &graphicsQueueObj);
+    VkQueueFactory::GetInstance()->InitQueues();
+    
+    //delete[] indexInFamily;
+    //delete[] createInfoList;
 }
 
 
@@ -84,7 +93,9 @@ void VulkanManager::CreateSurface(GLFWwindow * glfwWindow)
 #endif
 
     VkBool32 WSI_supported = false;
-    vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysicalDeviceObj, vulkanGraphicsQueueFamilyIndex, surface, &WSI_supported);
+    vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysicalDeviceObj, 
+        VkQueueFactory::GetInstance()->GetQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT), 
+        surface, &WSI_supported);
     if (!WSI_supported) 
     {
         ASSERT_MSG(0, "WSI not supported");
@@ -151,27 +162,11 @@ void VulkanManager::GetPhysicalDevice()
     vkGetPhysicalDeviceMemoryProperties(vkPhysicalDeviceObj, &physicalDeviceMemProps);
     vkGetPhysicalDeviceProperties(vkPhysicalDeviceObj, &physicalDeviceProps);
     vkGetPhysicalDeviceFeatures(vkPhysicalDeviceObj, &physicalDeviceFeatures);
-
-    /*
-    VkSampleCountFlags counts = std::min(physicalDeviceProps.limits.framebufferColorSampleCounts, physicalDeviceProps.limits.framebufferDepthSampleCounts);
-    if (counts & VK_SAMPLE_COUNT_64_BIT) { maxSampleCount = VK_SAMPLE_COUNT_64_BIT; }
-    if (counts & VK_SAMPLE_COUNT_32_BIT) { maxSampleCount = VK_SAMPLE_COUNT_32_BIT; }
-    if (counts & VK_SAMPLE_COUNT_16_BIT) { maxSampleCount = VK_SAMPLE_COUNT_16_BIT; }
-    if (counts & VK_SAMPLE_COUNT_8_BIT) { maxSampleCount = VK_SAMPLE_COUNT_8_BIT; }
-    if (counts & VK_SAMPLE_COUNT_4_BIT) { maxSampleCount = VK_SAMPLE_COUNT_4_BIT; }
-    if (counts & VK_SAMPLE_COUNT_2_BIT) { maxSampleCount = VK_SAMPLE_COUNT_2_BIT; }
-
-    // enable sample shading features.
-    if (physicalDeviceFeatures.sampleRateShading)
-    {
-        enabledPhysicalDeviceFeatures.sampleRateShading = VK_TRUE;
-    }
-    */
 }
 
 void VulkanManager::CalculateQueueFamilyIndex()
 {
-    uint32_t count = 0;
+    /*uint32_t count = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDeviceObj, &count, nullptr);
     std::vector<VkQueueFamilyProperties> propertyList(count);
     vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDeviceObj, &count, propertyList.data());
@@ -190,7 +185,7 @@ void VulkanManager::CalculateQueueFamilyIndex()
     {
         ASSERT_MSG(0, "No queue family found for grahics");
         std::exit(-1);
-    }
+    }*/
 }
 
 void VulkanManager::Init()
@@ -199,10 +194,15 @@ void VulkanManager::Init()
     validationManagerObj->InitDebug(&vkInstanceObj, pAllocator);
     CreateDevice();
     VulkanMemoryManager::GetSingleton()->Init(physicalDeviceMemProps);
+    VkQueueFactory::GetInstance()->Init();
+    VkCommandBufferFactory::GetInstance()->Init();
 }
 
 void VulkanManager::DeInit()
 {
+    VkCommandBufferFactory::GetInstance()->DeInit();
+    delete VkCommandBufferFactory::GetInstance();
+
     VulkanMemoryManager::GetSingleton()->DeInit();
     delete VulkanMemoryManager::GetSingleton();
 
@@ -210,6 +210,9 @@ void VulkanManager::DeInit()
     vkDestroyDevice(vkLogicalDeviceObj, pAllocator);
     validationManagerObj->DeinitDebug();
     vkDestroyInstance(vkInstanceObj, pAllocator);
+
+    VkQueueFactory::GetInstance()->DeInit();
+    delete VkQueueFactory::GetInstance();
 }
 
 void VulkanManager::Update()

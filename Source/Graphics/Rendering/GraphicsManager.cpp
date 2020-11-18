@@ -1,6 +1,7 @@
 #include "GraphicsManager.h"
 #include "WindowManager.h"
 #include <Settings.h>
+#include "VulkanInterface.h"
 #include "RenderingInterface.h"
 
 
@@ -12,18 +13,25 @@ void GraphicsManager::Init(uint32_t winWidth, uint32_t winHeight, std::string wi
     Settings::windowHeight  = winHeight;
     Settings::windowName    = winName;
     WindowManager::GetInstance()->Init();
-
-    renderingInterfaceObj = new RenderingInterface();
-    renderingInterfaceObj->Init();
+    
+#if (RENDERING_API == VULKAN)
+    apiInterface = new VulkanInterface();
+    renderingInterfaceObj = new RenderingInterface<VulkanInterface>();
+#elif (RENDERING_API == DX)
+    apiInterface = new DxInterface();
+#endif
+    
+    renderingInterfaceObj->Init(apiInterface);
     renderingInterfaceObj->SetupRenderer();
 }
 
 void GraphicsManager::DeInit()
 {
     renderingInterfaceObj->DislogeRenderer();
-
     renderingInterfaceObj->DeInit();
     delete renderingInterfaceObj;
+
+    delete apiInterface;
 
     WindowManager::GetInstance()->DeInit();
     delete WindowManager::GetInstance();
@@ -33,7 +41,7 @@ void GraphicsManager::Update()
 {
     while (WindowManager::GetInstance()->Update())
     {
-
+        
     }
 }
 
