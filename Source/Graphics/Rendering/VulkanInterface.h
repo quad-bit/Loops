@@ -61,4 +61,10 @@ public:
 
     uint32_t CreateCommandPool(PipelineType* pipelineType, CommandPoolProperty * prop);
     void DestroyCommandPool(uint32_t poolId);
+
+    uint32_t CreateFence(bool isSignaled);
+    uint32_t Create_Semaphore(bool isSignaled);
+
+    void DestroyFence(uint32_t id);
+    void DestroySemaphore(uint32_t id);
 };

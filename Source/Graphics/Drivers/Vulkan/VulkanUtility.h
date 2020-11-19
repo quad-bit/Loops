@@ -11,4 +11,6 @@ struct CoreObjects
     static VkDevice* logicalDeviceObj;
     static VkAllocationCallbacks * pAllocator;
     static VkFormat bestDepthFormat;
+    static uint32_t renderQueueId, presentationQueuedId;
+    static uint32_t computeQueueId, transferQueueId;
 };

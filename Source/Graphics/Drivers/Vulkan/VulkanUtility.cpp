@@ -5,12 +5,13 @@
 
 using namespace std;
 
-
 VkInstance * CoreObjects::instanceObj = nullptr;
 VkPhysicalDevice * CoreObjects::physicalDeviceObj = nullptr;
 VkDevice * CoreObjects::logicalDeviceObj = nullptr;
 VkAllocationCallbacks * CoreObjects::pAllocator = nullptr; 
 VkFormat CoreObjects::bestDepthFormat = VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT;
+uint32_t CoreObjects::renderQueueId = 0, CoreObjects::presentationQueuedId = 0;
+uint32_t CoreObjects::computeQueueId = 0, CoreObjects::transferQueueId = 0;
 
 void ErrorCheck(VkResult result)
 {

@@ -25,6 +25,16 @@ private:
     DrawCommandBuffer<T> ** drawCommandBufferObj;
     uint32_t graphicCommandPoolId, computeCommandPoolId, guiCommandPoolId;
 
+    uint32_t maxFramesInFlight;
+
+    uint32_t * renderSemaphores, *presentationSemaphores;
+    uint32_t * getSwapChainImageFences;
+
+    void BeginRenderLoop();
+    void EndRenderLoop();
+
+    T * apiInterface;
+
 public:
     void Init(T * apiInterface);
     void SetupRenderer();
@@ -36,11 +46,23 @@ public:
 #include "CommandBufferManager.h"
 
 template<typename T>
+inline void RenderingInterface<T>::BeginRenderLoop()
+{
+    //get swapchain image index to used for rendering the current frame.
+}
+
+template<typename T>
+inline void RenderingInterface<T>::EndRenderLoop()
+{
+}
+
+template<typename T>
 inline void RenderingInterface<T>::Init(T * apiInterface)
 {
     forwardRenderer = new ForwardRendering<T>();
     forwardRenderer->Init(apiInterface);
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);
+    this->apiInterface = apiInterface;
 }
 
 template<typename T>
@@ -67,11 +89,35 @@ inline void RenderingInterface<T>::SetupRenderer()
         *level = CommandBufferLevel::PRIMARY;
         drawCommandBufferObj[i] = CommandBufferManager<T>::GetInstance()->CreateDrawCommandBuffer(level, graphicCommandPoolId);
     }
+
+    maxFramesInFlight = Settings::swapBufferCount - 1;  
+    renderSemaphores = new uint32_t[maxFramesInFlight];
+    presentationSemaphores = new uint32_t[maxFramesInFlight];
+    getSwapChainImageFences = new uint32_t[maxFramesInFlight];
+
+    for (uint32_t i = 0; i < maxFramesInFlight; i++)
+    {
+        renderSemaphores[i] = apiInterface->Create_Semaphore(false);
+        presentationSemaphores[i] = apiInterface->Create_Semaphore(false);
+        getSwapChainImageFences[i] = apiInterface->CreateFence(true);
+    }
 }
 
 template<typename T>
 inline void RenderingInterface<T>::DislogeRenderer()
 {
+
+    for (uint32_t i = 0; i < maxFramesInFlight; i++)
+    {
+        apiInterface->DestroyFence(getSwapChainImageFences[i]);
+        apiInterface->DestroySemaphore(renderSemaphores[i]);
+        apiInterface->DestroySemaphore(presentationSemaphores[i]);
+    }
+
+    delete[] getSwapChainImageFences;
+    delete[] presentationSemaphores;
+    delete[] renderSemaphores;
+
     for (uint32_t i = 0; i < Settings::swapBufferCount; i++)
     {
         CommandBufferManager<T>::GetInstance()->DestroyDrawCommandBuffer(drawCommandBufferObj[i]);

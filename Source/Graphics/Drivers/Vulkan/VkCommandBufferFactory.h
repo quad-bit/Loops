@@ -47,7 +47,7 @@ private:
     uint32_t GetPoolId();
     uint32_t GetBufferId();
 
-    VkQueue * graphicsQueue, * computeQueue, *transferQueue ;
+    VkQueue * renderQueue, * computeQueue, *transferQueue ;
     uint32_t graphicsQueueFamilyId, computeQueueFamilyId, transferQueueFamilyId;
 
 public:

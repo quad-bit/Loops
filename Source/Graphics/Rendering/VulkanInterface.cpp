@@ -7,6 +7,7 @@
 #include <VkFrameBufferFactory.h>
 #include <VkRenderingUnwrapper.h>
 #include <VkCommandBufferFactory.h>
+#include <VkSynchroniserFactory.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, uint32_t attachmentCount)
 {
@@ -361,6 +362,26 @@ uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, Command
 void VulkanInterface::DestroyCommandPool(uint32_t poolId)
 {
     VkCommandBufferFactory::GetInstance()->DestroyCommandPool(poolId);
+}
+
+uint32_t VulkanInterface::CreateFence(bool isSignaled)
+{
+    return VkSynchroniserFactory::GetInstance()->CreateFence(isSignaled);
+}
+
+uint32_t VulkanInterface::Create_Semaphore(bool isSignaled)
+{
+    return VkSynchroniserFactory::GetInstance()->Create_Semaphore(isSignaled);
+}
+
+void VulkanInterface::DestroyFence(uint32_t id)
+{
+    return VkSynchroniserFactory::GetInstance()->DestroyFence(id);
+}
+
+void VulkanInterface::DestroySemaphore(uint32_t id)
+{
+    return VkSynchroniserFactory::GetInstance()->DestroySemaphore(id);
 }
 
 VulkanInterface::~VulkanInterface()

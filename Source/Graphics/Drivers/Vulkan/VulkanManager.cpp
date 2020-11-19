@@ -4,6 +4,7 @@
 #include "VulkanMemoryManager.h"
 #include "VkQueueFactory.h"
 #include "VkCommandBufferFactory.h"
+#include "VkSynchroniserFactory.h"
 #include <Settings.h>
 #include <Assertion.h>
 #include <algorithm>
@@ -43,10 +44,10 @@ void VulkanManager::CreateInstance()
 
 void VulkanManager::CreateDevice()
 {
-    GetPhysicalDevice();
+    //GetPhysicalDevice();
     //CalculateQueueFamilyIndex();
 
-    VkDeviceQueueCreateInfo VkDeviceQueueCreateInfoObj = VkQueueFactory::GetInstance()->FindQueue();
+    std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfoList = VkQueueFactory::GetInstance()->FindQueue();
 
     /*float priority{ 1.0f };
     VkDeviceQueueCreateInfo VkDeviceQueueCreateInfoObj{};
@@ -58,8 +59,8 @@ void VulkanManager::CreateDevice()
 
     VkDeviceCreateInfo vkDeviceCreateInfoObj{};
     vkDeviceCreateInfoObj.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    vkDeviceCreateInfoObj.queueCreateInfoCount = 1;
-    vkDeviceCreateInfoObj.pQueueCreateInfos = &VkDeviceQueueCreateInfoObj;
+    vkDeviceCreateInfoObj.queueCreateInfoCount = deviceQueueCreateInfoList.size();
+    vkDeviceCreateInfoObj.pQueueCreateInfos = deviceQueueCreateInfoList.data();
     vkDeviceCreateInfoObj.enabledExtensionCount = (uint32_t)validationManagerObj->deviceExtensionNameList.size();
     vkDeviceCreateInfoObj.enabledLayerCount = 0;
     vkDeviceCreateInfoObj.pEnabledFeatures = &enabledPhysicalDeviceFeatures;
@@ -71,7 +72,7 @@ void VulkanManager::CreateDevice()
     CoreObjects::logicalDeviceObj = &vkLogicalDeviceObj;
 
     //vkGetDeviceQueue(vkLogicalDeviceObj, vulkanGraphicsQueueFamilyIndex, 0, &graphicsQueueObj);
-    VkQueueFactory::GetInstance()->InitQueues();
+    //VkQueueFactory::GetInstance()->InitQueues();
     
     //delete[] indexInFamily;
     //delete[] createInfoList;
@@ -94,7 +95,7 @@ void VulkanManager::CreateSurface(GLFWwindow * glfwWindow)
 
     VkBool32 WSI_supported = false;
     vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysicalDeviceObj, 
-        VkQueueFactory::GetInstance()->GetQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT), 
+        VkQueueFactory::GetInstance()->GetGraphicsQueueFamilyIndex(), 
         surface, &WSI_supported);
     if (!WSI_supported) 
     {
@@ -191,15 +192,25 @@ void VulkanManager::CalculateQueueFamilyIndex()
 void VulkanManager::Init()
 {
     CreateInstance();
+    GetPhysicalDevice();
     validationManagerObj->InitDebug(&vkInstanceObj, pAllocator);
-    CreateDevice();
-    VulkanMemoryManager::GetSingleton()->Init(physicalDeviceMemProps);
     VkQueueFactory::GetInstance()->Init();
+    CreateDevice();
+
+    VkQueueFactory::GetInstance()->CreateGraphicsQueues(&CoreObjects::renderQueueId, 1);
+    VkQueueFactory::GetInstance()->CreateComputeQueues(&CoreObjects::computeQueueId, 1);
+    VkQueueFactory::GetInstance()->CreateTransferQueues(&CoreObjects::transferQueueId, 1);
+
+    VulkanMemoryManager::GetSingleton()->Init(physicalDeviceMemProps);
     VkCommandBufferFactory::GetInstance()->Init();
+    VkSynchroniserFactory::GetInstance()->Init();
 }
 
 void VulkanManager::DeInit()
 {
+    VkSynchroniserFactory::GetInstance()->Init();
+    delete VkSynchroniserFactory::GetInstance();
+
     VkCommandBufferFactory::GetInstance()->DeInit();
     delete VkCommandBufferFactory::GetInstance();
 

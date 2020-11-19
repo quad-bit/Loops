@@ -39,13 +39,17 @@ uint32_t VkCommandBufferFactory::GetBufferId()
 
 void VkCommandBufferFactory::Init()
 {
-    graphicsQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT);
-    computeQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT);
-    transferQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT);
+    //VkQueueFactory::GetInstance()->CreateGraphicsQueues(&renderQueueId, 1);
+    //VkQueueFactory::GetInstance()->CreateComputeQueues(&computeQueueId, 1);
+    //VkQueueFactory::GetInstance()->CreateTransferQueues(&transferQueueId, 1);
 
-    graphicsQueueFamilyId = VkQueueFactory::GetInstance()->GetQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT);
-    computeQueueFamilyId = VkQueueFactory::GetInstance()->GetQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT);
-    transferQueueFamilyId = VkQueueFactory::GetInstance()->GetQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT);
+    renderQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::renderQueueId);
+    computeQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, CoreObjects::computeQueueId);
+    transferQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT, CoreObjects::transferQueueId);
+
+    graphicsQueueFamilyId = VkQueueFactory::GetInstance()->GetQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::renderQueueId);
+    computeQueueFamilyId = VkQueueFactory::GetInstance()->GetQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, CoreObjects::computeQueueId);
+    transferQueueFamilyId = VkQueueFactory::GetInstance()->GetQueueFamilyIndex(VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT, CoreObjects::transferQueueId);
 }
 
 void VkCommandBufferFactory::DeInit()
