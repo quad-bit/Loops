@@ -35,10 +35,9 @@ private:
     //uint32_t                                        vulkanGraphicsQueueFamilyIndex;
 
     void CreateInstance();
-    void CreateDevice();
+    void CreateLogicalDevice();
 
     void GetPhysicalDevice();
-    void CalculateQueueFamilyIndex();
 
 public:
     static VulkanManager* GetInstance();

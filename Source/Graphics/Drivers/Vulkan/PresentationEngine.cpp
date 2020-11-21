@@ -138,3 +138,14 @@ PresentationEngine::~PresentationEngine()
 {
 
 }
+
+uint32_t PresentationEngine::VkGetAvailableSwapChainId(VkFence * fence, VkSemaphore * semaphore)
+{
+    ErrorCheck(vkWaitForFences(*CoreObjects::logicalDeviceObj, 1, fence, VK_TRUE, UINT64_MAX));
+    ErrorCheck(vkResetFences(*CoreObjects::logicalDeviceObj, 1, fence));
+
+    ErrorCheck(vkAcquireNextImageKHR(*CoreObjects::logicalDeviceObj, swapchainObj, UINT64_MAX,
+        *semaphore, VK_NULL_HANDLE, &activeSwapchainImageID));
+
+    return activeSwapchainImageID;
+}

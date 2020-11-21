@@ -12,14 +12,14 @@ enum class CMD_BUF_STATES
     INVALID
 };
 
-class CommandPoolWrapper
+class VkCommandPoolWrapper
 {
 public:
     VkCommandPool* pool;
     uint32_t poolId;
 };
 
-class CommandBufferWrapper
+class VkCommandBufferWrapper
 {
 public:
     uint32_t id;
@@ -38,8 +38,8 @@ private:
     static VkCommandBufferFactory* instance;
     static uint32_t poolIdCounter, bufferIdCounter;
 
-    std::vector<CommandPoolWrapper> poolList;
-    std::vector<CommandBufferWrapper> bufferList;
+    std::vector<VkCommandPoolWrapper> poolList;
+    std::vector<VkCommandBufferWrapper> bufferList;
 
     VkCommandBuffer * GetCommandBuffer(uint32_t id);
     VkCommandPool * GetCommandPool(uint32_t poolId);

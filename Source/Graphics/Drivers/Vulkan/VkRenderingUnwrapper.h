@@ -25,4 +25,6 @@ VkSampleCountFlagBits UnWrapSampleCount(Samples sampleCount);
 
 VkImageUsageFlagBits UnwrapUsage(Usage usage);
 
+VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo info);
+
 #endif RenderingUnwrapper_H

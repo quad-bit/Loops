@@ -42,20 +42,9 @@ void VulkanManager::CreateInstance()
     CoreObjects::instanceObj = &vkInstanceObj;
 }
 
-void VulkanManager::CreateDevice()
+void VulkanManager::CreateLogicalDevice()
 {
-    //GetPhysicalDevice();
-    //CalculateQueueFamilyIndex();
-
     std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfoList = VkQueueFactory::GetInstance()->FindQueue();
-
-    /*float priority{ 1.0f };
-    VkDeviceQueueCreateInfo VkDeviceQueueCreateInfoObj{};
-    VkDeviceQueueCreateInfoObj.queueCount = 1;
-    VkDeviceQueueCreateInfoObj.pQueuePriorities = &priority;
-    VkDeviceQueueCreateInfoObj.queueFamilyIndex = vulkanGraphicsQueueFamilyIndex;
-    VkDeviceQueueCreateInfoObj.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    */
 
     VkDeviceCreateInfo vkDeviceCreateInfoObj{};
     vkDeviceCreateInfoObj.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -70,12 +59,6 @@ void VulkanManager::CreateDevice()
     ErrorCheck(vkCreateDevice(vkPhysicalDeviceObj, &vkDeviceCreateInfoObj, pAllocator, &vkLogicalDeviceObj));
 
     CoreObjects::logicalDeviceObj = &vkLogicalDeviceObj;
-
-    //vkGetDeviceQueue(vkLogicalDeviceObj, vulkanGraphicsQueueFamilyIndex, 0, &graphicsQueueObj);
-    //VkQueueFactory::GetInstance()->InitQueues();
-    
-    //delete[] indexInFamily;
-    //delete[] createInfoList;
 }
 
 
@@ -165,39 +148,16 @@ void VulkanManager::GetPhysicalDevice()
     vkGetPhysicalDeviceFeatures(vkPhysicalDeviceObj, &physicalDeviceFeatures);
 }
 
-void VulkanManager::CalculateQueueFamilyIndex()
-{
-    /*uint32_t count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDeviceObj, &count, nullptr);
-    std::vector<VkQueueFamilyProperties> propertyList(count);
-    vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDeviceObj, &count, propertyList.data());
-
-    vulkanGraphicsQueueFamilyIndex = -1;
-    for (uint32_t i = 0; i < count; i++)
-    {
-        if (propertyList[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-        {
-            vulkanGraphicsQueueFamilyIndex = i;
-            break;
-        }
-    }
-
-    if (vulkanGraphicsQueueFamilyIndex == -1)
-    {
-        ASSERT_MSG(0, "No queue family found for grahics");
-        std::exit(-1);
-    }*/
-}
-
 void VulkanManager::Init()
 {
     CreateInstance();
     GetPhysicalDevice();
     validationManagerObj->InitDebug(&vkInstanceObj, pAllocator);
     VkQueueFactory::GetInstance()->Init();
-    CreateDevice();
+    CreateLogicalDevice();
 
     VkQueueFactory::GetInstance()->CreateGraphicsQueues(&CoreObjects::renderQueueId, 1);
+    VkQueueFactory::GetInstance()->CreateGraphicsQueues(&CoreObjects::presentationQueuedId, 1);
     VkQueueFactory::GetInstance()->CreateComputeQueues(&CoreObjects::computeQueueId, 1);
     VkQueueFactory::GetInstance()->CreateTransferQueues(&CoreObjects::transferQueueId, 1);
 

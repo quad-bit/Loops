@@ -51,6 +51,7 @@ public:
     void DestroyCommandBuffer(uint32_t commandBufferId);
     void DestroyDrawCommandBuffer(DrawCommandBuffer<T> * obj);
     void ResetCommandBuffer(uint32_t commandBufferId);
+    void ResetDrawCommandBuffer(DrawCommandBuffer<T> * obj);
     uint32_t CreateCommandPool(PipelineType * poolType, CommandPoolProperty * poolProp);
     void DestroyCommandPool(uint32_t commandPoolId);
 };

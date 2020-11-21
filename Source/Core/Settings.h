@@ -44,4 +44,7 @@ public:
     static uint32_t windowWidth, windowHeight;
     static string windowName;
     static uint32_t swapBufferCount;
+    static float depthClearValue, stencilClearValue;
+    static float clearColorValue[4];
 };
+

@@ -22,7 +22,7 @@ class RenderingInterface
 {
 private:
     ForwardRendering<T> * forwardRenderer;
-    DrawCommandBuffer<T> ** drawCommandBufferObj;
+    DrawCommandBuffer<T> ** drawCommandBufferList;
     uint32_t graphicCommandPoolId, computeCommandPoolId, guiCommandPoolId;
 
     uint32_t maxFramesInFlight;
@@ -30,16 +30,21 @@ private:
     uint32_t * renderSemaphores, *presentationSemaphores;
     uint32_t * getSwapChainImageFences;
 
+    uint32_t currentFrameIndex{ 0 }, currentSwapchainIndex{ 0 };
+
     void BeginRenderLoop();
     void EndRenderLoop();
 
     T * apiInterface;
+
+    DrawCommandBuffer<T> * activeDrawCommandBuffer;
 
 public:
     void Init(T * apiInterface);
     void SetupRenderer();
     void DislogeRenderer();
     void DeInit();
+    void Render();
 };
 
 #include "ForwardInterface.h"
@@ -48,7 +53,16 @@ public:
 template<typename T>
 inline void RenderingInterface<T>::BeginRenderLoop()
 {
-    //get swapchain image index to used for rendering the current frame.
+    //get swapchain image index to be used for rendering the current frame.
+
+    uint32_t fenceId = getSwapChainImageFences[currentFrameIndex];
+    uint32_t semaphoreId = renderSemaphores[currentFrameIndex];
+
+    currentSwapchainIndex = apiInterface->GetAvailableSwapchainIndex(fenceId, semaphoreId);
+
+    activeDrawCommandBuffer = drawCommandBufferList[currentSwapchainIndex];
+
+    CommandBufferManager<T>::GetInstance()->ResetDrawCommandBuffer(activeDrawCommandBuffer);
 }
 
 template<typename T>
@@ -63,6 +77,14 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     forwardRenderer->Init(apiInterface);
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);
     this->apiInterface = apiInterface;
+
+    Settings::clearColorValue[0] = 164.0f / 256.0f; // Red
+    Settings::clearColorValue[0] = 30.0f / 256.0f;  // Green
+    Settings::clearColorValue[0] = 34.0f / 256.0f;  // Blue
+    Settings::clearColorValue[0] = 1.0f;
+
+    Settings::depthClearValue = 1.0f;
+    Settings::stencilClearValue = 0.0f;
 }
 
 template<typename T>
@@ -81,13 +103,13 @@ inline void RenderingInterface<T>::SetupRenderer()
     
     forwardRenderer->SetupRenderer();
 
-    drawCommandBufferObj = new DrawCommandBuffer<T>*[Settings::swapBufferCount];
+    drawCommandBufferList = new DrawCommandBuffer<T>*[Settings::swapBufferCount];
 
     for (uint32_t i = 0; i < Settings::swapBufferCount; i++)
     {
         CommandBufferLevel * level = new CommandBufferLevel;
         *level = CommandBufferLevel::PRIMARY;
-        drawCommandBufferObj[i] = CommandBufferManager<T>::GetInstance()->CreateDrawCommandBuffer(level, graphicCommandPoolId);
+        drawCommandBufferList[i] = CommandBufferManager<T>::GetInstance()->CreateDrawCommandBuffer(level, graphicCommandPoolId);
     }
 
     maxFramesInFlight = Settings::swapBufferCount - 1;  
@@ -106,7 +128,6 @@ inline void RenderingInterface<T>::SetupRenderer()
 template<typename T>
 inline void RenderingInterface<T>::DislogeRenderer()
 {
-
     for (uint32_t i = 0; i < maxFramesInFlight; i++)
     {
         apiInterface->DestroyFence(getSwapChainImageFences[i]);
@@ -120,11 +141,11 @@ inline void RenderingInterface<T>::DislogeRenderer()
 
     for (uint32_t i = 0; i < Settings::swapBufferCount; i++)
     {
-        CommandBufferManager<T>::GetInstance()->DestroyDrawCommandBuffer(drawCommandBufferObj[i]);
+        CommandBufferManager<T>::GetInstance()->DestroyDrawCommandBuffer(drawCommandBufferList[i]);
         //delete drawCommandBufferObj[i];
     }
 
-    delete[] drawCommandBufferObj;
+    delete[] drawCommandBufferList;
 
     forwardRenderer->DislogeRenderer();
 
@@ -141,4 +162,12 @@ inline void RenderingInterface<T>::DeInit()
 
     forwardRenderer->DeInit();
     delete forwardRenderer;
+}
+
+template<typename T>
+inline void RenderingInterface<T>::Render()
+{
+    //BeginRenderLoop();
+
+    //EndRenderLoop();
 }

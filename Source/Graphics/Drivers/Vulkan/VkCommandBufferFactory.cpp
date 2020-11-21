@@ -9,8 +9,8 @@ uint32_t VkCommandBufferFactory::poolIdCounter = 0, VkCommandBufferFactory::buff
 
 VkCommandBuffer * VkCommandBufferFactory::GetCommandBuffer(uint32_t id)
 {
-    std::vector<CommandBufferWrapper>::iterator it;
-    it = std::find_if(bufferList.begin(), bufferList.end(), [&](CommandBufferWrapper e) { return e.id == id; });
+    std::vector<VkCommandBufferWrapper>::iterator it;
+    it = std::find_if(bufferList.begin(), bufferList.end(), [&](VkCommandBufferWrapper e) { return e.id == id; });
 
     ASSERT_MSG(it != bufferList.end(), "Image id not found");
     
@@ -19,8 +19,8 @@ VkCommandBuffer * VkCommandBufferFactory::GetCommandBuffer(uint32_t id)
 
 VkCommandPool * VkCommandBufferFactory::GetCommandPool(uint32_t poolId)
 {
-    std::vector<CommandPoolWrapper>::iterator it;
-    it = std::find_if(poolList.begin(), poolList.end(), [&](CommandPoolWrapper e) { return e.poolId == poolId; });
+    std::vector<VkCommandPoolWrapper>::iterator it;
+    it = std::find_if(poolList.begin(), poolList.end(), [&](VkCommandPoolWrapper e) { return e.poolId == poolId; });
 
     ASSERT_MSG(it != poolList.end(), "Image id not found");
 
@@ -54,14 +54,14 @@ void VkCommandBufferFactory::Init()
 
 void VkCommandBufferFactory::DeInit()
 {
-    for each (CommandPoolWrapper pool in poolList)
+    for each (VkCommandPoolWrapper pool in poolList)
     {
         delete pool.pool;
     }
 
     poolList.clear();
 
-    for each (CommandBufferWrapper buf in bufferList)
+    for each (VkCommandBufferWrapper buf in bufferList)
     {
         delete buf.commandBuffer;
     }
@@ -109,7 +109,7 @@ void VkCommandBufferFactory::CreateCommandPool(VkCommandPoolCreateFlagBits flags
         ASSERT_MSG(0, "Command buffer for this queue not supported");
     }
 
-    CommandPoolWrapper wrapper;
+    VkCommandPoolWrapper wrapper;
     wrapper.poolId = GetPoolId();
     wrapper.pool = new VkCommandPool;
     
@@ -128,7 +128,7 @@ void VkCommandBufferFactory::CreateCommandPool(VkCommandPoolCreateFlagBits flags
 void VkCommandBufferFactory::CreateCommandBuffer(uint32_t poolId, VkCommandBufferLevel level, uint32_t count, uint32_t * ids)
 {
     VkCommandPool* pool = GetCommandPool(poolId);
-    CommandBufferWrapper * wrapper = new CommandBufferWrapper;
+    VkCommandBufferWrapper * wrapper = new VkCommandBufferWrapper;
     wrapper->commandBuffer = new VkCommandBuffer;
     wrapper->id = GetBufferId();
     wrapper->pool = pool;
@@ -149,8 +149,8 @@ void VkCommandBufferFactory::CreateCommandBuffer(uint32_t poolId, VkCommandBuffe
 
 void VkCommandBufferFactory::DestroyCommandPool(uint32_t id)
 {
-    std::vector<CommandPoolWrapper>::iterator it;
-    it = std::find_if(poolList.begin(), poolList.end(), [&](CommandPoolWrapper e) { return e.poolId == id; });
+    std::vector<VkCommandPoolWrapper>::iterator it;
+    it = std::find_if(poolList.begin(), poolList.end(), [&](VkCommandPoolWrapper e) { return e.poolId == id; });
 
     ASSERT_MSG(it != poolList.end(), "Pool id not found");
 
@@ -167,8 +167,8 @@ void VkCommandBufferFactory::ResetCommandBuffer(uint32_t poolId, uint32_t id)
 
 void VkCommandBufferFactory::DestroyCommandBuffer(uint32_t id)
 {
-    std::vector<CommandBufferWrapper>::iterator it;
-    it = std::find_if(bufferList.begin(), bufferList.end(), [&](CommandBufferWrapper e) { return e.id == id; });
+    std::vector<VkCommandBufferWrapper>::iterator it;
+    it = std::find_if(bufferList.begin(), bufferList.end(), [&](VkCommandBufferWrapper e) { return e.id == id; });
 
     ASSERT_MSG(it != bufferList.end(), "Pool id not found");
 

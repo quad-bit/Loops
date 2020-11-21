@@ -36,5 +36,5 @@ public:
         VkRenderPass * renderPass, uint32_t width, uint32_t height, uint32_t * ids);
     void DestroyFrameBuffer(uint32_t id);
     void DestroyFrameBuffer(uint32_t * ids, uint32_t count);
-
+    VkFramebuffer * GetFrameBuffer(uint32_t id);
 };

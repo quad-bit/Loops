@@ -21,6 +21,11 @@ public:
     void DeInit();
     DrawCommandBuffer();
     ~DrawCommandBuffer();
+
+    void SetViewport(uint32_t commandBufferId, float width, float height, float positionX, float positionY);
+    void SetScissor(uint32_t commandBufferId, float width, float height, float positionX, float positionY);
+    //vkCmdBeginRenderPass(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
+    //void BeginRenderPass(uint32_t commandBufferId, RenderPassBeginInfo * renderPassBeginInfo )
 };
 
 #include "RenderingWrapper.h"
@@ -48,5 +53,15 @@ inline DrawCommandBuffer<T>::DrawCommandBuffer()
 
 template<typename T>
 inline DrawCommandBuffer<T>::~DrawCommandBuffer()
+{
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::SetViewport(uint32_t commandBufferId, float width, float height, float positionX, float positionY)
+{
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::SetScissor(uint32_t commandBufferId, float width, float height, float positionX, float positionY)
 {
 }

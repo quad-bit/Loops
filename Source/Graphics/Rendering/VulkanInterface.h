@@ -9,11 +9,13 @@ struct ImageInfo;
 struct RenderPassAttachmentInfo;
 struct SubpassInfo;
 struct SubpassDependency;
+struct RenderPassBeginInfo;
 
 enum class ImageFormat;
 enum class CommandBufferLevel;
 enum class PipelineType;
 enum class CommandPoolProperty;
+
 
 class VulkanInterface
 {
@@ -67,4 +69,11 @@ public:
 
     void DestroyFence(uint32_t id);
     void DestroySemaphore(uint32_t id);
+
+    void SetRenderpassBeginInfo(RenderPassBeginInfo * beginInfo, uint32_t renderPassId);
+
+    uint32_t GetAvailableSwapchainIndex(uint32_t fenceId, uint32_t semaphoreId);
+    
+    void ActivateCommandBuffer(uint32_t index);
+    
 };

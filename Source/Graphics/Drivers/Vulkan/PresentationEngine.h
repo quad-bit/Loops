@@ -25,6 +25,8 @@ private:
     vector<VkImage> swapChainImageList;
     vector<VkImageView> swapChainImageViewList;
 
+    uint32_t activeSwapchainImageID;
+
 public:
     void Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * surfaceFormat);
     vector<VkImage> * CreateSwapchainImage(AttachmentInfo* info, uint32_t count);
@@ -36,4 +38,7 @@ public:
     void Update();
     static PresentationEngine* GetInstance();
     ~PresentationEngine();
+
+    uint32_t VkGetAvailableSwapChainId(VkFence * fence, VkSemaphore * semaphore);
+
 };

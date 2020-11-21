@@ -123,10 +123,6 @@ enum class PipelineType
         ImageLayout initialLayout;
     };
 
-    //////////////////////////////////////////////////////////////////////////  [
-    /////////////////////////////        RENDER PASS      ////////////////////  [
-    //////////////////////////////////////////////////////////////////////////  [
-
     struct RenderPassAttachmentInfo
     {
         RenderPassAttachmentInfo()
@@ -183,9 +179,16 @@ enum class PipelineType
         uint32_t id;
     };
 
-    //////////////////////////////////////////////////////////////////////////  ]
-    /////////////////////////////        RENDER PASS      ////////////////////  ]
-    //////////////////////////////////////////////////////////////////////////  ]
+    struct RenderPassBeginInfo
+    {
+        float clearColorValue[4];
+        float depthClearValue;
+        float stencilClearValue;
+        uint32_t frameBufferId;
+        uint32_t renderPassId;
+        float renderAreaPosition[2];
+        float renderAreaExtent[2];
+    };
 
 
 #elif (RENDERING_API == DX12)

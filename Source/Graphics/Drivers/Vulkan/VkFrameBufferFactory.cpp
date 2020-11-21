@@ -90,3 +90,13 @@ void VkFrameBufferFactory::DestroyFrameBuffer(uint32_t * ids, uint32_t count)
     }
 }
 
+VkFramebuffer * VkFrameBufferFactory::GetFrameBuffer(uint32_t id)
+{
+    std::vector<FrameBufferWrapper*>::iterator it;
+    it = std::find_if(fboList.begin(), fboList.end(), [&](FrameBufferWrapper * e) { return e->id == id; });
+
+    ASSERT_MSG(it != fboList.end(), "Image id not found");
+
+    return &(*it)->fbo;
+} 
+

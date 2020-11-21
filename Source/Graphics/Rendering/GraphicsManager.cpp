@@ -41,7 +41,7 @@ void GraphicsManager::Update()
 {
     while (WindowManager::GetInstance()->Update())
     {
-        
+        renderingInterfaceObj->Render();
     }
 }
 

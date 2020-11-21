@@ -384,6 +384,25 @@ void VulkanInterface::DestroySemaphore(uint32_t id)
     return VkSynchroniserFactory::GetInstance()->DestroySemaphore(id);
 }
 
+void VulkanInterface::SetRenderpassBeginInfo(RenderPassBeginInfo * beginInfo, uint32_t renderPassId)
+{
+    VkRenderPassBeginInfo info = UnwrapRenderPassBeginInfo(*beginInfo);
+    VkRenderPassFactory::GetInstance()->SetRenderPassBeginInfo(info, renderPassId);
+}
+
+uint32_t VulkanInterface::GetAvailableSwapchainIndex(uint32_t fenceId, uint32_t semaphoreId)
+{
+    VkFence * fence = VkSynchroniserFactory::GetInstance()->GetFence(fenceId);
+    VkSemaphore * semaphore = VkSynchroniserFactory::GetInstance()->GetSemaphore(semaphoreId);
+
+    return PresentationEngine::GetInstance()->VkGetAvailableSwapChainId(fence, semaphore);
+}
+
+void VulkanInterface::ActivateCommandBuffer(uint32_t index)
+{
+    //VkCommandBufferFactory::GetInstance()->ActivateCommandBuffer(index);
+}
+
 VulkanInterface::~VulkanInterface()
 {
 

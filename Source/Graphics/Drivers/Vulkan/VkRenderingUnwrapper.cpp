@@ -1,4 +1,6 @@
 #include "VkRenderingUnwrapper.h"
+#include "VkFrameBufferFactory.h"
+#include "VkRenderPassFactory.h"
 
 VkColorSpaceKHR UnWrapColorSpace(ColorSpace colorSpace)
 {
@@ -230,4 +232,20 @@ VkImageUsageFlagBits UnwrapUsage(Usage usage)
         ASSERT_MSG(0, "Usage converter not found ");
         std::exit(-1);
     }
+}
+
+VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo beginInfo)
+{
+    VkRenderPassBeginInfo vkBeginInfo = {};
+    vkBeginInfo.framebuffer = *VkFrameBufferFactory::GetInstance()->GetFrameBuffer(beginInfo.frameBufferId);
+    vkBeginInfo.renderArea.extent.width = (uint32_t)beginInfo.renderAreaExtent[0];
+    vkBeginInfo.renderArea.extent.height = (uint32_t)beginInfo.renderAreaExtent[1];
+    vkBeginInfo.renderArea.offset.x = (int32_t)beginInfo.renderAreaPosition[0];
+    vkBeginInfo.renderArea.offset.y = (int32_t)beginInfo.renderAreaPosition[1];
+    vkBeginInfo.renderPass = *VkRenderPassFactory::GetInstance()->GetRenderPass(beginInfo.renderPassId);
+    vkBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    //vkBeginInfo.pClearValues = VkRenderPassFactory::GetInstance()->GetClearValue(beginInfo.renderPassId)->data();
+    //vkBeginInfo.clearValueCount = VkRenderPassFactory::GetInstance()->GetClearValue(beginInfo.renderPassId)->size();
+
+    return vkBeginInfo;
 }
