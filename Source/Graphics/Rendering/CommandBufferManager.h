@@ -47,13 +47,16 @@ public:
     void Init(T * apiInterface);
     void DeInit();
     void Update();
-    DrawCommandBuffer<T> * CreateDrawCommandBuffer(CommandBufferLevel* type, uint32_t poolId);
+    DrawCommandBuffer<T> * CreateDrawCommandBuffer(CommandBufferLevel* type, const uint32_t & poolId);
     void DestroyCommandBuffer(uint32_t commandBufferId);
     void DestroyDrawCommandBuffer(DrawCommandBuffer<T> * obj);
     void ResetCommandBuffer(uint32_t commandBufferId);
     void ResetDrawCommandBuffer(DrawCommandBuffer<T> * obj);
     uint32_t CreateCommandPool(PipelineType * poolType, CommandPoolProperty * poolProp);
     void DestroyCommandPool(uint32_t commandPoolId);
+
+    DrawCommandBuffer<T> * GetCommandBuffer(uint32_t id);
+
 };
 
 #include "RenderingWrapper.h"
@@ -80,13 +83,12 @@ inline void CommandBufferManager<T>::Update()
 }
 
 template<typename T>
-inline DrawCommandBuffer<T> * CommandBufferManager<T>::CreateDrawCommandBuffer(CommandBufferLevel* level, uint32_t poolId)
+inline DrawCommandBuffer<T> * CommandBufferManager<T>::CreateDrawCommandBuffer(CommandBufferLevel* level, const uint32_t & poolId)
 {
     //create draw command buffer
     ASSERT_MSG(drawCB_Counter <= MAX_COMMANDBUFFERS, "Command buffers exhausted");
     
     drawCommandBufferList[drawCB_Counter].Init(apiInterface, level, poolId);
-    drawCB_Counter;
 
     return &drawCommandBufferList[drawCB_Counter++];
 }
@@ -107,6 +109,14 @@ inline void CommandBufferManager<T>::DestroyDrawCommandBuffer(DrawCommandBuffer<
 template<typename T>
 inline void CommandBufferManager<T>::ResetCommandBuffer(uint32_t commandBufferId)
 {
+    DrawCommandBuffer<T> * buf = GetCommandBuffer(commandBufferId);
+    apiInterface->ResetCommandBuffer(commandBufferId, buf->poolId);
+}
+
+template<typename T>
+inline void CommandBufferManager<T>::ResetDrawCommandBuffer(DrawCommandBuffer<T>* obj)
+{
+    apiInterface->ResetCommandBuffer(obj->GetId(), obj->GetPoolId());
 }
 
 template<typename T>
@@ -119,6 +129,17 @@ template<typename T>
 inline void CommandBufferManager<T>::DestroyCommandPool(uint32_t commandPoolId)
 {
     apiInterface->DestroyCommandPool(commandPoolId);
+}
+
+template<typename T>
+inline DrawCommandBuffer<T>* CommandBufferManager<T>::GetCommandBuffer(uint32_t id)
+{
+    std::vector<DrawCommandBuffer<T>*>::iterator it;
+    it = std::find_if(drawCommandBufferList.begin(), drawCommandBufferList.end(), [&](DrawCommandBuffer<T> * e) { return e->id == id; });
+
+    ASSERT_MSG(it != drawCommandBufferList.end(), "Pool id not found");
+
+    return it;
 }
 
 template<typename T>

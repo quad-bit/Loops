@@ -3,18 +3,19 @@
 #include <Assertion.h>
 #include <VulkanUtility.h>
 #include <VkQueueFactory.h>
+#include "VkDrawCommandBuffer.h"
 
 VkCommandBufferFactory* VkCommandBufferFactory::instance = nullptr;
 uint32_t VkCommandBufferFactory::poolIdCounter = 0, VkCommandBufferFactory::bufferIdCounter = 0;
 
 VkCommandBuffer * VkCommandBufferFactory::GetCommandBuffer(uint32_t id)
 {
-    std::vector<VkCommandBufferWrapper>::iterator it;
-    it = std::find_if(bufferList.begin(), bufferList.end(), [&](VkCommandBufferWrapper e) { return e.id == id; });
+    std::vector<VkDrawCommandBuffer*>::iterator it;
+    it = std::find_if(drawCommandBufferList.begin(), drawCommandBufferList.end(), [&](VkDrawCommandBuffer* e) { return e->id == id; });
 
-    ASSERT_MSG(it != bufferList.end(), "Image id not found");
+    ASSERT_MSG(it != drawCommandBufferList.end(), "Image id not found");
     
-    return it->commandBuffer;
+    return (*it)->commandBuffer;
 }
 
 VkCommandPool * VkCommandBufferFactory::GetCommandPool(uint32_t poolId)
@@ -61,12 +62,12 @@ void VkCommandBufferFactory::DeInit()
 
     poolList.clear();
 
-    for each (VkCommandBufferWrapper buf in bufferList)
+    for each (VkDrawCommandBuffer* buf in drawCommandBufferList)
     {
-        delete buf.commandBuffer;
+        delete buf->commandBuffer;
     }
 
-    bufferList.clear();
+    drawCommandBufferList.clear();
 }
 
 void VkCommandBufferFactory::Update()
@@ -125,6 +126,7 @@ void VkCommandBufferFactory::CreateCommandPool(VkCommandPoolCreateFlagBits flags
     poolList.push_back(wrapper);
 }
 
+/*
 void VkCommandBufferFactory::CreateCommandBuffer(uint32_t poolId, VkCommandBufferLevel level, uint32_t count, uint32_t * ids)
 {
     VkCommandPool* pool = GetCommandPool(poolId);
@@ -146,6 +148,33 @@ void VkCommandBufferFactory::CreateCommandBuffer(uint32_t poolId, VkCommandBuffe
 
     bufferList.push_back(*wrapper);
 }
+*/
+
+VkDrawCommandBuffer * VkCommandBufferFactory::CreateCommandBuffer(uint32_t poolId, VkCommandBufferLevel level, 
+    PipelineType commandBufferType, uint32_t * ids)
+{
+    VkCommandPool* pool = GetCommandPool(poolId);
+    VkDrawCommandBuffer * drawCommandBuffer = new VkDrawCommandBuffer;
+    
+    drawCommandBuffer->commandBuffer = new VkCommandBuffer;
+    drawCommandBuffer->id = GetBufferId();
+    drawCommandBuffer->pool = pool;
+    drawCommandBuffer->commandBufferType = commandBufferType;
+    *ids = drawCommandBuffer->id;
+
+    VkCommandBufferAllocateInfo info = {};
+    info.commandBufferCount = 1;
+    info.level = level;
+    info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+    info.commandPool = *pool;
+
+    ErrorCheck(vkAllocateCommandBuffers(*CoreObjects::logicalDeviceObj,
+        &info, drawCommandBuffer->commandBuffer));
+
+    drawCommandBufferList.push_back(drawCommandBuffer);
+
+    return drawCommandBuffer;
+}
 
 void VkCommandBufferFactory::DestroyCommandPool(uint32_t id)
 {
@@ -163,14 +192,22 @@ void VkCommandBufferFactory::ResetCommandPool(uint32_t id)
 
 void VkCommandBufferFactory::ResetCommandBuffer(uint32_t poolId, uint32_t id)
 {
+
+    std::vector<VkDrawCommandBuffer*>::iterator it;
+    it = std::find_if(drawCommandBufferList.begin(), drawCommandBufferList.end(), [&](VkDrawCommandBuffer * e) { return e->id == id; });
+
+    ASSERT_MSG(it != drawCommandBufferList.end(), "Pool id not found");
+
+    vkResetCommandBuffer(*(*it)->commandBuffer, VkCommandBufferResetFlagBits::VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
+
 }
 
 void VkCommandBufferFactory::DestroyCommandBuffer(uint32_t id)
 {
-    std::vector<VkCommandBufferWrapper>::iterator it;
-    it = std::find_if(bufferList.begin(), bufferList.end(), [&](VkCommandBufferWrapper e) { return e.id == id; });
+    std::vector<VkDrawCommandBuffer*>::iterator it;
+    it = std::find_if(drawCommandBufferList.begin(), drawCommandBufferList.end(), [&](VkDrawCommandBuffer * e) { return e->id == id; });
 
-    ASSERT_MSG(it != bufferList.end(), "Pool id not found");
+    ASSERT_MSG(it != drawCommandBufferList.end(), "Pool id not found");
 
-    vkFreeCommandBuffers(*CoreObjects::logicalDeviceObj, *it->pool, 1, it->commandBuffer);
+    vkFreeCommandBuffers(*CoreObjects::logicalDeviceObj, *(*it)->pool, 1, (*it)->commandBuffer);
 }

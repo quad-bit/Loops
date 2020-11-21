@@ -167,7 +167,7 @@ inline void RenderingInterface<T>::DeInit()
 template<typename T>
 inline void RenderingInterface<T>::Render()
 {
-    //BeginRenderLoop();
+    BeginRenderLoop();
 
     //EndRenderLoop();
 }

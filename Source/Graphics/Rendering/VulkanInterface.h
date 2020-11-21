@@ -16,6 +16,7 @@ enum class CommandBufferLevel;
 enum class PipelineType;
 enum class CommandPoolProperty;
 
+class VkDrawCommandBuffer;
 
 class VulkanInterface
 {
@@ -57,10 +58,6 @@ public:
         uint32_t renderPassId, uint32_t width, uint32_t height, uint32_t * ids);
     void DestroyFrameBuffer(uint32_t * pid, uint32_t count);
 
-    void CreateCommandBuffer(const uint32_t & poolId, uint32_t & cmdBufferId,
-        CommandBufferLevel* commandBufferLevel);
-    void DestroyCommandBuffer(uint32_t id);
-
     uint32_t CreateCommandPool(PipelineType* pipelineType, CommandPoolProperty * prop);
     void DestroyCommandPool(uint32_t poolId);
 
@@ -76,4 +73,12 @@ public:
     
     void ActivateCommandBuffer(uint32_t index);
     
+#if (RENDERING_API == VULKAN)
+    VkDrawCommandBuffer * CreateCommandBuffer(const uint32_t & poolId, uint32_t * cmdBufferId, CommandBufferLevel* commandBufferLevel, PipelineType bufferType);
+#elif (RENDERING_API == DX)
+    apiInterface = new DxInterface();
+#endif
+
+    void DestroyCommandBuffer(uint32_t id);
+    void ResetCommandBuffer(uint32_t id, uint32_t poolId);
 };

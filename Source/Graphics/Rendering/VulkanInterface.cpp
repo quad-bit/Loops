@@ -285,6 +285,7 @@ void VulkanInterface::DestroyFrameBuffer(uint32_t * pid, uint32_t count)
     VkFrameBufferFactory::GetInstance()->DestroyFrameBuffer(pid, count);
 }
 
+/*
 void VulkanInterface::CreateCommandBuffer(const uint32_t & poolId, uint32_t & cmdBufferId, 
     CommandBufferLevel* commandBufferLevel)
 {
@@ -305,10 +306,16 @@ void VulkanInterface::CreateCommandBuffer(const uint32_t & poolId, uint32_t & cm
 
     VkCommandBufferFactory::GetInstance()->CreateCommandBuffer(poolId, level, 1, &cmdBufferId);
 }
+*/
 
 void VulkanInterface::DestroyCommandBuffer(uint32_t id)
 {
     VkCommandBufferFactory::GetInstance()->DestroyCommandBuffer(id);
+}
+
+void VulkanInterface::ResetCommandBuffer(uint32_t id, uint32_t poolId)
+{
+    VkCommandBufferFactory::GetInstance()->ResetCommandBuffer(id, poolId);
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)
@@ -401,6 +408,25 @@ uint32_t VulkanInterface::GetAvailableSwapchainIndex(uint32_t fenceId, uint32_t 
 void VulkanInterface::ActivateCommandBuffer(uint32_t index)
 {
     //VkCommandBufferFactory::GetInstance()->ActivateCommandBuffer(index);
+}
+
+VkDrawCommandBuffer * VulkanInterface::CreateCommandBuffer(const uint32_t & poolId, uint32_t * cmdBufferId, CommandBufferLevel* commandBufferLevel, PipelineType bufferType)
+{
+    VkCommandBufferLevel level;
+    switch (*commandBufferLevel)
+    {
+    case CommandBufferLevel::PRIMARY:
+        level = VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        break;
+
+    case CommandBufferLevel::SECONDARY:
+        level = VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+        break;
+
+    default:
+        ASSERT_MSG(0, "Wrong command level");
+    }
+    return VkCommandBufferFactory::GetInstance()->CreateCommandBuffer(poolId, level, bufferType, cmdBufferId);
 }
 
 VulkanInterface::~VulkanInterface()
