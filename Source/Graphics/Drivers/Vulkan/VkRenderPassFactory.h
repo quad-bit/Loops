@@ -13,7 +13,9 @@ public:
     uint32_t id;
     VkRenderPass renderPass;
     VkRenderPassBeginInfo beginInfo;
-    std::vector<VkClearValue> clearValue;
+    //std::vector<VkClearValue> clearValue;
+    VkClearValue * clearValue;
+    uint32_t clearValueCount;
 };
 
 class VkRenderPassFactory
@@ -41,25 +43,24 @@ public:
     ~VkRenderPassFactory();
 
     void CreateRenderPass(
-        const VkAttachmentDescription* renderpassAttachmentList, uint32_t attachmentCount,
-        const VkSubpassDescription* subpassList, uint32_t subpassCount,
-        const VkSubpassDependency* dependencyList, uint32_t dependencyCount,
+        const VkAttachmentDescription* renderpassAttachmentList, const uint32_t & attachmentCount,
+        const VkSubpassDescription* subpassList, const uint32_t & subpassCount,
+        const VkSubpassDependency* dependencyList, const uint32_t & dependencyCount,
         uint32_t& renderPassId
     );
 
     void CreateRenderPass(
-        const VkAttachmentDescription* renderpassAttachmentList, uint32_t attachmentCount,
-        const VkSubpassDescription* subpassList, uint32_t subpassCount,
-        const VkSubpassDependency* dependencyList, uint32_t dependencyCount,
-        const VkRenderPassBeginInfo beginInfo,
-        uint32_t& renderPassId
+        const VkAttachmentDescription* renderpassAttachmentList, const uint32_t & attachmentCount,
+        const VkSubpassDescription* subpassList, const uint32_t & subpassCount,
+        const VkSubpassDependency* dependencyList, const uint32_t & dependencyCount,
+        const VkRenderPassBeginInfo beginInfo, uint32_t& renderPassId
     );
-    void DestroyRenderPass(uint32_t id);
+    void DestroyRenderPass(const uint32_t & id);
 
-    void SetRenderPassBeginInfo(const VkRenderPassBeginInfo beginInfo, uint32_t renderpassId);
-    void SetClearColor(std::vector<VkClearValue> clearValue, uint32_t renderPassId);
-    
-    VkRenderPass * GetRenderPass(uint32_t id);
-    std::vector<VkClearValue> * GetClearValue(uint32_t renderpassId);
+    void SetRenderPassBeginInfo(const VkRenderPassBeginInfo beginInfo, const uint32_t & renderpassId);
+    void SetClearColor(std::vector<VkClearValue> clearValue, const uint32_t & renderPassId);
 
+    VkRenderPass * GetRenderPass(const uint32_t & id);
+    VkClearValue * GetClearValue(const uint32_t & renderpassId);
+    uint32_t GetClearValueCount(const uint32_t & renderpassId);
 };

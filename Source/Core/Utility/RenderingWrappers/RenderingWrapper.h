@@ -109,6 +109,56 @@ enum class PipelineType
     TRANSFER,
 };
 
+enum class CommandBufferUsage
+{
+    USAGE_ONE_TIME_SUBMIT_BIT = 0x00000001,
+    RENDER_PASS_CONTINUE_BIT = 0x00000002,
+    SIMULTANEOUS_USE_BIT = 0x00000004
+};
+
+enum class SubpassContentStatus
+{
+    SUBPASS_CONTENTS_INLINE = 0,
+    SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1,
+};
+
+enum class PipelineStage
+{
+    TOP_OF_PIPE_BIT = 0x00000001,
+    DRAW_INDIRECT_BIT = 0x00000002,
+    VERTEX_INPUT_BIT = 0x00000004,
+    VERTEX_SHADER_BIT = 0x00000008,
+    TESSELLATION_CONTROL_SHADER_BIT = 0x00000010,
+    TESSELLATION_EVALUATION_SHADER_BIT = 0x00000020,
+    GEOMETRY_SHADER_BIT = 0x00000040,
+    FRAGMENT_SHADER_BIT = 0x00000080,
+    EARLY_FRAGMENT_TESTS_BIT = 0x00000100,
+    LATE_FRAGMENT_TESTS_BIT = 0x00000200,
+    COLOR_ATTACHMENT_OUTPUT_BIT = 0x00000400,
+    COMPUTE_SHADER_BIT = 0x00000800,
+    TRANSFER_BIT = 0x00001000,
+    BOTTOM_OF_PIPE_BIT = 0x00002000,
+    HOST_BIT = 0x00004000,
+    ALL_GRAPHICS_BIT = 0x00008000,
+    ALL_COMMANDS_BIT = 0x00010000,
+    TRANSFORM_FEEDBACK_BIT_EXT = 0x01000000,
+    CONDITIONAL_RENDERING_BIT_EXT = 0x00040000,
+    RAY_TRACING_SHADER_BIT_KHR = 0x00200000,
+    ACCELERATION_STRUCTURE_BUILD_BIT_KHR = 0x02000000,
+    SHADING_RATE_IMAGE_BIT_NV = 0x00400000,
+    TASK_SHADER_BIT_NV = 0x00080000,
+    MESH_SHADER_BIT_NV = 0x00100000,
+    FRAGMENT_DENSITY_PROCESS_BIT_EXT = 0x00800000,
+    COMMAND_PREPROCESS_BIT_NV = 0x00020000,
+    FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class QueuePurpose
+{
+    RENDER,
+    PRESENT,
+    NONE
+};
 
 #if (RENDERING_API == VULKAN)
 
@@ -181,13 +231,39 @@ enum class PipelineType
 
     struct RenderPassBeginInfo
     {
-        float clearColorValue[4];
-        float depthClearValue;
-        float stencilClearValue;
+        float clearColorValue[4]{ -1.0f };
+        float depthClearValue = -1.0f;
+        float stencilClearValue = -1.0f;
         uint32_t frameBufferId;
         uint32_t renderPassId;
         float renderAreaPosition[2];
         float renderAreaExtent[2];
+    };
+
+    struct CommandBufferInheritanceInfo
+    {
+
+    };
+
+    struct SubmitInfo
+    {
+        uint32_t waitSemaphoreCount;
+        uint32_t * waitSemaphoreIds;
+        uint32_t signalSemaphoreCount;
+        uint32_t * signalSemaphoreIds;
+        uint32_t commandBufferCount;
+        uint32_t * commandBufferIds;
+        PipelineStage pipelineStage;
+        uint32_t queueId;
+        PipelineType * queueType;
+        QueuePurpose * purpose;
+    };
+
+    struct PresentInfo
+    {
+        uint32_t                 waitSemaphoreCount;
+        uint32_t *               pWaitSemaphoreIds;
+        uint32_t *               pImageIndices;
     };
 
 

@@ -244,8 +244,26 @@ VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo beginInfo)
     vkBeginInfo.renderArea.offset.y = (int32_t)beginInfo.renderAreaPosition[1];
     vkBeginInfo.renderPass = *VkRenderPassFactory::GetInstance()->GetRenderPass(beginInfo.renderPassId);
     vkBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-    //vkBeginInfo.pClearValues = VkRenderPassFactory::GetInstance()->GetClearValue(beginInfo.renderPassId)->data();
-    //vkBeginInfo.clearValueCount = VkRenderPassFactory::GetInstance()->GetClearValue(beginInfo.renderPassId)->size();
+    
+    if (beginInfo.clearColorValue[0] == -1.0f)
+    {
+        vkBeginInfo.pClearValues = VkRenderPassFactory::GetInstance()->GetClearValue(beginInfo.renderPassId);
+        vkBeginInfo.clearValueCount = VkRenderPassFactory::GetInstance()->GetClearValueCount(beginInfo.renderPassId);
+    }
+    else
+    {
+        VkClearValue * clearVal = new VkClearValue[2];
+        clearVal[0].color.float32[0] = beginInfo.clearColorValue[0];
+        clearVal[0].color.float32[1] = beginInfo.clearColorValue[1];
+        clearVal[0].color.float32[2] = beginInfo.clearColorValue[2];
+        clearVal[0].color.float32[3] = beginInfo.clearColorValue[3];
+
+        clearVal[1].depthStencil.depth = beginInfo.depthClearValue;
+        clearVal[1].depthStencil.stencil = (uint32_t)beginInfo.stencilClearValue;
+
+        vkBeginInfo.pClearValues = clearVal;
+        vkBeginInfo.clearValueCount = 2;
+    }
 
     return vkBeginInfo;
 }

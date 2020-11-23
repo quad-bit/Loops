@@ -112,3 +112,10 @@ VkSemaphore* VkSynchroniserFactory::GetSemaphore(uint32_t id)
     ASSERT_MSG(it != semaphoreList.end(), "Image id not found");
     return it->semaphore;
 }
+
+VkSemaphore * VkSynchroniserFactory::GetSemaphore(const uint32_t * id, const uint32_t & count)
+{
+    //return the first one's address. Care should be taken while creating multiple sems in a single call
+    //TODO : Create function to handle creation of multiple semaphores simultaneously
+    return GetSemaphore(id[0]);
+}

@@ -20,15 +20,6 @@ public:
     uint32_t poolId;
 };
 
-//class VkCommandBufferWrapper
-//{
-//public:
-//    uint32_t id;
-//    VkCommandBuffer * commandBuffer;
-//    VkCommandPool * pool;
-//};
-
-
 class VkDrawCommandBuffer;
 
 class VkCommandBufferFactory
@@ -47,14 +38,14 @@ private:
 
     std::vector<VkDrawCommandBuffer* > drawCommandBufferList;
 
-    VkCommandBuffer * GetCommandBuffer(uint32_t id);
-    VkCommandPool * GetCommandPool(uint32_t poolId);
 
     uint32_t GetPoolId();
     uint32_t GetBufferId();
 
     VkQueue * renderQueue, * computeQueue, *transferQueue ;
     uint32_t graphicsQueueFamilyId, computeQueueFamilyId, transferQueueFamilyId;
+
+    VkCommandBuffer * activeCommandBuffer;
 
 public:
     void Init();
@@ -65,10 +56,19 @@ public:
 
     void CreateCommandPool(VkCommandPoolCreateFlagBits flags, VkQueueFlagBits queueType, uint32_t& id);
     //void CreateCommandBuffer(uint32_t poolId, VkCommandBufferLevel level, uint32_t count, uint32_t * ids);
-    VkDrawCommandBuffer * CreateCommandBuffer(uint32_t poolId, VkCommandBufferLevel level, 
-        PipelineType commandBufferType, uint32_t * ids);
-    void DestroyCommandPool(uint32_t id);
-    void ResetCommandPool(uint32_t id);
-    void ResetCommandBuffer(uint32_t poolId, uint32_t id);
-    void DestroyCommandBuffer(uint32_t id);
+    VkDrawCommandBuffer * CreateCommandBuffer(uint32_t poolId, VkCommandBufferLevel level, PipelineType commandBufferType, uint32_t * ids);
+    void DestroyCommandPool(const uint32_t & id);
+    void ResetCommandPool(const uint32_t & id);
+    void ResetCommandBuffer(const uint32_t & id, const uint32_t & poolId);
+    void BeginCommandBufferRecording(const uint32_t & id, VkCommandBufferUsageFlagBits usage, VkCommandBufferInheritanceInfo * inheritanceInfo = nullptr);
+    void BeginCommandBufferRecording(VkCommandBufferUsageFlagBits usage, VkCommandBufferInheritanceInfo * inheritanceInfo = nullptr);
+    void EndCommandBufferRecording(const uint32_t & id);
+    void EndCommandBufferRecording();
+    void DestroyCommandBuffer(const uint32_t & id);
+    void ActivateCommandBuffer(const uint32_t & id);
+
+    VkCommandBuffer * GetCommandBuffer(const uint32_t & id);
+    VkCommandBuffer * GetCommandBuffer(const uint32_t * ids, const uint32_t & count);
+    VkCommandPool * GetCommandPool(const uint32_t & poolId);
+
 };

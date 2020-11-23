@@ -40,5 +40,7 @@ public:
     ~PresentationEngine();
 
     uint32_t VkGetAvailableSwapChainId(VkFence * fence, VkSemaphore * semaphore);
+    VkSwapchainKHR * GetSwapchain() { return &swapchainObj; }
 
+    void PresentSwapchainImage(VkPresentInfoKHR * info, VkQueue * presentationQueue);
 };

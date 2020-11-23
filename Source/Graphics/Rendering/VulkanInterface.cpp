@@ -8,8 +8,10 @@
 #include <VkRenderingUnwrapper.h>
 #include <VkCommandBufferFactory.h>
 #include <VkSynchroniserFactory.h>
+#include <VkQueueFactory.h>
+#include <VulkanUtility.h>
 
-VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, uint32_t attachmentCount)
+VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
 {
     VkAttachmentDescription* attachmentDescriptions = new VkAttachmentDescription[attachmentCount];
 
@@ -30,7 +32,7 @@ VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPass
     return attachmentDescriptions;
 }
 
-VkSubpassDescription * VulkanInterface::UnwrapSubpassDesc(const SubpassInfo * subpassList, uint32_t subpassCount)
+VkSubpassDescription * VulkanInterface::UnwrapSubpassDesc(const SubpassInfo * subpassList, const uint32_t & subpassCount)
 {
     VkSubpassDescription * subpassDescriptions = new VkSubpassDescription[subpassCount];
 
@@ -103,7 +105,7 @@ VkSubpassDescription * VulkanInterface::UnwrapSubpassDesc(const SubpassInfo * su
     return subpassDescriptions;
 }
 
-VkSubpassDependency * VulkanInterface::UnwrapSubpassDependency(const SubpassDependency * dependencyList, uint32_t dependencyCount)
+VkSubpassDependency * VulkanInterface::UnwrapSubpassDependency(const SubpassDependency * dependencyList, const uint32_t & dependencyCount)
 {
     return nullptr;
 }
@@ -147,6 +149,133 @@ VkImageViewCreateInfo VulkanInterface::UnwrapImageViewInfo(ImageInfo * info)
     return viewCreateInfo;
 }
 
+VkCommandBufferUsageFlagBits VulkanInterface::UnwrapCommandBufferUsage(const CommandBufferUsage * info)
+{
+    switch (*info)
+    {
+    case CommandBufferUsage::RENDER_PASS_CONTINUE_BIT :
+        return VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+        break;
+
+    case CommandBufferUsage::SIMULTANEOUS_USE_BIT:
+        return VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+        break;
+
+    case CommandBufferUsage::USAGE_ONE_TIME_SUBMIT_BIT:
+        return VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+        break;
+
+    default:
+        ASSERT_MSG(0, "No usage found.");
+    }
+}
+
+VkSubmitInfo * VulkanInterface::UnwrapSubmitInfo(const SubmitInfo * info)
+{
+    VkSubmitInfo * vkSubmitInfo = new VkSubmitInfo;
+    vkSubmitInfo->waitSemaphoreCount = info->waitSemaphoreCount;
+    vkSubmitInfo->pWaitSemaphores = VkSynchroniserFactory::GetInstance()->GetSemaphore(info->waitSemaphoreIds, info->waitSemaphoreCount);
+    vkSubmitInfo->signalSemaphoreCount = info->signalSemaphoreCount;
+    vkSubmitInfo->pSignalSemaphores = VkSynchroniserFactory::GetInstance()->GetSemaphore(info->signalSemaphoreIds, info->signalSemaphoreCount);
+    vkSubmitInfo->commandBufferCount = info->commandBufferCount;
+    vkSubmitInfo->pCommandBuffers = VkCommandBufferFactory::GetInstance()->GetCommandBuffer(info->commandBufferIds, info->commandBufferCount);
+    vkSubmitInfo->pWaitDstStageMask = UnwrapStageFlags(&info->pipelineStage);
+    vkSubmitInfo->sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    vkSubmitInfo->pNext = nullptr;
+
+    return vkSubmitInfo;
+}
+
+VkPipelineStageFlags * VulkanInterface::UnwrapStageFlags(const PipelineStage * pipelineStage)
+{
+    VkPipelineStageFlags * flags = new VkPipelineStageFlags;
+
+    switch (*pipelineStage)
+    {
+    case PipelineStage::TOP_OF_PIPE_BIT :
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        break;
+
+    case PipelineStage::ACCELERATION_STRUCTURE_BUILD_BIT_KHR:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR;
+        break;
+
+    case PipelineStage::ALL_COMMANDS_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+        break;
+
+    case PipelineStage::ALL_GRAPHICS_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+        break;
+
+    case PipelineStage::BOTTOM_OF_PIPE_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+        break;
+
+    case PipelineStage::COLOR_ATTACHMENT_OUTPUT_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        break;
+
+    case PipelineStage::COMMAND_PREPROCESS_BIT_NV:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COMMAND_PREPROCESS_BIT_NV;
+        break;
+
+    case PipelineStage::COMPUTE_SHADER_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+        break;
+
+    case PipelineStage::CONDITIONAL_RENDERING_BIT_EXT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_CONDITIONAL_RENDERING_BIT_EXT;
+        break;
+
+    case PipelineStage::DRAW_INDIRECT_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+        break;
+
+    case PipelineStage::EARLY_FRAGMENT_TESTS_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+        break;
+
+    case PipelineStage::FLAG_BITS_MAX_ENUM:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FLAG_BITS_MAX_ENUM;
+        break;
+
+    case PipelineStage::FRAGMENT_DENSITY_PROCESS_BIT_EXT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT;
+        break;
+
+    case PipelineStage::FRAGMENT_SHADER_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        break;
+
+    case PipelineStage::GEOMETRY_SHADER_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
+        break;
+
+    case PipelineStage::HOST_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_HOST_BIT;
+        break;
+
+    case PipelineStage::LATE_FRAGMENT_TESTS_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        break;
+
+    case PipelineStage::TRANSFER_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TRANSFER_BIT;
+        break;
+
+    case PipelineStage::VERTEX_INPUT_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+        break;
+
+    case PipelineStage::VERTEX_SHADER_BIT:
+        *flags = VkPipelineStageFlagBits::VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+        break;
+    }
+
+    return flags;
+}
+
 VulkanInterface::VulkanInterface()
 {
 }
@@ -163,6 +292,8 @@ void VulkanInterface::Init()
 
 void VulkanInterface::DeInit()
 {
+
+
     VkFrameBufferFactory::GetInstance()->DeInit();
     delete VkFrameBufferFactory::GetInstance();
 
@@ -179,12 +310,12 @@ void VulkanInterface::DeInit()
     delete VulkanManager::GetInstance();
 }
 
-uint32_t VulkanInterface::FindBestDepthFormat(ImageFormat * imageFormat, uint32_t count)
+uint32_t VulkanInterface::FindBestDepthFormat(ImageFormat * imageFormat, const uint32_t & count)
 {
     return VkAttachmentFactory::GetInstance()->FindBestDepthFormat(imageFormat, count);
 }
 
-void VulkanInterface::CreateRenderTarget(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids)
+void VulkanInterface::CreateRenderTarget(ImageInfo * info, const uint32_t & count, bool defaultTarget, vector<uint32_t>* ids)
 {
     VkAttachmentFactory::GetInstance()->CreateColorAttachment(info, count, defaultTarget, ids);
 }
@@ -194,7 +325,7 @@ void VulkanInterface::DestroyRenderTarget(std::vector<uint32_t>* ids, bool defau
     VkAttachmentFactory::GetInstance()->DestroyAttachment(*ids, defaultTarget);
 }
 
-void VulkanInterface::CreateDepthTarget(ImageInfo * info, uint32_t count, bool stencilRequired, 
+void VulkanInterface::CreateDepthTarget(ImageInfo * info, const uint32_t & count, bool stencilRequired, 
     bool defaultTarget, std::vector<uint32_t>* ids)
 {
     VkImageCreateInfo * imageCreateInfo = new VkImageCreateInfo[count];
@@ -219,11 +350,10 @@ void VulkanInterface::DestroyDepthTarget(std::vector<uint32_t>* ids, bool defaul
 }
 
 void VulkanInterface::CreateRenderPass(
-    const RenderPassAttachmentInfo* renderpassAttachmentList, uint32_t attachmentCount,
-    const SubpassInfo* subpassList, uint32_t subpassCount,
-    const SubpassDependency* dependencyList, uint32_t dependencyCount,
-    uint32_t& renderPassId
-    )
+    const RenderPassAttachmentInfo* renderpassAttachmentList, const uint32_t & attachmentCount,
+    const SubpassInfo* subpassList, const uint32_t & subpassCount,
+    const SubpassDependency* dependencyList, const uint32_t & dependencyCount,
+    uint32_t& renderPassId)
 {
     /*VkRenderPassFactory::GetInstance()->CreateRenderPass(renderpassAttachmentList, attachmentCount,
         subpassList, subpassCount, dependencyList, dependencyCount, renderPassId
@@ -258,13 +388,13 @@ void VulkanInterface::CreateRenderPass(
         delete[] subpassDescList;
 }
 
-void VulkanInterface::DestroyRenderPass(uint32_t id)
+void VulkanInterface::DestroyRenderPass(const uint32_t & id)
 {
     VkRenderPassFactory::GetInstance()->DestroyRenderPass(id);
 }
 
-void VulkanInterface::CreateFrameBuffer(uint32_t numFrameBuffers, uint32_t * imageViewId, 
-    uint32_t viewsPerFB, uint32_t renderPassId, uint32_t width, uint32_t height, uint32_t * ids)
+void VulkanInterface::CreateFrameBuffer(uint32_t numFrameBuffers, uint32_t * imageViewId, const uint32_t & viewsPerFB,
+    uint32_t renderPassId, const uint32_t & width, const uint32_t & height, uint32_t * ids)
 {
     VkRenderPass * renderPass = VkRenderPassFactory::GetInstance()->GetRenderPass(renderPassId);
 
@@ -280,42 +410,84 @@ void VulkanInterface::CreateFrameBuffer(uint32_t numFrameBuffers, uint32_t * ima
     delete [] viewList;
 }
 
-void VulkanInterface::DestroyFrameBuffer(uint32_t * pid, uint32_t count)
+void VulkanInterface::DestroyFrameBuffer(uint32_t * pid, const uint32_t & count)
 {
     VkFrameBufferFactory::GetInstance()->DestroyFrameBuffer(pid, count);
 }
 
-/*
-void VulkanInterface::CreateCommandBuffer(const uint32_t & poolId, uint32_t & cmdBufferId, 
-    CommandBufferLevel* commandBufferLevel)
-{
-    VkCommandBufferLevel level;
-    switch (*commandBufferLevel)
-    {
-    case CommandBufferLevel::PRIMARY:
-        level = VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-        break;
-
-    case CommandBufferLevel::SECONDARY:
-        level = VkCommandBufferLevel::VK_COMMAND_BUFFER_LEVEL_SECONDARY;
-        break;
-
-    default:
-        ASSERT_MSG(0, "Wrong command level");
-    }
-
-    VkCommandBufferFactory::GetInstance()->CreateCommandBuffer(poolId, level, 1, &cmdBufferId);
-}
-*/
-
-void VulkanInterface::DestroyCommandBuffer(uint32_t id)
+void VulkanInterface::DestroyCommandBuffer(const uint32_t & id)
 {
     VkCommandBufferFactory::GetInstance()->DestroyCommandBuffer(id);
 }
 
-void VulkanInterface::ResetCommandBuffer(uint32_t id, uint32_t poolId)
+void VulkanInterface::ResetCommandBuffer(const uint32_t & id, const uint32_t & poolId)
 {
     VkCommandBufferFactory::GetInstance()->ResetCommandBuffer(id, poolId);
+}
+
+void VulkanInterface::BeginCommandBufferRecording(const uint32_t & id, 
+    const CommandBufferUsage * usage, const CommandBufferInheritanceInfo * inheritanceInfo)
+{
+    VkCommandBufferUsageFlagBits vkUsage = UnwrapCommandBufferUsage(usage);
+    VkCommandBufferInheritanceInfo * vkInheritanceInfo = nullptr;
+
+    VkCommandBufferFactory::GetInstance()->BeginCommandBufferRecording(id, vkUsage, vkInheritanceInfo);
+
+    if(vkInheritanceInfo != nullptr)
+        delete vkInheritanceInfo;
+}
+
+void VulkanInterface::EndCommandBufferRecording(const uint32_t & id)
+{
+    VkCommandBufferFactory::GetInstance()->EndCommandBufferRecording(id);
+}
+
+void VulkanInterface::SubmitJob(const SubmitInfo * info, const uint32_t & submitInfoCount, const uint32_t & fenceId)
+{
+    VkSubmitInfo * vkSubmitInfo = UnwrapSubmitInfo(info);
+    VkFence * fence = VkSynchroniserFactory::GetInstance()->GetFence(fenceId);
+    
+    //VkQueueFactory::GetInstance()->SubmitQueue(info->queueId, info->queueType, vkSubmitInfo, submitInfoCount, fence);
+
+    if (*info->purpose == QueuePurpose::RENDER)
+        VkQueueFactory::GetInstance()->SubmitQueueForRendering(vkSubmitInfo, 1, fence);
+
+    delete vkSubmitInfo->pWaitDstStageMask;
+    delete vkSubmitInfo;
+}
+
+void VulkanInterface::SubmitJob(const SubmitInfo * info, const uint32_t & submitInfoCount)
+{
+    VkSubmitInfo * vkSubmitInfo = UnwrapSubmitInfo(info);
+    VkQueueFactory::GetInstance()->SubmitQueue(info->queueId, info->queueType, vkSubmitInfo, submitInfoCount, VK_NULL_HANDLE);
+    delete vkSubmitInfo;
+}
+
+void VulkanInterface::PresentSwapchainImage(const PresentInfo * info, const uint32_t & presentQueueId)
+{
+    VkResult presentationResult;
+
+    VkPresentInfoKHR vkPresentInfo = {};
+    vkPresentInfo.pImageIndices = info->pImageIndices;
+    //vkPresentInfo.swapchainCount = 1; // completed in PresentationFactory
+    //vkPresentInfo.pSwapchains = PresentationEngine::GetInstance()->GetSwapchain(); // completed in PresentationFactory
+    vkPresentInfo.waitSemaphoreCount = info->waitSemaphoreCount;
+    vkPresentInfo.pWaitSemaphores = VkSynchroniserFactory::GetInstance()->GetSemaphore(info->pWaitSemaphoreIds, info->waitSemaphoreCount);
+    vkPresentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    vkPresentInfo.pResults = &presentationResult;
+    
+    //TODO : Expose presentation queue
+    VkQueue * presentQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::presentationQueuedId);
+
+    PresentationEngine::GetInstance()->PresentSwapchainImage(&vkPresentInfo, presentQueue);
+}
+
+bool VulkanInterface::IsApplicationSafeForClosure()
+{
+    VkQueueFactory::GetInstance()->WaitForAllQueues();
+    vkDeviceWaitIdle(*CoreObjects::logicalDeviceObj);
+
+    return true;
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)
@@ -366,7 +538,7 @@ uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, Command
     return poolId;
 }
 
-void VulkanInterface::DestroyCommandPool(uint32_t poolId)
+void VulkanInterface::DestroyCommandPool(const uint32_t & poolId)
 {
     VkCommandBufferFactory::GetInstance()->DestroyCommandPool(poolId);
 }
@@ -381,23 +553,23 @@ uint32_t VulkanInterface::Create_Semaphore(bool isSignaled)
     return VkSynchroniserFactory::GetInstance()->Create_Semaphore(isSignaled);
 }
 
-void VulkanInterface::DestroyFence(uint32_t id)
+void VulkanInterface::DestroyFence(const uint32_t & id)
 {
     return VkSynchroniserFactory::GetInstance()->DestroyFence(id);
 }
 
-void VulkanInterface::DestroySemaphore(uint32_t id)
+void VulkanInterface::DestroySemaphore(const uint32_t & id)
 {
     return VkSynchroniserFactory::GetInstance()->DestroySemaphore(id);
 }
 
-void VulkanInterface::SetRenderpassBeginInfo(RenderPassBeginInfo * beginInfo, uint32_t renderPassId)
+void VulkanInterface::SetRenderpassBeginInfo(RenderPassBeginInfo * beginInfo, const uint32_t & renderPassId)
 {
     VkRenderPassBeginInfo info = UnwrapRenderPassBeginInfo(*beginInfo);
     VkRenderPassFactory::GetInstance()->SetRenderPassBeginInfo(info, renderPassId);
 }
 
-uint32_t VulkanInterface::GetAvailableSwapchainIndex(uint32_t fenceId, uint32_t semaphoreId)
+uint32_t VulkanInterface::GetAvailableSwapchainIndex(const uint32_t & fenceId, const uint32_t & semaphoreId)
 {
     VkFence * fence = VkSynchroniserFactory::GetInstance()->GetFence(fenceId);
     VkSemaphore * semaphore = VkSynchroniserFactory::GetInstance()->GetSemaphore(semaphoreId);
@@ -405,9 +577,9 @@ uint32_t VulkanInterface::GetAvailableSwapchainIndex(uint32_t fenceId, uint32_t 
     return PresentationEngine::GetInstance()->VkGetAvailableSwapChainId(fence, semaphore);
 }
 
-void VulkanInterface::ActivateCommandBuffer(uint32_t index)
+void VulkanInterface::ActivateCommandBuffer(const uint32_t & index)
 {
-    //VkCommandBufferFactory::GetInstance()->ActivateCommandBuffer(index);
+    VkCommandBufferFactory::GetInstance()->ActivateCommandBuffer(index);
 }
 
 VkDrawCommandBuffer * VulkanInterface::CreateCommandBuffer(const uint32_t & poolId, uint32_t * cmdBufferId, CommandBufferLevel* commandBufferLevel, PipelineType bufferType)

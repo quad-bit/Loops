@@ -5,6 +5,9 @@
 #include <Assertion.h>
 #include <vector>
 
+template <typename T>
+class DrawCommandBuffer;
+
 template<typename T>
 class ForwardRendering
 {
@@ -20,6 +23,8 @@ public:
     void Init(T * apiInterface);
     void SetupRenderer();
     void DislogeRenderer();
+    void BeginRender(DrawCommandBuffer<T> * drawCommandBuffer, const uint32_t & activeSwapChainIndex);
+    void EndRender(DrawCommandBuffer<T> * drawCommandBuffer);
     void DeInit();
 };
 
@@ -158,8 +163,39 @@ inline void ForwardRendering<T>::DislogeRenderer()
 }
 
 template<typename T>
+inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBuffer, const uint32_t & activeSwapChainIndex)
+{
+    //set the begin info for the render pass
+    
+    RenderPassBeginInfo info = {};
+    info.frameBufferId = defaultFbos[activeSwapChainIndex];
+    
+    info.clearColorValue[0] = Settings::clearColorValue[0];
+    info.clearColorValue[1] = Settings::clearColorValue[1];
+    info.clearColorValue[2] = Settings::clearColorValue[2];
+    info.clearColorValue[3] = Settings::clearColorValue[3];
+
+    info.depthClearValue = Settings::depthClearValue;
+    info.stencilClearValue = Settings::stencilClearValue;
+    info.renderPassId = defaultRenderPassId;
+    info.renderAreaExtent[0] = (float)Settings::windowWidth;
+    info.renderAreaExtent[1] = (float)Settings::windowHeight;
+    info.renderAreaPosition[0] = 0.0f;
+    info.renderAreaPosition[1] = 0.0f;
+
+    SubpassContentStatus subpassStatus = SubpassContentStatus::SUBPASS_CONTENTS_INLINE;
+
+    drawCommandBuffer->BeginRenderPass(&info, &subpassStatus);
+}
+
+template<typename T>
+inline void ForwardRendering<T>::EndRender(DrawCommandBuffer<T>* drawCommandBuffer)
+{
+    drawCommandBuffer->EndRenderPass();
+}
+
+template<typename T>
 inline void ForwardRendering<T>::DeInit()
 {
     apiInterface->DeInit();
-    //delete apiInterface;
 }

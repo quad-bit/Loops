@@ -48,7 +48,7 @@ void VulkanManager::CreateLogicalDevice()
 
     VkDeviceCreateInfo vkDeviceCreateInfoObj{};
     vkDeviceCreateInfoObj.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-    vkDeviceCreateInfoObj.queueCreateInfoCount = deviceQueueCreateInfoList.size();
+    vkDeviceCreateInfoObj.queueCreateInfoCount = (uint32_t)deviceQueueCreateInfoList.size();
     vkDeviceCreateInfoObj.pQueueCreateInfos = deviceQueueCreateInfoList.data();
     vkDeviceCreateInfoObj.enabledExtensionCount = (uint32_t)validationManagerObj->deviceExtensionNameList.size();
     vkDeviceCreateInfoObj.enabledLayerCount = 0;
@@ -156,8 +156,16 @@ void VulkanManager::Init()
     VkQueueFactory::GetInstance()->Init();
     CreateLogicalDevice();
 
+    //TODO : expose queue creation.
+
     VkQueueFactory::GetInstance()->CreateGraphicsQueues(&CoreObjects::renderQueueId, 1);
+    QueuePurpose * renderPurpose = new QueuePurpose{ QueuePurpose::RENDER };
+    VkQueueFactory::GetInstance()->SetQueuePurpose(renderPurpose, QueueType::GRAPHICS, CoreObjects::renderQueueId);
+    
     VkQueueFactory::GetInstance()->CreateGraphicsQueues(&CoreObjects::presentationQueuedId, 1);
+    QueuePurpose * presentPurpose = new QueuePurpose{ QueuePurpose::PRESENT };
+    VkQueueFactory::GetInstance()->SetQueuePurpose(presentPurpose, QueueType::GRAPHICS, CoreObjects::presentationQueuedId);
+
     VkQueueFactory::GetInstance()->CreateComputeQueues(&CoreObjects::computeQueueId, 1);
     VkQueueFactory::GetInstance()->CreateTransferQueues(&CoreObjects::transferQueueId, 1);
 

@@ -22,6 +22,9 @@ void VkRenderPassFactory::DeInit()
 {
     for (uint32_t i = 0; i < renderpassList.size(); i++)
     {
+        if (renderpassList[i]->clearValue != nullptr)
+            delete renderpassList[i]->clearValue;
+
         delete renderpassList[i];
     }
     renderpassList.clear();
@@ -46,7 +49,9 @@ VkRenderPassFactory::~VkRenderPassFactory()
 
 }
 
-void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * renderpassAttachmentList, uint32_t attachmentCount, const VkSubpassDescription * subpassList, uint32_t subpassCount, const VkSubpassDependency * dependencyList, uint32_t dependencyCount, uint32_t & renderPassId)
+void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * renderpassAttachmentList, 
+    const uint32_t & attachmentCount, const VkSubpassDescription * subpassList, const uint32_t & subpassCount,
+    const VkSubpassDependency * dependencyList, const uint32_t & dependencyCount, uint32_t & renderPassId)
 {
     RenderpassWrapper * info = new RenderpassWrapper();
     info->id = GetId();
@@ -64,12 +69,26 @@ void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * rende
 
     renderpassList.push_back(info);
     renderpassIdCounter = info->id;
+
+    VkClearValue * clearValue = new VkClearValue[2];
+    clearValue[0].color.float32[0] = Settings::clearColorValue[0];
+    clearValue[0].color.float32[1] = Settings::clearColorValue[1];
+    clearValue[0].color.float32[2] = Settings::clearColorValue[2];
+    clearValue[0].color.float32[3] = Settings::clearColorValue[3];
+    
+    clearValue[1].depthStencil.depth = Settings::depthClearValue;
+    clearValue[1].depthStencil.stencil = (uint32_t)Settings::stencilClearValue;
+
+    // float32 is chosen because VK_FORMAT_B8G8R8A8_UNORM is preferred to be the format UNORM is unsigned normalised which is floating point
+    // the type float32 / int / uint should be selected based on the format
+    info->clearValue = clearValue;
+    info->clearValueCount = 2;
 }
 
 void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * renderpassAttachmentList, 
-    uint32_t attachmentCount, const VkSubpassDescription * subpassList, uint32_t 
+    const uint32_t & attachmentCount, const VkSubpassDescription * subpassList, const uint32_t &
     subpassCount, const VkSubpassDependency * dependencyList, 
-    uint32_t dependencyCount, const VkRenderPassBeginInfo beginInfo, uint32_t & renderPassId)
+    const uint32_t & dependencyCount, const VkRenderPassBeginInfo beginInfo, uint32_t & renderPassId)
 {
     RenderpassWrapper * info = new RenderpassWrapper();
     info->id = GetId();
@@ -100,7 +119,7 @@ void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * rende
     info->clearValue[0].color.float32[3] = Settings::clearColorValue[3];
 }
 
-void VkRenderPassFactory::SetRenderPassBeginInfo(const VkRenderPassBeginInfo beginInfo, uint32_t renderpassId)
+void VkRenderPassFactory::SetRenderPassBeginInfo(const VkRenderPassBeginInfo beginInfo, const uint32_t & renderpassId)
 {
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == renderpassId; });
@@ -108,11 +127,11 @@ void VkRenderPassFactory::SetRenderPassBeginInfo(const VkRenderPassBeginInfo beg
     ASSERT_MSG(it != renderpassList.end(), "Image id not found");
 
     (*it)->beginInfo = beginInfo;
-    (*it)->beginInfo.clearValueCount = (uint32_t)(*it)->clearValue.size();
-    (*it)->beginInfo.pClearValues = (*it)->clearValue.data();
+    (*it)->beginInfo.clearValueCount = (uint32_t)(*it)->clearValueCount;
+    (*it)->beginInfo.pClearValues = (*it)->clearValue;
 }
 
-void VkRenderPassFactory::DestroyRenderPass(uint32_t id)
+void VkRenderPassFactory::DestroyRenderPass(const uint32_t & id)
 {
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == id; });
@@ -122,7 +141,7 @@ void VkRenderPassFactory::DestroyRenderPass(uint32_t id)
     vkDestroyRenderPass(*CoreObjects::logicalDeviceObj, (*it)->renderPass, CoreObjects::pAllocator);
 }
 
-VkRenderPass * VkRenderPassFactory::GetRenderPass(uint32_t id)
+VkRenderPass * VkRenderPassFactory::GetRenderPass(const uint32_t & id)
 {
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == id; });
@@ -132,34 +151,33 @@ VkRenderPass * VkRenderPassFactory::GetRenderPass(uint32_t id)
     return &(*it)->renderPass;
 }
 
-std::vector<VkClearValue>* VkRenderPassFactory::GetClearValue(uint32_t renderpassId)
+VkClearValue * VkRenderPassFactory::GetClearValue(const uint32_t & renderpassId)
 {
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == renderpassId; });
 
     ASSERT_MSG(it != renderpassList.end(), "Image id not found");
 
-    return &(*it)->clearValue;
+    return (*it)->clearValue;
 }
 
-void VkRenderPassFactory::SetClearColor(std::vector<VkClearValue> clearValue, uint32_t renderPassId)
+uint32_t VkRenderPassFactory::GetClearValueCount(const uint32_t & renderpassId)
+{
+    std::vector<RenderpassWrapper*>::iterator it;
+    it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == renderpassId; });
+
+    ASSERT_MSG(it != renderpassList.end(), "Image id not found");
+
+    return (*it)->clearValueCount;
+}
+
+void VkRenderPassFactory::SetClearColor(std::vector<VkClearValue> clearValue, const uint32_t & renderPassId)
 {
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == renderPassId; });
 
     ASSERT_MSG(it != renderpassList.end(), "Image id not found");
 
-    (*it)->clearValue = clearValue;
-
-    return;
-
-    (*it)->clearValue[1].depthStencil.depth   = clearValue[1].depthStencil.depth;
-    (*it)->clearValue[1].depthStencil.stencil = clearValue[1].depthStencil.stencil;
-
-    // float32 is chosen because VK_FORMAT_B8G8R8A8_UNORM is preferred to be the format UNORM is unsigned normalised which is floating point
-    // the type float32 / int / uint should be selected based on the format
-    (*it)->clearValue[0].color.float32[0] = clearValue[0].color.float32[0];
-    (*it)->clearValue[0].color.float32[1] = clearValue[0].color.float32[1];
-    (*it)->clearValue[0].color.float32[2] = clearValue[0].color.float32[2];
-    (*it)->clearValue[0].color.float32[3] = clearValue[0].color.float32[3];
+    (*it)->clearValue = clearValue.data();
+    (*it)->clearValueCount = (uint32_t)clearValue.size();
 }

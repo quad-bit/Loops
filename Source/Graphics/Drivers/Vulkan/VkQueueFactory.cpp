@@ -365,6 +365,44 @@ VkQueue * VkQueueFactory::GetQueue(VkQueueFlagBits qType, uint32_t id)
     return nullptr;
 }
 
+void VkQueueFactory::SetQueuePurpose(QueuePurpose * purpose, QueueType qType, const uint32_t & queueId)
+{
+    std::vector<QueueWrapper>::iterator it;
+
+    switch (qType)
+    {
+    case QueueType::GRAPHICS:
+    {
+        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        ASSERT_MSG(it != graphicsQueueWrapperList.end(), "Queue family index not found");
+
+        it->purpose = purpose;
+    }
+    break;
+
+    case QueueType::COMPUTE:
+    {
+        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        ASSERT_MSG(it != computeQueueWrapperList.end(), "Queue family index not found");
+
+        it->purpose = purpose;
+    }
+    break;
+
+    case QueueType::TRANSFER:
+    {
+        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        ASSERT_MSG(it != transferQueueWrapperList.end(), "Queue family index not found");
+
+        it->purpose = purpose;
+    }
+    break;
+
+    default:
+        ASSERT_MSG(0, "Queue not found");
+    }
+}
+
 uint32_t VkQueueFactory::GetQueueFamilyIndex(QueueType qType, uint32_t queueId)
 {
     std::vector<QueueWrapper>::iterator it;
@@ -491,5 +529,30 @@ void VkQueueFactory::CreateTransferQueues(uint32_t * ids, const uint32_t & count
         ids[i] = transferQueueWrapperList[transferQueueInitCounter].queueId;
         transferQueueInitCounter++;
     }
+}
+
+void VkQueueFactory::SubmitQueue(const uint32_t & queueId, const QueueType * queueType, VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence)
+{
+    ErrorCheck( vkQueueSubmit(*GetQueue(*queueType, queueId), submitCount, info, *fence));
+}
+
+void VkQueueFactory::SubmitQueueForRendering(const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence)
+{
+    QueueType type{ QueueType::GRAPHICS };
+    ErrorCheck(vkQueueSubmit(*GetQueue(*&type, CoreObjects::renderQueueId), submitCount, info, *fence));
+}
+
+void VkQueueFactory::SubmitQueueForPresentation(const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence)
+{
+    QueueType type{ QueueType::GRAPHICS };
+    ErrorCheck(vkQueueSubmit(*GetQueue(*&type, CoreObjects::presentationQueuedId), submitCount, info, *fence));
+}
+
+void VkQueueFactory::WaitForAllQueues()
+{
+    //TODO : Expose queue
+    vkQueueWaitIdle(*GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::renderQueueId));
+    vkQueueWaitIdle(*GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::presentationQueuedId));
+
 }
 

@@ -149,3 +149,12 @@ uint32_t PresentationEngine::VkGetAvailableSwapChainId(VkFence * fence, VkSemaph
 
     return activeSwapchainImageID;
 }
+
+void PresentationEngine::PresentSwapchainImage(VkPresentInfoKHR * info, VkQueue * presentationQueue)
+{
+    info->swapchainCount = 1;
+    info->pSwapchains = &swapchainObj;
+    
+    ErrorCheck(vkQueuePresentKHR(*presentationQueue, info));
+    ErrorCheck(*info->pResults);
+}

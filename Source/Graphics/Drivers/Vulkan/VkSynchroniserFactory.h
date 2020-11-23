@@ -46,4 +46,5 @@ public:
     uint32_t Create_Semaphore(bool isSemaphoreSignaled); // "CreateSemaphore" is already existing, not available
     void DestroySemaphore(uint32_t id);
     VkSemaphore* GetSemaphore(uint32_t id);
+    VkSemaphore* GetSemaphore(const uint32_t * id, const uint32_t & count);
 };

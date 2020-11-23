@@ -31,6 +31,7 @@ private:
     uint32_t * getSwapChainImageFences;
 
     uint32_t currentFrameIndex{ 0 }, currentSwapchainIndex{ 0 };
+    uint32_t currentRenderSemaphoreId, currentPresentationSemaphoreId, currentFenceId;
 
     void BeginRenderLoop();
     void EndRenderLoop();
@@ -49,25 +50,65 @@ public:
 
 #include "ForwardInterface.h"
 #include "CommandBufferManager.h"
+//#include <Settings.h>
 
 template<typename T>
 inline void RenderingInterface<T>::BeginRenderLoop()
 {
     //get swapchain image index to be used for rendering the current frame.
 
-    uint32_t fenceId = getSwapChainImageFences[currentFrameIndex];
-    uint32_t semaphoreId = renderSemaphores[currentFrameIndex];
+    currentFenceId = getSwapChainImageFences[currentFrameIndex];
+    currentRenderSemaphoreId = renderSemaphores[currentFrameIndex];
+    currentPresentationSemaphoreId = presentationSemaphores[currentFrameIndex];
 
-    currentSwapchainIndex = apiInterface->GetAvailableSwapchainIndex(fenceId, semaphoreId);
+    currentSwapchainIndex = apiInterface->GetAvailableSwapchainIndex(currentFenceId, currentRenderSemaphoreId);
 
     activeDrawCommandBuffer = drawCommandBufferList[currentSwapchainIndex];
 
     CommandBufferManager<T>::GetInstance()->ResetDrawCommandBuffer(activeDrawCommandBuffer);
+
+    CommandBufferUsage usage { CommandBufferUsage::USAGE_ONE_TIME_SUBMIT_BIT };
+    CommandBufferManager<T>::GetInstance()->BeginDrawCommandBufferRecording(activeDrawCommandBuffer,
+     &usage, nullptr);
+
+    forwardRenderer->BeginRender(activeDrawCommandBuffer, currentSwapchainIndex);
 }
 
 template<typename T>
 inline void RenderingInterface<T>::EndRenderLoop()
 {
+    forwardRenderer->EndRender(activeDrawCommandBuffer);
+    CommandBufferManager<T>::GetInstance()->EndDrawCommandBufferRecording(activeDrawCommandBuffer);
+
+    SubmitInfo info = {};
+    PipelineType queueType = PipelineType::GRAPHICS;
+    QueuePurpose purpose = QueuePurpose::RENDER;
+
+    uint32_t id = activeDrawCommandBuffer->GetId();
+
+    info.commandBufferCount = 1;
+    info.commandBufferIds = &id;
+    info.pipelineStage = PipelineStage::COLOR_ATTACHMENT_OUTPUT_BIT;
+    //info.queueId = ;
+    info.queueType =  &queueType;
+    info.purpose = &purpose;
+    info.signalSemaphoreCount = 1;
+    info.signalSemaphoreIds = &presentationSemaphores[currentFrameIndex];
+    info.waitSemaphoreCount = 1;
+    info.waitSemaphoreIds = &renderSemaphores[currentFrameIndex];
+
+    apiInterface->SubmitJob(&info, 1, getSwapChainImageFences[currentFrameIndex]);
+
+    // submit for presentation
+    PresentInfo presentInfo = {};
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphoreIds = &presentationSemaphores[currentFrameIndex];
+    presentInfo.pImageIndices = &currentSwapchainIndex;
+
+    //TODO : send the correct presentation queue id
+    apiInterface->PresentSwapchainImage(&presentInfo, 0);
+
+    currentFrameIndex = (currentFrameIndex + 1) % maxFramesInFlight;
 }
 
 template<typename T>
@@ -79,9 +120,9 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     this->apiInterface = apiInterface;
 
     Settings::clearColorValue[0] = 164.0f / 256.0f; // Red
-    Settings::clearColorValue[0] = 30.0f / 256.0f;  // Green
-    Settings::clearColorValue[0] = 34.0f / 256.0f;  // Blue
-    Settings::clearColorValue[0] = 1.0f;
+    Settings::clearColorValue[1] = 30.0f / 256.0f;  // Green
+    Settings::clearColorValue[2] = 34.0f / 256.0f;  // Blue
+    Settings::clearColorValue[3] = 1.0f;
 
     Settings::depthClearValue = 1.0f;
     Settings::stencilClearValue = 0.0f;
@@ -128,6 +169,8 @@ inline void RenderingInterface<T>::SetupRenderer()
 template<typename T>
 inline void RenderingInterface<T>::DislogeRenderer()
 {
+    apiInterface->IsApplicationSafeForClosure();
+
     for (uint32_t i = 0; i < maxFramesInFlight; i++)
     {
         apiInterface->DestroyFence(getSwapChainImageFences[i]);
@@ -169,5 +212,5 @@ inline void RenderingInterface<T>::Render()
 {
     BeginRenderLoop();
 
-    //EndRenderLoop();
+    EndRenderLoop();
 }

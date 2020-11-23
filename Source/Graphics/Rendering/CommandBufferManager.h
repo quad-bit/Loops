@@ -6,6 +6,8 @@
 enum class CommandPoolProperty;
 enum class PipelineType;
 enum class CommandBufferLevel;
+enum class CommandBufferUsage;
+struct CommandBufferInheritanceInfo;
 typedef PipelineType CommandBufferType;
 
 template <typename T>
@@ -52,6 +54,8 @@ public:
     void DestroyDrawCommandBuffer(DrawCommandBuffer<T> * obj);
     void ResetCommandBuffer(uint32_t commandBufferId);
     void ResetDrawCommandBuffer(DrawCommandBuffer<T> * obj);
+    void BeginDrawCommandBufferRecording(DrawCommandBuffer<T> * obj, CommandBufferUsage * usage, CommandBufferInheritanceInfo * inheritanceInfo);
+    void EndDrawCommandBufferRecording(DrawCommandBuffer<T> * obj);
     uint32_t CreateCommandPool(PipelineType * poolType, CommandPoolProperty * poolProp);
     void DestroyCommandPool(uint32_t commandPoolId);
 
@@ -117,6 +121,18 @@ template<typename T>
 inline void CommandBufferManager<T>::ResetDrawCommandBuffer(DrawCommandBuffer<T>* obj)
 {
     apiInterface->ResetCommandBuffer(obj->GetId(), obj->GetPoolId());
+}
+
+template<typename T>
+inline void CommandBufferManager<T>::BeginDrawCommandBufferRecording(DrawCommandBuffer<T>* obj, CommandBufferUsage * usage, CommandBufferInheritanceInfo * inheritanceInfo)
+{
+    apiInterface->BeginCommandBufferRecording(obj->GetId(), usage, inheritanceInfo);
+}
+
+template<typename T>
+inline void CommandBufferManager<T>::EndDrawCommandBufferRecording(DrawCommandBuffer<T>* obj)
+{
+    apiInterface->EndCommandBufferRecording(obj->GetId());
 }
 
 template<typename T>

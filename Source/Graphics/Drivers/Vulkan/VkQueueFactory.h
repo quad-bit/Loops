@@ -32,6 +32,7 @@ public:
     uint32_t indexInFamily;
     VkQueue * queue;
     QueueType queueType;
+    QueuePurpose * purpose;
 };
 
 
@@ -72,7 +73,7 @@ public:
 
     VkQueue * GetQueue(QueueType qType, uint32_t id);
     VkQueue * GetQueue(VkQueueFlagBits qType, uint32_t id);
-    //uint32_t GetQueueFamilyIndex(VkQueueFlagBits qType) { return familyIndex; }
+    void SetQueuePurpose(QueuePurpose * purpose, QueueType qType, const uint32_t & id);
 
     uint32_t GetQueueFamilyIndex(QueueType qType, uint32_t queueId);
     uint32_t GetQueueFamilyIndex(VkQueueFlagBits qType, uint32_t queueId);
@@ -82,5 +83,12 @@ public:
     void CreateComputeQueues(uint32_t * ids, const uint32_t & count);
     void CreateTransferQueues(uint32_t * ids, const uint32_t & count);
 
+    void SubmitQueue(const uint32_t & queueId, const QueueType * queueType, 
+        VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
+
+    void SubmitQueueForRendering(const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
+    void SubmitQueueForPresentation(const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
     //void DestroyQueue(QueueType qType, uint32_t queueId);
+
+    void WaitForAllQueues();
 };
