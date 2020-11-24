@@ -2,7 +2,7 @@
 #include <vulkan\vulkan.h>
 #include <GLFW\glfw3.h>
 
-
+struct QueueWrapper;
 class ValidationManager;
 
 class VulkanManager
@@ -44,6 +44,7 @@ public:
     ~VulkanManager();
         
     void Init();
+    void Init(QueueWrapper * queueRequirement, const uint32_t & count);
     void DeInit();
     void Update();
     void CreateSurface(GLFWwindow * glfwWindow);

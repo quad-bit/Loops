@@ -2,9 +2,41 @@
 #include "VulkanUtility.h"
 #include <Assertion.h>
 #include <algorithm>
-//#include <string>
+
 VkQueueFactory* VkQueueFactory::instance = nullptr;
 
+VkQueueWrapper * VkQueueFactory::MapQueueWrapper(const QueueWrapper * wrapper)
+{
+    if (*wrapper->queueType == QueueType::GRAPHICS)
+        for (uint32_t i = 0; i < graphicsQueueWrapperList.size(); i++)
+        {
+            if (wrapper->queueId == graphicsQueueWrapperList[i].queueId && wrapper->purpose == graphicsQueueWrapperList[i].purpose)
+            {
+                return &graphicsQueueWrapperList[i];
+            }
+        }
+
+    if (*wrapper->queueType == QueueType::COMPUTE)
+        for (uint32_t i = 0; i < computeQueueWrapperList.size(); i++)
+        {
+            if (wrapper->queueId == computeQueueWrapperList[i].queueId && wrapper->purpose == computeQueueWrapperList[i].purpose)
+            {
+                return &computeQueueWrapperList[i];
+            }
+        }
+
+    if (*wrapper->queueType == QueueType::TRANSFER)
+        for (uint32_t i = 0; i < transferQueueWrapperList.size(); i++)
+        {
+            if (wrapper->queueId == transferQueueWrapperList[i].queueId && wrapper->purpose == transferQueueWrapperList[i].purpose)
+            {
+                return &transferQueueWrapperList[i];
+            }
+        }
+
+    ASSERT_MSG(0, "no queue found");
+    return nullptr;
+}
 
 void VkQueueFactory::Init()
 {
@@ -82,54 +114,6 @@ VkQueueFactory::~VkQueueFactory()
 
 std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
 {
-    /*uint32_t uniqueQueues = 3;
-    uint32_t requirementFlag = VK_QUEUE_COMPUTE_BIT | VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_TRANSFER_BIT;
-
-    uint32_t qFamilyCount = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(*CoreObjects::physicalDeviceObj, &qFamilyCount, nullptr);
-    propertyList.resize(qFamilyCount);
-    vkGetPhysicalDeviceQueueFamilyProperties(*CoreObjects::physicalDeviceObj, &qFamilyCount, propertyList.data());
-
-    queueWrapperList.resize(uniqueQueues);
-    VkQueue * queueList = new VkQueue[uniqueQueues];
-    priority = new float[uniqueQueues] {1.0f};
-
-    for (uint32_t j = 0; j < qFamilyCount; j++)
-    {
-        if (propertyList[j].queueFlags & requirementFlag)
-        {
-            familyIndex = j;
-            break;
-        }
-    }
-
-    ASSERT_MSG(familyIndex != -1, "GRAPHICS + COMPUTE + TRANSFER not available in a single family");
-    ASSERT_MSG(propertyList[familyIndex].queueCount >= uniqueQueues, "Family doesnt has enough queues");
-
-    for (uint32_t k = 0; k < uniqueQueues; k++)
-    {
-        uniqueIndiciesInFamily.push_back(k);
-        queueWrapperList[k].queue = &queueList[k];
-        queueWrapperList[k].queueFamilyIndex = familyIndex;
-
-        if (k == 0)
-            queueWrapperList[k].queueType = QueueType::GRAPHICS;
-        else if(k == 1)
-            queueWrapperList[k].queueType = QueueType::COMPUTE;
-        else if (k == 2)
-            queueWrapperList[k].queueType = QueueType::TRANSFER;
-    }
-    
-    VkDeviceQueueCreateInfo creatInfoList = {};
-    creatInfoList.flags = 0;
-    creatInfoList.pNext = nullptr;
-    creatInfoList.pQueuePriorities = priority;
-    creatInfoList.queueCount = uniqueQueues;
-    creatInfoList.queueFamilyIndex = familyIndex;
-    creatInfoList.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-
-    return creatInfoList;*/
-    
     graphicQueuePriority = new float[maxGraphicQueues] {1.0f};
 
     std::vector<VkDeviceQueueCreateInfo> creatInfoList;
@@ -247,23 +231,8 @@ std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
     return creatInfoList; 
 }
 
-//void VkQueueFactory::InitQueues(uint32_t * indexInFamily, uint32_t count)
-//{
-//    for (uint32_t i = 0; i < count; i++)
-//    {
-//        vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, queueWrapperList[i].queueFamilyIndex, indexInFamily[i], queueWrapperList[i].queue);
-//        ASSERT_MSG(*queueWrapperList[i].queue != VK_NULL_HANDLE, "Queue not available ");
-//    }
-//}
-
 void VkQueueFactory::InitQueues()
 {
-    /*for (uint32_t i = 0; i < uniqueIndiciesInFamily.size(); i++)
-    {
-        vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, queueWrapperList[i].queueFamilyIndex, uniqueIndiciesInFamily[i], queueWrapperList[i].queue);
-        ASSERT_MSG(*queueWrapperList[i].queue != VK_NULL_HANDLE, "Queue not available ");
-    }
-*/
     for (uint32_t i = 0; i < maxGraphicQueues; i++)
     {
         vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, graphicsQueueWrapperList[i].queueFamilyIndex,
@@ -286,15 +255,15 @@ void VkQueueFactory::InitQueues()
     }
 }
 
-VkQueue * VkQueueFactory::GetQueue(QueueType qType, uint32_t id)
+VkQueue * VkQueueFactory::GetQueue(QueueType qType, const uint32_t & id)
 {
-    std::vector<QueueWrapper>::iterator it;
+    std::vector<VkQueueWrapper>::iterator it;
 
     switch (qType)
     {
     case QueueType::GRAPHICS:
         {
-            it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId== id; });
+            it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId== id; });
             ASSERT_MSG(it != graphicsQueueWrapperList.end(), "Queue family index not found");
 
             return it->queue;
@@ -303,7 +272,7 @@ VkQueue * VkQueueFactory::GetQueue(QueueType qType, uint32_t id)
 
     case QueueType::COMPUTE:
         {
-            it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == id; });
+            it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == id; });
             ASSERT_MSG(it != computeQueueWrapperList.end(), "Queue family index not found");
 
             return it->queue;
@@ -312,7 +281,7 @@ VkQueue * VkQueueFactory::GetQueue(QueueType qType, uint32_t id)
 
     case QueueType::TRANSFER:
         {
-            it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == id; });
+            it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == id; });
             ASSERT_MSG(it != transferQueueWrapperList.end(), "Queue family index not found");
 
             return it->queue;
@@ -326,15 +295,15 @@ VkQueue * VkQueueFactory::GetQueue(QueueType qType, uint32_t id)
     return nullptr;
 }
 
-VkQueue * VkQueueFactory::GetQueue(VkQueueFlagBits qType, uint32_t id)
+VkQueue * VkQueueFactory::GetQueue(VkQueueFlagBits qType, const uint32_t & id)
 {
-    std::vector<QueueWrapper>::iterator it;
+    std::vector<VkQueueWrapper>::iterator it;
 
     switch (qType)
     {
     case VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT:
     {
-        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == id; });
+        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == id; });
         ASSERT_MSG(it != graphicsQueueWrapperList.end(), "Queue family index not found");
 
         return it->queue;
@@ -343,7 +312,7 @@ VkQueue * VkQueueFactory::GetQueue(VkQueueFlagBits qType, uint32_t id)
 
     case VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT:
     {
-        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == id; });
+        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == id; });
         ASSERT_MSG(it != computeQueueWrapperList.end(), "Queue family index not found");
 
         return it->queue;
@@ -352,7 +321,7 @@ VkQueue * VkQueueFactory::GetQueue(VkQueueFlagBits qType, uint32_t id)
 
     case VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT:
     {
-        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == id; });
+        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == id; });
         ASSERT_MSG(it != transferQueueWrapperList.end(), "Queue family index not found");
 
         return it->queue;
@@ -365,15 +334,21 @@ VkQueue * VkQueueFactory::GetQueue(VkQueueFlagBits qType, uint32_t id)
     return nullptr;
 }
 
+VkQueue * VkQueueFactory::GetQueue(const QueueWrapper * req)
+{
+    VkQueueWrapper * vkWrapper = MapQueueWrapper(req);
+    return vkWrapper->queue;
+}
+
 void VkQueueFactory::SetQueuePurpose(QueuePurpose * purpose, QueueType qType, const uint32_t & queueId)
 {
-    std::vector<QueueWrapper>::iterator it;
+    std::vector<VkQueueWrapper>::iterator it;
 
     switch (qType)
     {
     case QueueType::GRAPHICS:
     {
-        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != graphicsQueueWrapperList.end(), "Queue family index not found");
 
         it->purpose = purpose;
@@ -382,7 +357,7 @@ void VkQueueFactory::SetQueuePurpose(QueuePurpose * purpose, QueueType qType, co
 
     case QueueType::COMPUTE:
     {
-        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != computeQueueWrapperList.end(), "Queue family index not found");
 
         it->purpose = purpose;
@@ -391,7 +366,7 @@ void VkQueueFactory::SetQueuePurpose(QueuePurpose * purpose, QueueType qType, co
 
     case QueueType::TRANSFER:
     {
-        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != transferQueueWrapperList.end(), "Queue family index not found");
 
         it->purpose = purpose;
@@ -405,13 +380,13 @@ void VkQueueFactory::SetQueuePurpose(QueuePurpose * purpose, QueueType qType, co
 
 uint32_t VkQueueFactory::GetQueueFamilyIndex(QueueType qType, uint32_t queueId)
 {
-    std::vector<QueueWrapper>::iterator it;
+    std::vector<VkQueueWrapper>::iterator it;
 
     switch (qType)
     {
     case QueueType::GRAPHICS:
     {
-        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != graphicsQueueWrapperList.end(), "Queue family index not found");
 
         return it->queueFamilyIndex;
@@ -420,7 +395,7 @@ uint32_t VkQueueFactory::GetQueueFamilyIndex(QueueType qType, uint32_t queueId)
 
     case QueueType::COMPUTE:
     {
-        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != computeQueueWrapperList.end(), "Queue family index not found");
 
         return it->queueFamilyIndex;
@@ -429,7 +404,7 @@ uint32_t VkQueueFactory::GetQueueFamilyIndex(QueueType qType, uint32_t queueId)
 
     case QueueType::TRANSFER:
     {
-        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != transferQueueWrapperList.end(), "Queue family index not found");
 
         return it->queueFamilyIndex;
@@ -445,13 +420,13 @@ uint32_t VkQueueFactory::GetQueueFamilyIndex(QueueType qType, uint32_t queueId)
 
 uint32_t VkQueueFactory::GetQueueFamilyIndex(VkQueueFlagBits qType, uint32_t queueId)
 {
-    std::vector<QueueWrapper>::iterator it;
+    std::vector<VkQueueWrapper>::iterator it;
 
     switch (qType)
     {
     case VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT:
     {
-        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(graphicsQueueWrapperList.begin(), graphicsQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != graphicsQueueWrapperList.end(), "Queue family index not found");
 
         return it->queueFamilyIndex;
@@ -460,7 +435,7 @@ uint32_t VkQueueFactory::GetQueueFamilyIndex(VkQueueFlagBits qType, uint32_t que
 
     case VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT:
     {
-        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(computeQueueWrapperList.begin(), computeQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != computeQueueWrapperList.end(), "Queue family index not found");
 
         return it->queueFamilyIndex;
@@ -469,7 +444,7 @@ uint32_t VkQueueFactory::GetQueueFamilyIndex(VkQueueFlagBits qType, uint32_t que
 
     case VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT:
     {
-        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](QueueWrapper e) { return e.queueId == queueId; });
+        it = std::find_if(transferQueueWrapperList.begin(), transferQueueWrapperList.end(), [&](VkQueueWrapper e) { return e.queueId == queueId; });
         ASSERT_MSG(it != transferQueueWrapperList.end(), "Queue family index not found");
 
         return it->queueFamilyIndex;
@@ -536,23 +511,34 @@ void VkQueueFactory::SubmitQueue(const uint32_t & queueId, const QueueType * que
     ErrorCheck( vkQueueSubmit(*GetQueue(*queueType, queueId), submitCount, info, *fence));
 }
 
-void VkQueueFactory::SubmitQueueForRendering(const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence)
+void VkQueueFactory::SubmitQueue(const QueueWrapper * req, VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence)
 {
-    QueueType type{ QueueType::GRAPHICS };
-    ErrorCheck(vkQueueSubmit(*GetQueue(*&type, CoreObjects::renderQueueId), submitCount, info, *fence));
+    VkQueueWrapper * vkQueueWrapperObj = MapQueueWrapper(req);
+    ErrorCheck(vkQueueSubmit(*vkQueueWrapperObj->queue, submitCount, info, *fence));
 }
 
-void VkQueueFactory::SubmitQueueForPresentation(const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence)
-{
-    QueueType type{ QueueType::GRAPHICS };
-    ErrorCheck(vkQueueSubmit(*GetQueue(*&type, CoreObjects::presentationQueuedId), submitCount, info, *fence));
-}
+//void VkQueueFactory::SubmitQueueForRendering(const QueueWrapper * wrapper, const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence)
+//{
+//    VkQueueWrapper * vkQueueWrapperObj = MapQueueWrapper(wrapper);
+//    ErrorCheck(vkQueueSubmit(*vkQueueWrapperObj->queue, submitCount, info, *fence));
+//}
+//
+//void VkQueueFactory::SubmitQueueForPresentation(const QueueWrapper * wrapper, const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence)
+//{
+//    VkQueueWrapper * vkQueueWrapperObj = MapQueueWrapper(wrapper);
+//    ErrorCheck(vkQueueSubmit(*vkQueueWrapperObj->queue, submitCount, info, *fence));
+//}
 
 void VkQueueFactory::WaitForAllQueues()
 {
-    //TODO : Expose queue
-    vkQueueWaitIdle(*GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::renderQueueId));
-    vkQueueWaitIdle(*GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::presentationQueuedId));
+    //TODO : Expose queue, DONE
+    //vkQueueWaitIdle(*GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::renderQueueId));
+    //vkQueueWaitIdle(*GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::presentationQueuedId));
+
+    for each(VkQueueWrapper wrapper in transferQueueWrapperList)
+    {
+        vkQueueWaitIdle(*wrapper.queue);
+    }
 
 }
 

@@ -42,10 +42,6 @@ uint32_t VkCommandBufferFactory::GetBufferId()
 
 void VkCommandBufferFactory::Init()
 {
-    //VkQueueFactory::GetInstance()->CreateGraphicsQueues(&renderQueueId, 1);
-    //VkQueueFactory::GetInstance()->CreateComputeQueues(&computeQueueId, 1);
-    //VkQueueFactory::GetInstance()->CreateTransferQueues(&transferQueueId, 1);
-
     renderQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::renderQueueId);
     computeQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, CoreObjects::computeQueueId);
     transferQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT, CoreObjects::transferQueueId);

@@ -4,13 +4,6 @@
 #include <vector>
 #include <RenderingWrapper.h>
 
-//enum class QUEUE_TYPE
-//{
-//    GRAPHICS,
-//    COMPUTE,
-//    TRANSFER,
-//    GRAPHICS_COMPUTE
-//};
 
 enum class FamilyPermutatation
 {
@@ -24,7 +17,7 @@ enum class FamilyPermutatation
 
 typedef PipelineType QueueType;
 
-class QueueWrapper
+class VkQueueWrapper
 {
 public:
     uint32_t queueFamilyIndex;
@@ -46,7 +39,7 @@ private:
     static VkQueueFactory* instance;
 
     //std::vector<QueueWrapper> queueWrapperList;
-    std::vector<QueueWrapper> graphicsQueueWrapperList, computeQueueWrapperList, transferQueueWrapperList;
+    std::vector<VkQueueWrapper> graphicsQueueWrapperList, computeQueueWrapperList, transferQueueWrapperList;
     std::vector<VkQueueFamilyProperties> propertyList;
     //std::vector<uint32_t> uniqueIndiciesInFamily;
     const float* graphicQueuePriority, *computeQueuePriority, *transferQueuePriority;
@@ -58,6 +51,7 @@ private:
 
     uint32_t queueIdCounter = 0;
     uint32_t GetQueueId() { return queueIdCounter++; }
+    VkQueueWrapper * MapQueueWrapper(const QueueWrapper * wrapper);
 
 public:
     void Init();
@@ -71,11 +65,14 @@ public:
     std::vector<VkDeviceQueueCreateInfo> FindQueue();
     void InitQueues();
 
-    VkQueue * GetQueue(QueueType qType, uint32_t id);
-    VkQueue * GetQueue(VkQueueFlagBits qType, uint32_t id);
+    VkQueue * GetQueue(QueueType qType, const uint32_t & id);
+    VkQueue * GetQueue(VkQueueFlagBits qType, const uint32_t & id);
+    VkQueue * GetQueue(const QueueWrapper * req);
+
     void SetQueuePurpose(QueuePurpose * purpose, QueueType qType, const uint32_t & id);
 
     uint32_t GetQueueFamilyIndex(QueueType qType, uint32_t queueId);
+    //uint32_t GetQueueFamilyIndex(PipelineType qType, uint32_t queueId);
     uint32_t GetQueueFamilyIndex(VkQueueFlagBits qType, uint32_t queueId);
     uint32_t GetGraphicsQueueFamilyIndex() { return graphicsQueueFamilyIndex; }
 
@@ -83,11 +80,10 @@ public:
     void CreateComputeQueues(uint32_t * ids, const uint32_t & count);
     void CreateTransferQueues(uint32_t * ids, const uint32_t & count);
 
-    void SubmitQueue(const uint32_t & queueId, const QueueType * queueType, 
-        VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
-
-    void SubmitQueueForRendering(const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
-    void SubmitQueueForPresentation(const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
+    void SubmitQueue(const uint32_t & queueId, const QueueType * queueType, VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
+    void SubmitQueue(const QueueWrapper * req, VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
+    //void SubmitQueueForRendering(const QueueWrapper * req, const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
+    //void SubmitQueueForPresentation(const QueueWrapper * req,const VkSubmitInfo * info, const uint32_t & submitCount, VkFence * fence);
     //void DestroyQueue(QueueType qType, uint32_t queueId);
 
     void WaitForAllQueues();

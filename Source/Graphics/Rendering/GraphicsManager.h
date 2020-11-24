@@ -8,6 +8,9 @@ class RenderingInterface;
 
 #if (RENDERING_API == VULKAN)
 class VulkanInterface;
+struct QueueWrapper;
+enum class QueuePurpose;
+enum class PipelineType;
 #elif (RENDERING_API == DX)
 class DxInterface;
 #endif
@@ -20,7 +23,6 @@ private:
     GraphicsManager const & operator= (GraphicsManager const &) {}
 
     static GraphicsManager* instance;
-
 
 #if (RENDERING_API == VULKAN)
     VulkanInterface * apiInterface;

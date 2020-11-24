@@ -21,6 +21,7 @@ enum class CommandBufferUsage;
 struct CommandBufferInheritanceInfo;
 struct SubmitInfo;
 struct PresentInfo;
+struct QueueWrapper;
 
 class VkDrawCommandBuffer;
 
@@ -93,10 +94,10 @@ public:
     void BeginCommandBufferRecording(const uint32_t & id , const CommandBufferUsage * usage, const CommandBufferInheritanceInfo * inheritanceInfo);
     void EndCommandBufferRecording(const uint32_t & id );
 
-    void SubmitJob(const SubmitInfo * info, const uint32_t & submitInfoCount, const uint32_t & fenceId);
+    void SubmitJob(const QueueWrapper * queueWrapper, const SubmitInfo * info, const uint32_t & submitInfoCount, const uint32_t & fenceId);
     void SubmitJob(const SubmitInfo * info, const uint32_t & submitInfoCount);
 
-    void PresentSwapchainImage(const PresentInfo * info, const uint32_t & presentQueueId);
+    void PresentSwapchainImage(const QueueWrapper * queueWrapper, const PresentInfo * info, const uint32_t & presentQueueId);
 
     bool IsApplicationSafeForClosure();
 };

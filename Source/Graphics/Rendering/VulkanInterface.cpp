@@ -10,6 +10,7 @@
 #include <VkSynchroniserFactory.h>
 #include <VkQueueFactory.h>
 #include <VulkanUtility.h>
+#include <RendererSettings.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
 {
@@ -282,7 +283,8 @@ VulkanInterface::VulkanInterface()
 
 void VulkanInterface::Init()
 {
-    VulkanManager::GetInstance()->Init();
+    //VulkanManager::GetInstance()->Init();
+    VulkanManager::GetInstance()->Init(RendererSettings::queueReq , RendererSettings::queueRequirementCount );
     VulkanManager::GetInstance()->CreateSurface(WindowManager::GetInstance()->glfwWindow);
     PresentationEngine::GetInstance()->Init(VulkanManager::GetInstance()->GetSurface(), VulkanManager::GetInstance()->GetSurfaceFormat());
     VkAttachmentFactory::GetInstance()->Init();
@@ -292,8 +294,6 @@ void VulkanInterface::Init()
 
 void VulkanInterface::DeInit()
 {
-
-
     VkFrameBufferFactory::GetInstance()->DeInit();
     delete VkFrameBufferFactory::GetInstance();
 
@@ -442,15 +442,12 @@ void VulkanInterface::EndCommandBufferRecording(const uint32_t & id)
     VkCommandBufferFactory::GetInstance()->EndCommandBufferRecording(id);
 }
 
-void VulkanInterface::SubmitJob(const SubmitInfo * info, const uint32_t & submitInfoCount, const uint32_t & fenceId)
+void VulkanInterface::SubmitJob(const QueueWrapper * queueWrapper, const SubmitInfo * info, const uint32_t & submitInfoCount, const uint32_t & fenceId)
 {
     VkSubmitInfo * vkSubmitInfo = UnwrapSubmitInfo(info);
     VkFence * fence = VkSynchroniserFactory::GetInstance()->GetFence(fenceId);
     
-    //VkQueueFactory::GetInstance()->SubmitQueue(info->queueId, info->queueType, vkSubmitInfo, submitInfoCount, fence);
-
-    if (*info->purpose == QueuePurpose::RENDER)
-        VkQueueFactory::GetInstance()->SubmitQueueForRendering(vkSubmitInfo, 1, fence);
+    VkQueueFactory::GetInstance()->SubmitQueue(queueWrapper, vkSubmitInfo, submitInfoCount, fence);
 
     delete vkSubmitInfo->pWaitDstStageMask;
     delete vkSubmitInfo;
@@ -460,10 +457,14 @@ void VulkanInterface::SubmitJob(const SubmitInfo * info, const uint32_t & submit
 {
     VkSubmitInfo * vkSubmitInfo = UnwrapSubmitInfo(info);
     VkQueueFactory::GetInstance()->SubmitQueue(info->queueId, info->queueType, vkSubmitInfo, submitInfoCount, VK_NULL_HANDLE);
+    
+    if(vkSubmitInfo->pWaitDstStageMask != nullptr)
+        delete vkSubmitInfo->pWaitDstStageMask;
+
     delete vkSubmitInfo;
 }
 
-void VulkanInterface::PresentSwapchainImage(const PresentInfo * info, const uint32_t & presentQueueId)
+void VulkanInterface::PresentSwapchainImage(const QueueWrapper * queueWrapper, const PresentInfo * info, const uint32_t & presentQueueId)
 {
     VkResult presentationResult;
 
@@ -477,8 +478,8 @@ void VulkanInterface::PresentSwapchainImage(const PresentInfo * info, const uint
     vkPresentInfo.pResults = &presentationResult;
     
     //TODO : Expose presentation queue
-    VkQueue * presentQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::presentationQueuedId);
-
+    //VkQueue * presentQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::presentationQueuedId);
+    VkQueue * presentQueue = VkQueueFactory::GetInstance()->GetQueue(queueWrapper);
     PresentationEngine::GetInstance()->PresentSwapchainImage(&vkPresentInfo, presentQueue);
 }
 

@@ -156,7 +156,7 @@ void VulkanManager::Init()
     VkQueueFactory::GetInstance()->Init();
     CreateLogicalDevice();
 
-    //TODO : expose queue creation.
+    //TODO : expose queue creation. DONE 
 
     VkQueueFactory::GetInstance()->CreateGraphicsQueues(&CoreObjects::renderQueueId, 1);
     QueuePurpose * renderPurpose = new QueuePurpose{ QueuePurpose::RENDER };
@@ -168,6 +168,54 @@ void VulkanManager::Init()
 
     VkQueueFactory::GetInstance()->CreateComputeQueues(&CoreObjects::computeQueueId, 1);
     VkQueueFactory::GetInstance()->CreateTransferQueues(&CoreObjects::transferQueueId, 1);
+
+    VulkanMemoryManager::GetSingleton()->Init(physicalDeviceMemProps);
+    VkCommandBufferFactory::GetInstance()->Init();
+    VkSynchroniserFactory::GetInstance()->Init();
+}
+
+void VulkanManager::Init(QueueWrapper * queueRequirement, const uint32_t & count)
+{
+    CreateInstance();
+    GetPhysicalDevice();
+    validationManagerObj->InitDebug(&vkInstanceObj, pAllocator);
+    VkQueueFactory::GetInstance()->Init();
+    CreateLogicalDevice();
+
+    //TODO : expose queue creation.
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        if (*queueRequirement[i].queueType == QueueType::GRAPHICS)
+        {
+            if (*queueRequirement[i].purpose == QueuePurpose::PRESENT)
+            {
+                VkQueueFactory::GetInstance()->CreateGraphicsQueues(&queueRequirement[i].queueId, 1);
+                CoreObjects::presentationQueuedId = queueRequirement[i].queueId;
+            }
+
+            if (*queueRequirement[i].purpose == QueuePurpose::RENDER)
+            {
+                VkQueueFactory::GetInstance()->CreateGraphicsQueues(&queueRequirement[i].queueId, 1);
+                CoreObjects::renderQueueId = queueRequirement[i].queueId;
+            }
+        }
+
+        if (*queueRequirement[i].queueType == QueueType::COMPUTE)
+        {
+            VkQueueFactory::GetInstance()->CreateComputeQueues(&queueRequirement[i].queueId, 1);
+            CoreObjects::computeQueueId = queueRequirement[i].queueId;
+        }
+
+        if (*queueRequirement[i].queueType == QueueType::TRANSFER)
+        {
+            VkQueueFactory::GetInstance()->CreateTransferQueues(&queueRequirement[i].queueId, 1);
+            CoreObjects::transferQueueId = queueRequirement[i].queueId;
+        }
+
+        queueRequirement[i].queueFamilyId = VkQueueFactory::GetInstance()->GetQueueFamilyIndex(*queueRequirement[i].queueType, queueRequirement[i].queueId);
+        VkQueueFactory::GetInstance()->SetQueuePurpose(queueRequirement[i].purpose, *queueRequirement[i].queueType, queueRequirement[i].queueId);
+    }
 
     VulkanMemoryManager::GetSingleton()->Init(physicalDeviceMemProps);
     VkCommandBufferFactory::GetInstance()->Init();

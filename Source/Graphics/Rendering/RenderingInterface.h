@@ -89,15 +89,13 @@ inline void RenderingInterface<T>::EndRenderLoop()
     info.commandBufferCount = 1;
     info.commandBufferIds = &id;
     info.pipelineStage = PipelineStage::COLOR_ATTACHMENT_OUTPUT_BIT;
-    //info.queueId = ;
-    info.queueType =  &queueType;
     info.purpose = &purpose;
     info.signalSemaphoreCount = 1;
     info.signalSemaphoreIds = &presentationSemaphores[currentFrameIndex];
     info.waitSemaphoreCount = 1;
     info.waitSemaphoreIds = &renderSemaphores[currentFrameIndex];
 
-    apiInterface->SubmitJob(&info, 1, getSwapChainImageFences[currentFrameIndex]);
+    apiInterface->SubmitJob(&RendererSettings::queueReq[0], &info, 1, getSwapChainImageFences[currentFrameIndex]);
 
     // submit for presentation
     PresentInfo presentInfo = {};
@@ -105,8 +103,8 @@ inline void RenderingInterface<T>::EndRenderLoop()
     presentInfo.pWaitSemaphoreIds = &presentationSemaphores[currentFrameIndex];
     presentInfo.pImageIndices = &currentSwapchainIndex;
 
-    //TODO : send the correct presentation queue id
-    apiInterface->PresentSwapchainImage(&presentInfo, 0);
+    //TODO : send the correct presentation queue id, DONE.
+    apiInterface->PresentSwapchainImage(&RendererSettings::queueReq[1], &presentInfo, 0);
 
     currentFrameIndex = (currentFrameIndex + 1) % maxFramesInFlight;
 }

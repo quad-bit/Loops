@@ -157,6 +157,8 @@ enum class QueuePurpose
 {
     RENDER,
     PRESENT,
+    COMPUTE,
+    TRANSFER,
     NONE
 };
 
@@ -266,6 +268,13 @@ enum class QueuePurpose
         uint32_t *               pImageIndices;
     };
 
+    struct QueueWrapper
+    {
+        uint32_t queueId;
+        uint32_t queueFamilyId;
+        PipelineType * queueType;
+        QueuePurpose * purpose;
+    };
 
 #elif (RENDERING_API == DX12)
 
