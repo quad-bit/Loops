@@ -6,47 +6,46 @@
 
 void UnitTest()
 {
-    World worldObj;
-
-    // update the family while creating the managers...
-    ComponentManager<Transform>* transformManager = worldObj.CreateManager<Transform>();
-    //ComponentManager<MeshFilter>* meshFilterManager = worldObj.CreateManager<ComponentSpace::MeshFilter>();
-
-    //System* meshFilterSystemObj = new MeshFilterSystem();
-    //worldObj.AddSystem(meshFilterSystemObj);
-
-    System* transformSystemObj = new TransformSystem();
-    worldObj.AddSystem(transformSystemObj);
-
-    worldObj.Init();
-
+    /*
     EntityHandle* playerHandle = worldObj.CreateEntity();
+    EntityHandle* head = worldObj.CreateEntity();
+    EntityHandle* torso = worldObj.CreateEntity();
+    EntityHandle* leftArm = worldObj.CreateEntity();
+    EntityHandle* rightArm = worldObj.CreateEntity();
+    EntityHandle* rightLeg = worldObj.CreateEntity();
+    EntityHandle* leftLeg = worldObj.CreateEntity();
 
     Transform playerTransform;
-    playerTransform.position = glm::vec3(10, 10, 10);
-
-    //ComponentSpace::MeshFilter * meshFilterObj = new ComponentSpace::MeshFilter();
-    //meshFilterObj->meshType = "CUBE";
-    //meshFilterObj->hasNormals = true;
-    //meshFilterObj->hasColors = true;
-
+    playerTransform.localPosition = glm::vec3(10, 10, 10);
     playerHandle->AddComponent<Transform>(&playerTransform);
-    //playerHandle->AddComponent<ComponentSpace::MeshFilter>(meshFilterObj);
+    
+    Transform headTransform;
+    headTransform.localPosition = glm::vec3(0, 20, 0);
+    head->AddComponent<Transform>(&headTransform);
+    headTransform.SetParent(&playerTransform);
 
-    //ComponentHandle<ComponentSpace::MeshFilter> test = playerHandle->GetComponent<ComponentSpace::MeshFilter>();
+    Transform torsoTransform;
+    torsoTransform.localPosition = glm::vec3(0, 10, 0);
+    torso->AddComponent<Transform>(&torsoTransform);
+
+    Transform leftArmTransform;
+    leftArmTransform.localPosition = glm::vec3(-5, 20, 0);
+    leftArm->AddComponent<Transform>(&leftArmTransform);
+
+    Transform rightArmTransform;
+    rightArmTransform.localPosition = glm::vec3(5, 20, 0);
+    rightArm->AddComponent<Transform>(&rightArmTransform);
+
+    Transform rightLegTransform;
+    rightLegTransform.localPosition = glm::vec3(5, 5, 0);
+    rightLeg->AddComponent<Transform>(&rightLegTransform);
+
+    Transform leftLegTransform;
+    leftLegTransform.localPosition = glm::vec3(-5, 5, 0);
+    leftLeg->AddComponent<Transform>(&leftLegTransform);
 
     ComponentHandle<Transform> obj = playerHandle->GetComponent<Transform>();
 
     playerHandle->RemoveComponent<Transform>(&playerTransform);
-    //playerHandle->RemoveComponent<MeshFilter>(meshFilterObj);
-
-    //delete meshFilterObj;
-
-    worldObj.DeInit();
-
-    //delete meshFilterSystemObj;
-
-    //delete meshFilterManager;
-    delete transformManager;
-
+    */
 }

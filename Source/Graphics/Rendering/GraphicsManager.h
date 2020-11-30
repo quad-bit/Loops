@@ -37,4 +37,6 @@ public:
     void Update();
     static GraphicsManager* GetInstance();
     ~GraphicsManager();
+
+    bool IsWindowActive();
 };

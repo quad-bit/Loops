@@ -24,6 +24,7 @@ void EntityManager::Init()
 
 void EntityManager::DeInit()
 {
+
 	entityList.clear();
 	entityHandleList.clear();
 }

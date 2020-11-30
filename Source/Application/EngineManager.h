@@ -1,5 +1,6 @@
 #pragma once
 
+class SceneManager;
 class EngineManager
 {
 
@@ -10,6 +11,7 @@ private:
 
     static EngineManager* instance;
 
+    SceneManager * sceneManagerObj;
 public:
     void Init();
     void DeInit();

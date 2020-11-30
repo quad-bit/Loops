@@ -65,10 +65,11 @@ void GraphicsManager::DeInit()
 
 void GraphicsManager::Update()
 {
-    while (WindowManager::GetInstance()->Update())
+    renderingInterfaceObj->Render();
+    /*while (IsWindowActive())
     {
-        renderingInterfaceObj->Render();
-    }
+        
+    }*/
 }
 
 GraphicsManager * GraphicsManager::GetInstance()
@@ -82,4 +83,9 @@ GraphicsManager * GraphicsManager::GetInstance()
 
 GraphicsManager::~GraphicsManager()
 {
+}
+
+bool GraphicsManager::IsWindowActive()
+{
+    return WindowManager::GetInstance()->Update();
 }

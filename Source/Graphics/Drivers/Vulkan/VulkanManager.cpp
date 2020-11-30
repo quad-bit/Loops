@@ -156,7 +156,7 @@ void VulkanManager::Init()
     VkQueueFactory::GetInstance()->Init();
     CreateLogicalDevice();
 
-    //TODO : expose queue creation. DONE 
+    //TODO : expose queue creation. This function is deprecated.DONE 
 
     VkQueueFactory::GetInstance()->CreateGraphicsQueues(&CoreObjects::renderQueueId, 1);
     QueuePurpose * renderPurpose = new QueuePurpose{ QueuePurpose::RENDER };

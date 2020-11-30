@@ -2,6 +2,8 @@
 #include <CoreManager.h>
 #include <Settings.h>
 #include <GraphicsManager.h>
+#include <ECS_EngineManager.h>
+#include "SceneManager.h"
 
 EngineManager* EngineManager::instance = nullptr;
 
@@ -9,10 +11,18 @@ void EngineManager::Init()
 {
     CoreManager::GetInstance()->Init();
     GraphicsManager::GetInstance()->Init(800, 600, "Loops");
+    ECS_Manager::GetInstance()->Init();
+
+    sceneManagerObj = new SceneManager();
 }
 
 void EngineManager::DeInit()
 {
+    delete sceneManagerObj;
+
+    ECS_Manager::GetInstance()->DeInit();
+    delete ECS_Manager::GetInstance();
+
     GraphicsManager::GetInstance()->DeInit();
     delete GraphicsManager::GetInstance();
 
@@ -22,8 +32,12 @@ void EngineManager::DeInit()
 
 void EngineManager::Update()
 {
-    CoreManager::GetInstance()->Update();
-    GraphicsManager::GetInstance()->Update();
+    while (GraphicsManager::GetInstance()->IsWindowActive())
+    {
+        CoreManager::GetInstance()->Update();
+        ECS_Manager::GetInstance()->Update();
+        GraphicsManager::GetInstance()->Update();
+    }
 }
 
 EngineManager * EngineManager::GetInstance()

@@ -20,7 +20,7 @@ class ComponentData
 {
 public:
     uint32_t size = 1;
-    std::array<ComponentType*, MAX_NUM_OF_COMPONENTS>* data;
+    std::array<ComponentType*, MAX_NUM_OF_UNIQUE_COMPONENTS>* data;
 };
 
 class BaseComponentManager {
@@ -61,7 +61,7 @@ public:
 template<typename ComponentType>
 inline ComponentManager<ComponentType>::ComponentManager()
 {
-    componentDataObj.data = static_cast<std::array<ComponentType*, MAX_NUM_OF_COMPONENTS>* >(malloc(sizeof(ComponentType) * MAX_NUM_OF_COMPONENTS));
+    componentDataObj.data = static_cast<std::array<ComponentType*, MAX_NUM_OF_UNIQUE_COMPONENTS>* >(malloc(sizeof(ComponentType) * MAX_NUM_OF_UNIQUE_COMPONENTS));
     entityMapObj = new EntityMap();
 }
 
@@ -69,6 +69,7 @@ template<typename ComponentType>
 inline ComponentManager<ComponentType>::~ComponentManager()
 {
     delete entityMapObj;
+    std::cout << "Deleting component manager\n";
 }
 
 template<typename ComponentType>

@@ -1,6 +1,8 @@
 #pragma once
 #include "World.h"
 
+#include <iostream>
+
 class Entity;
 class World;
 
@@ -24,7 +26,7 @@ public:
         worldObj->DestroyEntity(entityObj);
     }
 
-    Entity * GetEntityHandle() { return entityObj; }
+    Entity * GetEntity() { return entityObj; }
 
     template<typename ComponentType>
     void AddComponent(ComponentType* componentType);
@@ -34,6 +36,11 @@ public:
 
     template<typename ComponentType>
     ComponentHandle<ComponentType> GetComponent();
+
+    ~EntityHandle()
+    {
+        //std::cout << "entity handle deleted \n";
+    }
 
 };
 

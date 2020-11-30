@@ -7,21 +7,38 @@
 
 class Transform : public Component<Transform>
 {
-public:
-    glm::vec3 position;
-    glm::vec3 scale;
-    glm::vec3 eulerAngles;
+private:
+    Transform * parent;
+    std::vector<Transform*> childrenList;
 
-    glm::mat4 modelMat;
+
+public:
+    glm::vec3 localPosition, globalPosition;
+    glm::vec3 localScale, globalScale;
+    glm::vec3 localEulerAngle, globalEulerAngle;
+
+    glm::mat4 localModelMatrix;
+    glm::mat4 globalModelMatrix;
     glm::mat4 translationMat, scaleMat, rotationMat;
 
-    Transform * parent;
+    bool isTransformUpdated;
 
     Transform()
     {
-        position = glm::vec3(0, 0, 0);
-        scale = glm::vec3(1, 1, 1);
-        eulerAngles = glm::vec3(0, 0, 0);
+        localPosition = glm::vec3(0, 0, 0);
+        localScale = glm::vec3(1, 1, 1);
+        localEulerAngle = glm::vec3(0, 0, 0);
+
+        globalPosition = glm::vec3(0, 0, 0);
+        globalScale = glm::vec3(1, 1, 1);
+        globalEulerAngle = glm::vec3(0, 0, 0);
+
         parent = nullptr;
     }
+
+    Transform * GetParent();
+    void SetParent(Transform * transform);
+
+    const std::vector<Transform *> & GetChildren();
+
 };

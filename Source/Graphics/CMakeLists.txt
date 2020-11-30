@@ -58,6 +58,21 @@ FOREACH(subdir ${SUBDIRS})
     target_include_directories(Renderer PUBLIC "${subdir}")
 ENDFOREACH()
 
+#target_precompile_headers(Renderer PRIVATE RenderingPrecompiled.pch)
+
+if (MSVC)
+    # For precompiled header.
+    # Set
+    # "Precompiled Header" to "Use (/Yu)"
+    # "Precompiled Header File" to "stdafx.h"
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /YuRenderingPrecompiled.h /FIRenderingPrecompiled.h")
+endif()
+
+set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/Rendering/RenderingPrecompiled.cpp"
+    PROPERTIES
+    COMPILE_FLAGS "/YcRenderingPrecompiled.h"
+)
+
 ADD_GLFW(includeDir libDir libraries)
 target_include_directories(Renderer PUBLIC includeDir)
 link_directories(${libDir})

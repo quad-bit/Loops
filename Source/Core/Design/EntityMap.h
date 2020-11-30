@@ -13,7 +13,7 @@ class EntityMap
 {
 
 private:
-    std::array<Entity, MAX_NUM_OF_COMPONENTS> indexToEntity;
+    std::array<Entity, MAX_NUM_OF_UNIQUE_COMPONENTS> indexToEntity;
     std::map<Entity, ComponentIndex> entityToIndex;
 
 public:

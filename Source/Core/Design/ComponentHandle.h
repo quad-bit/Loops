@@ -19,6 +19,7 @@ public:
     ComponentHandle(ComponentManager<ComponentType>* componentManagerObj, Entity * owner, uint32_t componentIndex);
     void DestroyComponent();
     ComponentType *operator->() const { return componentType; }
+    ComponentType * GetComponent();
 };
 
 #include "ComponentManager.h"
@@ -35,4 +36,10 @@ template<typename ComponentType>
 void ComponentHandle<ComponentType>::DestroyComponent()
 {
     componentManagerObj->RemoveComponent(owner);
+}
+
+template<typename ComponentType>
+inline ComponentType * ComponentHandle<ComponentType>::GetComponent()
+{
+    return componentType;
 }

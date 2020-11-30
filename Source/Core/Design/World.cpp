@@ -1,6 +1,7 @@
 #include "World.h"
 #include "System.h"
 #include "EntityManager.h"
+#include "Transform.h"
 
 EntityHandle* World::CreateEntity()
 {
@@ -9,6 +10,10 @@ EntityHandle* World::CreateEntity()
 
     ComponentMask mask;
     entityMasks.insert({ *obj, mask });
+
+    Transform * transform = new Transform;
+    handle->AddComponent<Transform>(transform);
+    obj->transform = transform;
 
     return handle;
 }
@@ -58,10 +63,22 @@ void World::DeInit()
     {
         system->DeInit();
     }
+
+    EntityManager::GetSingleton()->DeInit();
+
+    for (uint32_t i = 0 ; i < managerList.size(); i++)
+    {
+        delete managerList[i];
+    }
+    managerList.clear();
+
+    delete EntityManager::GetSingleton();
 }
 
 void World::Init()
 {
+    EntityManager::GetSingleton()->Init();
+
     for (auto system : systemList)
     {
         system->Init();
@@ -73,5 +90,11 @@ void World::DestroyEntity(Entity* entityObj)
     for (auto system : systemList)
     {
         system->UnRegisterEntity(entityObj);
+    }
+
+    if (entityObj != nullptr)
+    {
+        delete entityObj->transform;
+        delete entityObj;
     }
 }
