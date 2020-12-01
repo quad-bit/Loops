@@ -37,6 +37,7 @@ public:
     void Init();
 
     void DestroyEntity(Entity* entityObj);
+    void DestroyEntity(EntityHandle* entityHandleObj);
     EntityHandle* CreateEntity();
 
     template<typename ComponentType>

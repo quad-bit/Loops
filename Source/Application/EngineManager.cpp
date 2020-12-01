@@ -3,6 +3,7 @@
 #include <Settings.h>
 #include <GraphicsManager.h>
 #include <ECS_EngineManager.h>
+#include <InputManager.h>
 #include "SceneManager.h"
 
 EngineManager* EngineManager::instance = nullptr;
@@ -35,6 +36,7 @@ void EngineManager::Update()
     while (GraphicsManager::GetInstance()->IsWindowActive())
     {
         CoreManager::GetInstance()->Update();
+        InputManager::GetInstance()->Update();
         ECS_Manager::GetInstance()->Update();
         GraphicsManager::GetInstance()->Update();
     }

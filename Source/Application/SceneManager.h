@@ -1,7 +1,9 @@
 #pragma once
+#include <InputManager.h>
 
 class EntityHandle;
 class Scriptable;
+struct KeyInputEvent;
 
 class SceneManager
 {
@@ -19,4 +21,6 @@ private:
 public:
     SceneManager();
     ~SceneManager();
+
+    void HandleSceneControls(KeyInputEvent * inputEvent);
 };

@@ -94,7 +94,14 @@ void World::DestroyEntity(Entity* entityObj)
 
     if (entityObj != nullptr)
     {
-        delete entityObj->transform;
+        if (entityObj->transform != nullptr)
+            delete entityObj->transform;
+
         delete entityObj;
     }
+}
+
+void World::DestroyEntity(EntityHandle * entityHandleObj)
+{
+    DestroyEntity(entityHandleObj->GetEntity());
 }
