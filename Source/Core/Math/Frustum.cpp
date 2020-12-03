@@ -1,7 +1,5 @@
 #include "Frustum.h"
 
-using namespace Loops::Core::Math;
-using namespace Loops::Core::Utils::Container;
 
 Frustum::Frustum()
 {
@@ -45,7 +43,7 @@ void Frustum::CalculateFrustum(float angle, float ratio, float near, float far, 
 
 	frustum.Clear();
 
-	Loops::Core::Math::Plane planeObj;
+	Plane planeObj;
 
 	planeObj.Create(nearTopRight, nearTopLeft, farTopLeft);
 	AddPlane(planeObj);
@@ -66,7 +64,7 @@ void Frustum::CalculateFrustum(float angle, float ratio, float near, float far, 
 	AddPlane(planeObj);
 }
 
-void Frustum::AddPlane(Loops::Core::Math::Plane & plane)
+void Frustum::AddPlane(Plane & plane)
 {
 	frustum.Push(plane);
 }

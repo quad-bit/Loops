@@ -4,235 +4,232 @@
 #include <iostream>
 #include <stdint.h>
 
-namespace Loops::Core::Utils::Container
+template < class T>
+class LinkList;
+
+template < class T>
+class LinkIterator;
+
+template <class T>
+class Node
 {
-    template < class T>
-    class LinkList;
+    friend class LinkList<T>;
+    friend class LinkIterator<T>;
 
-    template < class T>
-    class LinkIterator;
+private:
+    T data;
+    Node * next;
+};
 
-    template <class T>
-    class Node
+template < class T>
+class LinkIterator
+{
+private:
+    Node<T> *node;
+public:
+    LinkIterator() {}
+    ~LinkIterator() {}
+
+    void operator = (Node<T> * node)
     {
-    	friend class LinkList<T>;
-    	friend class LinkIterator<T>;
+    	this->node = node;
+    }
 
-    private:
-    	T data;
-    	Node * next;
-    };
-
-    template < class T>
-    class LinkIterator
+    T &operator*()
     {
-    private:
-    	Node<T> *node;
-    public:
-    	LinkIterator() {}
-    	~LinkIterator() {}
+    	assert(node != NULL);
+    	return node->data;
+    }
 
-    	void operator = (Node<T> * node)
-    	{
-    		this->node = node;
-    	}
+    void operator ++()
+    {
+    	assert(node != NULL);
+    	if (node->next != NULL)
+    		node = node->next;
+    	else
+    		std::cout << "last node";
+    }
 
-    	T &operator*()
+    void operator++(int val)
+    {
+    	assert(node != NULL);
+    	for (int i = 0; i < val; i++)
     	{
-    		assert(node != NULL);
-    		return node->data;
-    	}
-
-    	void operator ++()
-    	{
-    		assert(node != NULL);
     		if (node->next != NULL)
     			node = node->next;
     		else
+    		{
     			std::cout << "last node";
-    	}
-
-    	void operator++(int val)
-    	{
-    		assert(node != NULL);
-    		for (int i = 0; i < val; i++)
-    		{
-    			if (node->next != NULL)
-    				node = node->next;
-    			else
-    			{
-    				std::cout << "last node";
-    				break;
-    			}
+    			break;
     		}
     	}
+    }
 
-    	bool operator != (Node<T> * node)
-    	{
-    		assert(node != NULL);
-    		assert(this->node != NULL);
-
-    		return (this->node != node);
-    	}
-
-    	bool operator == (Node<T> * node)
-    	{
-    		return (this->node == node);
-    	}
-    };
-
-
-    template < class T>
-    class LinkList
+    bool operator != (Node<T> * node)
     {
-    private:
-    	std::uint32_t size;
-    	Node<T> * firstNode;
-    	Node<T> * lastNode;
+    	assert(node != NULL);
+    	assert(this->node != NULL);
 
-    public:
-    	LinkList() : size(0), firstNode(0), lastNode(0)
+    	return (this->node != node);
+    }
+
+    bool operator == (Node<T> * node)
+    {
+    	return (this->node == node);
+    }
+};
+
+
+template < class T>
+class LinkList
+{
+private:
+    std::uint32_t size;
+    Node<T> * firstNode;
+    Node<T> * lastNode;
+
+public:
+    LinkList() : size(0), firstNode(0), lastNode(0)
+    {
+
+    }
+
+    ~LinkList()
+    {
+    	Clear();
+    }
+
+    Node<T> * Begin()
+    {
+    	assert(firstNode != NULL);
+    	return firstNode;
+    }
+
+    Node<T> * End()
+    {
+    	assert(lastNode != NULL);
+    	return lastNode;
+    }
+
+    void Push(T data)
+    {
+    	Node<T> * node = new Node<T>();
+    	node->data = data;
+    	node->next = NULL;
+
+    	if (firstNode == NULL)
     	{
-
+    		firstNode = node;
+    		lastNode = node;
     	}
-
-    	~LinkList()
+    	else
     	{
-    		Clear();
+    		lastNode->next = node;
+    		lastNode = node;
     	}
+    	size++;
+    }
 
-    	Node<T> * Begin()
+    void Pop()
+    {
+    	assert(firstNode != NULL);
+
+    	if (firstNode->next == NULL)
     	{
-    		assert(firstNode != NULL);
-    		return firstNode;
+    		delete firstNode;
+    		firstNode = NULL;
     	}
-
-    	Node<T> * End()
+    	else
     	{
-    		assert(lastNode != NULL);
-    		return lastNode;
-    	}
+    		Node<T> * prevNode = firstNode;
 
-    	void Push(T data)
-    	{
-    		Node<T> * node = new Node<T>();
-    		node->data = data;
-    		node->next = NULL;
-
-    		if (firstNode == NULL)
+    		while (prevNode->next != NULL && prevNode->next != lastNode)
     		{
-    			firstNode = node;
-    			lastNode = node;
-    		}
-    		else
-    		{
-    			lastNode->next = node;
-    			lastNode = node;
-    		}
-    		size++;
-    	}
-
-    	void Pop()
-    	{
-    		assert(firstNode != NULL);
-
-    		if (firstNode->next == NULL)
-    		{
-    			delete firstNode;
-    			firstNode = NULL;
-    		}
-    		else
-    		{
-    			Node<T> * prevNode = firstNode;
-
-    			while (prevNode->next != NULL && prevNode->next != lastNode)
-    			{
-    				prevNode = prevNode->next;
-    			}
-
-    			delete lastNode;
-    			prevNode->next = NULL;
-    			lastNode = prevNode;
-    		}
-
-    		size = (size == 0 ? 0 : size - 1);
-    	}
-
-    	void PushFront(T data)
-    	{
-    		Node<T> * node = new Node<T>();
-    		node->data = data;
-    		node->next = NULL;
-
-    		if (firstNode != NULL)
-    		{
-    			node->next = firstNode;
-    			firstNode = node;
-    		}
-    		else
-    		{
-    			firstNode = node;
-    			lastNode = node;
-    		}
-    		size++;
-    	}
-
-    	void PopFront()
-    	{
-    		assert(firstNode != NULL);
-    		Node<T> *temp = firstNode;
-    		firstNode = firstNode->next;
-
-    		delete temp;
-
-    		size = (size == 0 ? 0 : size - 1);
-    	}
-
-    	std::uint32_t GetSize()
-    	{
-    		return size;
-    	}
-
-    	void Clear()
-    	{
-    		while (firstNode != NULL)
-    		{
-    			Pop();
-    		}
-    	}
-
-    	void Insert(T data, std::uint32_t location)
-    	{
-
-    		ASSERT(location >= 0);
-    		ASSERT(location <= size);
-
-    		if (location == 0)
-    		{
-    			PushFront(data);
-    			return;
-    		}
-    		else if (location == GetSize())
-    		{
-    			Push(data);
-    			return;
+    			prevNode = prevNode->next;
     		}
 
-    		Node<T> * temp = firstNode;
-
-    		for (uint32_t i = 0; i < location - 1; i++)
-    		{
-    			temp = temp->next;
-    		}
-
-    		Node<T> * newNode = new Node<T>;
-    		newNode->data = data;
-
-    		Node<T> * nextNode = temp->next;
-    		temp->next = newNode;
-    		newNode->next = nextNode;
-
-    		size++;
+    		delete lastNode;
+    		prevNode->next = NULL;
+    		lastNode = prevNode;
     	}
-    };
-}
+
+    	size = (size == 0 ? 0 : size - 1);
+    }
+
+    void PushFront(T data)
+    {
+    	Node<T> * node = new Node<T>();
+    	node->data = data;
+    	node->next = NULL;
+
+    	if (firstNode != NULL)
+    	{
+    		node->next = firstNode;
+    		firstNode = node;
+    	}
+    	else
+    	{
+    		firstNode = node;
+    		lastNode = node;
+    	}
+    	size++;
+    }
+
+    void PopFront()
+    {
+    	assert(firstNode != NULL);
+    	Node<T> *temp = firstNode;
+    	firstNode = firstNode->next;
+
+    	delete temp;
+
+    	size = (size == 0 ? 0 : size - 1);
+    }
+
+    std::uint32_t GetSize()
+    {
+    	return size;
+    }
+
+    void Clear()
+    {
+    	while (firstNode != NULL)
+    	{
+    		Pop();
+    	}
+    }
+
+    void Insert(T data, std::uint32_t location)
+    {
+
+    	ASSERT(location >= 0);
+    	ASSERT(location <= size);
+
+    	if (location == 0)
+    	{
+    		PushFront(data);
+    		return;
+    	}
+    	else if (location == GetSize())
+    	{
+    		Push(data);
+    		return;
+    	}
+
+    	Node<T> * temp = firstNode;
+
+    	for (uint32_t i = 0; i < location - 1; i++)
+    	{
+    		temp = temp->next;
+    	}
+
+    	Node<T> * newNode = new Node<T>;
+    	newNode->data = data;
+
+    	Node<T> * nextNode = temp->next;
+    	temp->next = newNode;
+    	newNode->next = nextNode;
+
+    	size++;
+    }
+};

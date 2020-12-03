@@ -69,7 +69,6 @@ template<typename ComponentType>
 inline ComponentManager<ComponentType>::~ComponentManager()
 {
     delete entityMapObj;
-    std::cout << "Deleting component manager\n";
 }
 
 template<typename ComponentType>

@@ -1,287 +1,284 @@
 #pragma once
 #include <iostream>
 
-namespace Loops::Core::Utils::Container
+template <class T>
+class BinaryTree;
+
+template <class T>
+class BTNode
 {
-    template <class T>
-    class BinaryTree;
+    friend class BinaryTree<T>;
 
-    template <class T>
-    class BTNode
+private:
+    T key;
+    BTNode *left, *right;
+
+public:
+    BTNode(T obj) : key(obj), left(NULL), right(NULL)
+    {}
+
+    ~BTNode()
     {
-    	friend class BinaryTree<T>;
-
-    private:
-    	T key;
-    	BTNode *left, *right;
-
-    public:
-    	BTNode(T obj) : key(obj), left(NULL), right(NULL)
-    	{}
-
-    	~BTNode()
+    	if (left != NULL)
     	{
-    		if (left != NULL)
-    		{
-    			delete left;
-    			left = NULL;
-    		}
-
-    		if (right != NULL)
-    		{
-    			delete right;
-    			right = NULL;
-    		}
+    		delete left;
+    		left = NULL;
     	}
 
-    	T GetKey()
+    	if (right != NULL)
     	{
-    		return key;
+    		delete right;
+    		right = NULL;
     	}
-    };
+    }
 
-
-    template <class T>
-    class BinaryTree
+    T GetKey()
     {
-    private:
-    	BTNode<T> * root;
+    	return key;
+    }
+};
 
-    	void DisplayInOrder(BTNode<T> * node);
-    	void DisplayPreOrder(BTNode<T> * node);
-    	void DisplayPostOrder(BTNode<T> * node);
 
-    public:
-    	BinaryTree() : root(NULL) {}
+template <class T>
+class BinaryTree
+{
+private:
+    BTNode<T> * root;
 
-    	~BinaryTree()
+    void DisplayInOrder(BTNode<T> * node);
+    void DisplayPreOrder(BTNode<T> * node);
+    void DisplayPostOrder(BTNode<T> * node);
+
+public:
+    BinaryTree() : root(NULL) {}
+
+    ~BinaryTree()
+    {
+    	if (root != NULL)
     	{
-    		if (root != NULL)
-    		{
-    			delete root;
-    			root = NULL;
-    		}
+    		delete root;
+    		root = NULL;
     	}
+    }
 
-    	bool Push(T key);
-    	bool Search(T key);
+    bool Push(T key);
+    bool Search(T key);
 
-    	void DisplayInOrder() { DisplayInOrder(root); }
-    	void DisplayPreOrder() { DisplayPreOrder(root); }
-    	void DisplayPostOrder() { DisplayPostOrder(root); }
-    	void Remove(T key);
-    };
+    void DisplayInOrder() { DisplayInOrder(root); }
+    void DisplayPreOrder() { DisplayPreOrder(root); }
+    void DisplayPostOrder() { DisplayPostOrder(root); }
+    void Remove(T key);
+};
 
-    template<class T>
-    inline void BinaryTree<T>::DisplayInOrder(BTNode<T>* node)
+template<class T>
+inline void BinaryTree<T>::DisplayInOrder(BTNode<T>* node)
+{
+    if (node == NULL)
+    	return;
+
+    DisplayInOrder(node->left);
+    std::cout << node->key << " ";
+    DisplayInOrder(node->right);
+}
+
+template<class T>
+inline void BinaryTree<T>::DisplayPreOrder(BTNode<T>* node)
+{
+    if (node != NULL)
     {
-    	if (node == NULL)
-    		return;
-
-    	DisplayInOrder(node->left);
     	std::cout << node->key << " ";
-    	DisplayInOrder(node->right);
+    	DisplayPreOrder(node->left);
+    	DisplayPreOrder(node->right);
     }
+}
 
-    template<class T>
-    inline void BinaryTree<T>::DisplayPreOrder(BTNode<T>* node)
+template<class T>
+inline void BinaryTree<T>::DisplayPostOrder(BTNode<T>* node)
+{
+    if (node == NULL)
+    	return;
+
+    DisplayPostOrder(node->left);
+    DisplayPostOrder(node->right);
+    std::cout << node->key << " ";
+}
+
+template<class T>
+inline bool BinaryTree<T>::Push(T key)
+{
+    BTNode<T> * node = new BTNode<T>(key);
+
+    if (root == NULL)
     {
-    	if (node != NULL)
-    	{
-    		std::cout << node->key << " ";
-    		DisplayPreOrder(node->left);
-    		DisplayPreOrder(node->right);
-    	}
+    	root = node;
     }
-
-    template<class T>
-    inline void BinaryTree<T>::DisplayPostOrder(BTNode<T>* node)
+    else
     {
-    	if (node == NULL)
-    		return;
+    	BTNode<T> * parentNode = NULL;
+    	BTNode<T> * currentNode = root;
 
-    	DisplayPostOrder(node->left);
-    	DisplayPostOrder(node->right);
-    	std::cout << node->key << " ";
-    }
-
-    template<class T>
-    inline bool BinaryTree<T>::Push(T key)
-    {
-    	BTNode<T> * node = new BTNode<T>(key);
-
-    	if (root == NULL)
+    	while (1)
     	{
-    		root = node;
-    	}
-    	else
-    	{
-    		BTNode<T> * parentNode = NULL;
-    		BTNode<T> * currentNode = root;
+    		parentNode = currentNode;
 
-    		while (1)
+    		if (key == currentNode->key)
     		{
-    			parentNode = currentNode;
-
-    			if (key == currentNode->key)
-    			{
-    				delete node;
-    				return false;
-    			}
-
-    			if (currentNode->key > key)
-    			{
-    				currentNode = currentNode->left;
-
-    				if (currentNode == NULL)
-    				{
-    					parentNode->left = node;
-    					return true;
-    				}
-    			}
-    			else
-    			{
-    				currentNode = currentNode->right;
-
-    				if (currentNode == NULL)
-    				{
-    					parentNode->right = node;
-    					return true;
-    				}
-    			}
+    			delete node;
+    			return false;
     		}
-    	}
 
-    	return true;
-    }
-
-    template<class T>
-    inline bool BinaryTree<T>::Search(T key)
-    {
-    	if (root == NULL)
-    	{
-    		return false;
-    	}
-
-    	BTNode<T> * currentNode;
-
-    	currentNode = root;
-    	while (currentNode->key != key)
-    	{
-    		if (currentNode->key < key)
-    		{
-    			currentNode = currentNode->right;
-    		}
-    		else
+    		if (currentNode->key > key)
     		{
     			currentNode = currentNode->left;
+
+    			if (currentNode == NULL)
+    			{
+    				parentNode->left = node;
+    				return true;
+    			}
     		}
+    		else
+    		{
+    			currentNode = currentNode->right;
 
-    		if (currentNode == NULL)
-    			return false;
-
+    			if (currentNode == NULL)
+    			{
+    				parentNode->right = node;
+    				return true;
+    			}
+    		}
     	}
-    	return true;
     }
 
-    template<class T>
-    inline void BinaryTree<T>::Remove(T key)
+    return true;
+}
+
+template<class T>
+inline bool BinaryTree<T>::Search(T key)
+{
+    if (root == NULL)
     {
-    	if (root == NULL)
-    		return;
+    	return false;
+    }
 
-    	BTNode<T> * parent = root;
-    	BTNode<T> * node = root;
+    BTNode<T> * currentNode;
 
-    	bool isLeftNode = false;
-
-    	while (node->key != key)
+    currentNode = root;
+    while (currentNode->key != key)
+    {
+    	if (currentNode->key < key)
     	{
-    		parent = node;
-
-    		if (key < node->key)
-    		{
-    			node = node->left;
-    			isLeftNode = true;
-    		}
-    		else
-    		{
-    			node = node->right;
-    			isLeftNode = false;
-    		}
-
-    		if (node == NULL)
-    			return;
-    	}
-
-    	if (node->left == NULL && node->right == NULL)
-    	{
-    		if (node == root)
-    			root = NULL;
-    		else if (isLeftNode == true)
-    			parent->left = NULL;
-    		else
-    			parent->right = NULL;
-    	}
-    	else if (node->left == NULL)
-    	{
-    		if (node == root)
-    			root = node->right;
-    		else if (isLeftNode)
-    			parent->left = node->right;
-    		else
-    			parent->right = node->right;
-
-    	}
-    	else if (node->right == NULL)
-    	{
-    		if (node == root)
-    			root = node->left;
-    		else if (isLeftNode)
-    			parent->left = node->left;
-    		else
-    			parent->right = node->left;
+    		currentNode = currentNode->right;
     	}
     	else
     	{
-    		BTNode<T> * tempNode = node->right;
-    		BTNode<T> * successor = node;
-    		BTNode<T> * successorParent = node;
-
-    		while (tempNode != NULL)
-    		{
-    			successorParent = successor;
-    			successor = tempNode;
-    			tempNode = tempNode->left;
-    		}
-
-    		if (successor != node->right)
-    		{
-    			successorParent->left = successor->right;
-    			successor->right = node->right;
-    		}
-
-    		if (node == root)
-    		{
-    			root = successor;
-    		}
-    		else if (isLeftNode)
-    		{
-    			node = parent->left;
-    			parent->left = successor;
-    		}
-    		else
-    		{
-    			node = parent->right;
-    			parent->right = successor;
-    		}
-
-    		successor->left = node->left;
+    		currentNode = currentNode->left;
     	}
 
-    	node->left = NULL;
-    	node->right = NULL;
-    	delete node;
+    	if (currentNode == NULL)
+    		return false;
+
+    }
+    return true;
+}
+
+template<class T>
+inline void BinaryTree<T>::Remove(T key)
+{
+    if (root == NULL)
+    	return;
+
+    BTNode<T> * parent = root;
+    BTNode<T> * node = root;
+
+    bool isLeftNode = false;
+
+    while (node->key != key)
+    {
+    	parent = node;
+
+    	if (key < node->key)
+    	{
+    		node = node->left;
+    		isLeftNode = true;
+    	}
+    	else
+    	{
+    		node = node->right;
+    		isLeftNode = false;
+    	}
+
+    	if (node == NULL)
+    		return;
     }
 
+    if (node->left == NULL && node->right == NULL)
+    {
+    	if (node == root)
+    		root = NULL;
+    	else if (isLeftNode == true)
+    		parent->left = NULL;
+    	else
+    		parent->right = NULL;
+    }
+    else if (node->left == NULL)
+    {
+    	if (node == root)
+    		root = node->right;
+    	else if (isLeftNode)
+    		parent->left = node->right;
+    	else
+    		parent->right = node->right;
+
+    }
+    else if (node->right == NULL)
+    {
+    	if (node == root)
+    		root = node->left;
+    	else if (isLeftNode)
+    		parent->left = node->left;
+    	else
+    		parent->right = node->left;
+    }
+    else
+    {
+    	BTNode<T> * tempNode = node->right;
+    	BTNode<T> * successor = node;
+    	BTNode<T> * successorParent = node;
+
+    	while (tempNode != NULL)
+    	{
+    		successorParent = successor;
+    		successor = tempNode;
+    		tempNode = tempNode->left;
+    	}
+
+    	if (successor != node->right)
+    	{
+    		successorParent->left = successor->right;
+    		successor->right = node->right;
+    	}
+
+    	if (node == root)
+    	{
+    		root = successor;
+    	}
+    	else if (isLeftNode)
+    	{
+    		node = parent->left;
+    		parent->left = successor;
+    	}
+    	else
+    	{
+    		node = parent->right;
+    		parent->right = successor;
+    	}
+
+    	successor->left = node->left;
+    }
+
+    node->left = NULL;
+    node->right = NULL;
+    delete node;
 }
+

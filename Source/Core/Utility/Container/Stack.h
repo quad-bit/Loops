@@ -3,53 +3,50 @@
 #include <stdexcept>
 #include "LinkedList.h"
 
-namespace Loops::Core::Utils::Container
+template <class T>
+class Stack
 {
-    template <class T>
-    class Stack
+private:
+    LinkList<T> container;
+    int size;
+
+public:
+    void Push(T const & obj);
+    void Pop();
+    const T& Top() const;
+    bool Empty() const
     {
-    private:
-    	LinkList<T> container;
-    	int size;
-
-    public:
-    	void Push(T const & obj);
-    	void Pop();
-    	const T& Top() const;
-    	bool Empty() const
-    	{
-    		return (container.size == 0 ? true : false);
-    	}
-
-    	//Stack<T>& operator=(Stack<T> const &);
-    };
-
-    template<class T>
-    inline void Stack<T>::Push(T const & obj)
-    {
-    	container.Push(obj);
+    	return (container.size == 0 ? true : false);
     }
 
-    template<class T>
-    inline void Stack<T>::Pop()
-    {
-    	if (Empty())
-    		throw std::out_of_range("cannot pop from empty stack ");
+    //Stack<T>& operator=(Stack<T> const &);
+};
 
-    	container.Pop();
-    }
+template<class T>
+inline void Stack<T>::Push(T const & obj)
+{
+    container.Push(obj);
+}
 
-    template<class T>
-    inline const T& Stack<T>::Top() const
-    {
-    	if (Empty())
-    		throw std::out_of_range("empty stack ");
+template<class T>
+inline void Stack<T>::Pop()
+{
+    if (Empty())
+    	throw std::out_of_range("cannot pop from empty stack ");
 
-    	LinkIterator<T> it;
-    	it = container.End();
+    container.Pop();
+}
 
-    	return *it;
-    }
+template<class T>
+inline const T& Stack<T>::Top() const
+{
+    if (Empty())
+    	throw std::out_of_range("empty stack ");
+
+    LinkIterator<T> it;
+    it = container.End();
+
+    return *it;
 }
 
 /*

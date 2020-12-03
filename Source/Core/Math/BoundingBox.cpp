@@ -1,6 +1,5 @@
 #include "BoundingBox.h"
 
-using namespace Loops::Core::Math;
 
 BoundingBox::BoundingBox()
 {

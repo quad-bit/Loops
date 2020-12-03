@@ -6,302 +6,299 @@
 
 #include "Assertion.h"
 
-namespace Loops::Core::Utils::Container
+template <typename T>
+class Vector // unordered array
 {
-	template <typename T>
-	class Vector // unordered array
+private:
+
+	enum STRUCTURE_TYPE
 	{
-	private:
-
-		enum STRUCTURE_TYPE
-		{
-			FIXED,
-			DYNAMIC,
-			NONE
-		}structureType;
+		FIXED,
+		DYNAMIC,
+		NONE
+	}structureType;
 
 
-		T * array;
-		LinkList<T> list;
-		int maxSize;
-		int growSize;
-		int numElements;
+	T * array;
+	LinkList<T> list;
+	int maxSize;
+	int growSize;
+	int numElements;
 
 
-	public:
-		Vector(int size, int growBy = 1);
-		Vector();
-		~Vector();
-		T& operator[](int index);
+public:
+	Vector(int size, int growBy = 1);
+	Vector();
+	~Vector();
+	T& operator[](int index);
 
-		virtual void Push(T val);
-		void Pop();
-		bool RemoveAt(int index);
-		bool Expand();
-		void PrintElements();
-		void Clear();
-		bool Empty();
-		int GetSize();
-		void Insert(T data, int location);
-	};
+	virtual void Push(T val);
+	void Pop();
+	bool RemoveAt(int index);
+	bool Expand();
+	void PrintElements();
+	void Clear();
+	bool Empty();
+	int GetSize();
+	void Insert(T data, int location);
+};
 
-	template<typename T>
-	inline Vector<T>::Vector(int size, int growBy) : array(NULL), maxSize(0), growSize(0), numElements(0)
+template<typename T>
+inline Vector<T>::Vector(int size, int growBy) : array(NULL), maxSize(0), growSize(0), numElements(0)
+{
+	if (size)
 	{
-		if (size)
-		{
-			maxSize = size;
-			array = new T[maxSize];
+		maxSize = size;
+		array = new T[maxSize];
 
-			growSize = (growBy > 0) ? growBy : 0;
-			structureType = STRUCTURE_TYPE::FIXED;
+		growSize = (growBy > 0) ? growBy : 0;
+		structureType = STRUCTURE_TYPE::FIXED;
+	}
+	else
+	structureType = STRUCTURE_TYPE::NONE;
+}
+
+template<typename T>
+inline Vector<T>::Vector()
+{
+	structureType = STRUCTURE_TYPE::DYNAMIC;
+}
+
+template<typename T>
+inline Vector<T>::~Vector()
+{
+	if (structureType == STRUCTURE_TYPE::FIXED)
+	{
+		if (array != NULL)
+		{
+			delete[] array;
+			array = NULL;
 		}
-		else
-		structureType = STRUCTURE_TYPE::NONE;
 	}
-
-	template<typename T>
-	inline Vector<T>::Vector()
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
 	{
-		structureType = STRUCTURE_TYPE::DYNAMIC;
+		list.Clear();
 	}
+}
 
-	template<typename T>
-	inline Vector<T>::~Vector()
+template<typename T>
+inline T & Vector<T>::operator[](int index)
+{
+	ASSERT(index > 0);
+
+	if (structureType == STRUCTURE_TYPE::FIXED)
 	{
-		if (structureType == STRUCTURE_TYPE::FIXED)
+		ASSERT(array != NULL);
+		ASSERT(index < numElements);
+		//assert(numElements >= 0);
+		ASSERT_MSG(numElements <= 0,"test");
+
+		for (int i = 0; i < numElements; i++)
 		{
-			if (array != NULL)
+			if (i == index)
 			{
-				delete[] array;
-				array = NULL;
+				return array[i];
 			}
 		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			list.Clear();
-		}
 	}
-
-	template<typename T>
-	inline T & Vector<T>::operator[](int index)
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
 	{
-		ASSERT(index > 0);
+		ASSERT_MSG(list.GetSize() > 0, "vector empty");
+		ASSERT_MSG((int)list.GetSize() > index, "out of bounds");
 
-		if (structureType == STRUCTURE_TYPE::FIXED)
+		LinkIterator<T> it;
+		it = list.Begin();
+
+		int count = 0;
+		for (it = list.Begin(); it != list.End(); ++it , count++)
 		{
-			ASSERT(array != NULL);
-			ASSERT(index < numElements);
-			//assert(numElements >= 0);
-			ASSERT_MSG(numElements <= 0,"test");
-
-			for (int i = 0; i < numElements; i++)
-			{
-				if (i == index)
-				{
-					return array[i];
-				}
-			}
-		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			ASSERT_MSG(list.GetSize() > 0, "vector empty");
-			ASSERT_MSG((int)list.GetSize() > index, "out of bounds");
-
-			LinkIterator<T> it;
-			it = list.Begin();
-
-			int count = 0;
-			for (it = list.Begin(); it != list.End(); ++it , count++)
-			{
-				//cout << "  " << *it;
-				if (count == index)
-					return *it;
-			}
-		}
-
-		//return *(list.Begin());
-	}
-
-	template<typename T>
-	inline void Vector<T>::Push(T val)
-	{
-		ASSERT(structureType != STRUCTURE_TYPE::NONE);
-
-		if(structureType == STRUCTURE_TYPE::FIXED)
-		{
-			ASSERT(array != NULL);
-
-			if (numElements >= maxSize)
-			{
-				//expand the array
-				Expand();
-			}
-
-			array[numElements++] = val;
-		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			list.Push(val);
+			//cout << "  " << *it;
+			if (count == index)
+				return *it;
 		}
 	}
 
-	template<typename T>
-	inline void Vector<T>::Pop()
-	{
-		ASSERT(Empty() != true);
-		ASSERT(structureType != STRUCTURE_TYPE::NONE);
+	//return *(list.Begin());
+}
 
-		if (structureType == STRUCTURE_TYPE::FIXED)
-		{
-			ASSERT(array != NULL);
+template<typename T>
+inline void Vector<T>::Push(T val)
+{
+	ASSERT(structureType != STRUCTURE_TYPE::NONE);
 
-			if (numElements > 0)
-				numElements--;
-		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			list.Pop();
-		}
-	}
-
-	template<typename T>
-	inline bool Vector<T>::RemoveAt(int index)
-	{
-		ASSERT(Empty() != true);
-		ASSERT(structureType != STRUCTURE_TYPE::NONE);
-
-		if (structureType == STRUCTURE_TYPE::FIXED)
-		{
-			ASSERT(array != NULL);
-			if (index >= maxSize)
-			{
-				return false;
-			}
-
-			for (int k = index; k < maxSize; k++)
-			{
-				array[k] = array[k + 1];
-			}
-
-			numElements--;
-
-			return true;
-		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			ASSERT(0);
-			LinkIterator<T> it;
-			it = list.End();
-		}
-
-		return false;
-	}
-
-	template<typename T>
-	inline bool Vector<T>::Expand()
-	{
-		if (growSize <= 0)
-			return false;
-		T* temp = new T[maxSize + growSize];
-		ASSERT(temp != NULL);
-
-		maxSize += growSize;
-
-		memcpy(temp, array, sizeof(T) * maxSize);
-
-		delete[] array;
-
-		array = temp;
-		return true;
-	}
-
-	template<typename T>
-	inline void Vector<T>::PrintElements()
+	if(structureType == STRUCTURE_TYPE::FIXED)
 	{
 		ASSERT(array != NULL);
 
-		for (int k = 0; k < numElements; k++)
+		if (numElements >= maxSize)
 		{
-			std::cout << array[k] << std::endl;
+			//expand the array
+			Expand();
 		}
+
+		array[numElements++] = val;
+	}
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
+	{
+		list.Push(val);
+	}
+}
+
+template<typename T>
+inline void Vector<T>::Pop()
+{
+	ASSERT(Empty() != true);
+	ASSERT(structureType != STRUCTURE_TYPE::NONE);
+
+	if (structureType == STRUCTURE_TYPE::FIXED)
+	{
+		ASSERT(array != NULL);
+
+		if (numElements > 0)
+			numElements--;
+	}
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
+	{
+		list.Pop();
+	}
+}
+
+template<typename T>
+inline bool Vector<T>::RemoveAt(int index)
+{
+	ASSERT(Empty() != true);
+	ASSERT(structureType != STRUCTURE_TYPE::NONE);
+
+	if (structureType == STRUCTURE_TYPE::FIXED)
+	{
+		ASSERT(array != NULL);
+		if (index >= maxSize)
+		{
+			return false;
+		}
+
+		for (int k = index; k < maxSize; k++)
+		{
+			array[k] = array[k + 1];
+		}
+
+		numElements--;
+
+		return true;
+	}
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
+	{
+		ASSERT(0);
+		LinkIterator<T> it;
+		it = list.End();
 	}
 
-	template<typename T>
-	inline void Vector<T>::Clear()
-	{
-		ASSERT(structureType != STRUCTURE_TYPE::NONE);
+	return false;
+}
 
-		if (structureType == STRUCTURE_TYPE::FIXED)
-		{
-			ASSERT(array != NULL);
-
-			if (numElements == 0)
-				return;
-
-			while (numElements != 0)
-			{
-				Pop();
-				numElements--;
-			}
-		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			list.Clear();
-		}
-	}
-
-	template<typename T>
-	inline bool Vector<T>::Empty()
-	{
-		ASSERT(structureType != STRUCTURE_TYPE::NONE);
-
-		if (structureType == STRUCTURE_TYPE::FIXED)
-		{
-			ASSERT(array != NULL);
-
-			if (numElements == 0)
-				return true;
-		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			if (list.GetSize() == 0)
-				return true;
-		}
-
+template<typename T>
+inline bool Vector<T>::Expand()
+{
+	if (growSize <= 0)
 		return false;
-	}
-	template<typename T>
-	inline int Vector<T>::GetSize()
+	T* temp = new T[maxSize + growSize];
+	ASSERT(temp != NULL);
+
+	maxSize += growSize;
+
+	memcpy(temp, array, sizeof(T) * maxSize);
+
+	delete[] array;
+
+	array = temp;
+	return true;
+}
+
+template<typename T>
+inline void Vector<T>::PrintElements()
+{
+	ASSERT(array != NULL);
+
+	for (int k = 0; k < numElements; k++)
 	{
-		ASSERT(structureType != STRUCTURE_TYPE::NONE);
+		std::cout << array[k] << std::endl;
+	}
+}
 
-		if (structureType == STRUCTURE_TYPE::FIXED)
+template<typename T>
+inline void Vector<T>::Clear()
+{
+	ASSERT(structureType != STRUCTURE_TYPE::NONE);
+
+	if (structureType == STRUCTURE_TYPE::FIXED)
+	{
+		ASSERT(array != NULL);
+
+		if (numElements == 0)
+			return;
+
+		while (numElements != 0)
 		{
-			ASSERT(array != NULL);
-
-			return numElements;
+			Pop();
+			numElements--;
 		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			return list.GetSize();
-		}
+	}
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
+	{
+		list.Clear();
+	}
+}
 
-		return 0;
+template<typename T>
+inline bool Vector<T>::Empty()
+{
+	ASSERT(structureType != STRUCTURE_TYPE::NONE);
+
+	if (structureType == STRUCTURE_TYPE::FIXED)
+	{
+		ASSERT(array != NULL);
+
+		if (numElements == 0)
+			return true;
+	}
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
+	{
+		if (list.GetSize() == 0)
+			return true;
 	}
 
-	template<typename T>
-	inline void Vector<T>::Insert(T data, int location)
-	{
-		ASSERT(structureType != STRUCTURE_TYPE::NONE);
+	return false;
+}
+template<typename T>
+inline int Vector<T>::GetSize()
+{
+	ASSERT(structureType != STRUCTURE_TYPE::NONE);
 
-		if (structureType == STRUCTURE_TYPE::FIXED)
-		{
-			ASSERT(array != NULL);
-		}
-		else if (structureType == STRUCTURE_TYPE::DYNAMIC)
-		{
-			list.Insert(data, location);
-		}
+	if (structureType == STRUCTURE_TYPE::FIXED)
+	{
+		ASSERT(array != NULL);
+
+		return numElements;
+	}
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
+	{
+		return list.GetSize();
+	}
+
+	return 0;
+}
+
+template<typename T>
+inline void Vector<T>::Insert(T data, int location)
+{
+	ASSERT(structureType != STRUCTURE_TYPE::NONE);
+
+	if (structureType == STRUCTURE_TYPE::FIXED)
+	{
+		ASSERT(array != NULL);
+	}
+	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
+	{
+		list.Insert(data, location);
 	}
 }

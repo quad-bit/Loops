@@ -1,6 +1,5 @@
 #include "Plane.h"
 
-using namespace Loops::Core::Math;
 
 void Plane::Create(vec3 & p, vec3 & q, vec3 & r)
 {
@@ -80,12 +79,12 @@ POINT_STATE Plane::ClassifyPoint(const vec3 & point, float& dist)
 		dist = dp;
 
 	if (dp >= 0.001f)
-		return Loops::Core::Math::POINT_STATE::PLANE_FRONT;
+		return POINT_STATE::PLANE_FRONT;
 
 	if (dp < 0.001f)
-		return Loops::Core::Math::POINT_STATE::PLANE_BACK;
+		return POINT_STATE::PLANE_BACK;
 
-	return Loops::Core::Math::POINT_STATE::NONE;
+	return POINT_STATE::NONE;
 }
 
 float Plane::GetDistance(const vec3 & point)

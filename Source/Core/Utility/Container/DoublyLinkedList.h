@@ -2,251 +2,248 @@
 #include <stdint.h>
 #include <assert.h>
 
-namespace Loops::Core::Utils::Container
+template < class T>
+class DblLinkList;
+
+template < class T>
+class DblLinkIterator;
+
+template <class T>
+class DblLinkNode
 {
-    template < class T>
-    class DblLinkList;
+    friend class DblLinkList<T>;
+    friend class DblLinkIterator<T>;
 
-    template < class T>
-    class DblLinkIterator;
+private:
+    T data;
+    DblLinkNode * next, * prev;
+};
 
-    template <class T>
-    class DblLinkNode
+
+template < class T>
+class DblLinkIterator
+{
+private:
+    DblLinkNode<T> *node;
+
+public:
+    DblLinkIterator() {}
+    ~DblLinkIterator() {}
+
+    void operator=(DblLinkNode<T> * node)
     {
-    	friend class DblLinkList<T>;
-    	friend class DblLinkIterator<T>;
+    	this->node = node;
+    }
 
-    private:
-    	T data;
-    	DblLinkNode * next, * prev;
-    };
-
-
-    template < class T>
-    class DblLinkIterator
+    T &operator*()
     {
-    private:
-    	DblLinkNode<T> *node;
+    	assert(node != NULL);
+    	return node->data;
+    }
 
-    public:
-    	DblLinkIterator() {}
-    	~DblLinkIterator() {}
+    void operator ++()
+    {
+    	assert(node != NULL);
+    	if (node->next != NULL)
+    		node = node->next;
+    	else
+    		std::cout << "last node";
+    }
 
-    	void operator=(DblLinkNode<T> * node)
+    void operator--()
+    {
+    	assert(node != NULL);
+
+    	if (node->prev != NULL)
+    		node = node->prev;
+    	else
+    		std::cout << "first node";
+    }
+
+    void operator++(int val)
+    {
+    	assert(node != NULL);
+    	for (int i = 0; i < val; i++)
     	{
-    		this->node = node;
-    	}
-
-    	T &operator*()
-    	{
-    		assert(node != NULL);
-    		return node->data;
-    	}
-
-    	void operator ++()
-    	{
-    		assert(node != NULL);
     		if (node->next != NULL)
     			node = node->next;
     		else
+    		{
     			std::cout << "last node";
+    			break;
+    		}
     	}
+    }
 
-    	void operator--()
+    void operator--(int val)
+    {
+    	assert(node != NULL);
+    	for (int i = 0; i < val; i++)
     	{
-    		assert(node != NULL);
-
     		if (node->prev != NULL)
     			node = node->prev;
     		else
-    			std::cout << "first node";
-    	}
-
-    	void operator++(int val)
-    	{
-    		assert(node != NULL);
-    		for (int i = 0; i < val; i++)
     		{
-    			if (node->next != NULL)
-    				node = node->next;
-    			else
-    			{
-    				std::cout << "last node";
-    				break;
-    			}
+    			std::cout << "last node";
+    			break;
     		}
     	}
-
-    	void operator--(int val)
-    	{
-    		assert(node != NULL);
-    		for (int i = 0; i < val; i++)
-    		{
-    			if (node->prev != NULL)
-    				node = node->prev;
-    			else
-    			{
-    				std::cout << "last node";
-    				break;
-    			}
-    		}
-    	}
+    }
 
 
-    	bool operator != (DblLinkNode<T> * node)
-    	{
-    		//assert(node != NULL);
-    		assert(this->node != NULL);
-
-    		return (this->node != node);
-    	}
-
-    	bool operator == (DblLinkNode<T> * node)
-    	{
-    		return (this->node == node);
-    	}
-
-    };
-
-
-    template < class T>
-    class DblLinkList
+    bool operator != (DblLinkNode<T> * node)
     {
-    private:
-    	uint32_t size;
-    	DblLinkNode<T> * firstNode;
-    	DblLinkNode<T> * lastNode;
+    	//assert(node != NULL);
+    	assert(this->node != NULL);
 
-    public:
+    	return (this->node != node);
+    }
 
-    	DblLinkList()
+    bool operator == (DblLinkNode<T> * node)
+    {
+    	return (this->node == node);
+    }
+
+};
+
+
+template < class T>
+class DblLinkList
+{
+private:
+    uint32_t size;
+    DblLinkNode<T> * firstNode;
+    DblLinkNode<T> * lastNode;
+
+public:
+
+    DblLinkList()
+    {
+    	size = 0;
+    	firstNode = 0;
+    	lastNode = 0;
+    }
+
+    ~DblLinkList()
+    {
+    	Clear();
+    }
+
+    DblLinkNode<T> * Begin()
+    {
+    	assert(firstNode != NULL);
+    	return firstNode;
+    }
+
+    DblLinkNode<T> * End()
+    {
+    	assert(lastNode != NULL);
+    	return lastNode;
+    }
+
+    void Push(T data)
+    {
+    	DblLinkNode<T> * node = new DblLinkNode<T>;
+    	node->data = data;
+    	node->next = NULL;
+    	node->prev = NULL;
+
+    	if (firstNode == NULL)
     	{
-    		size = 0;
-    		firstNode = 0;
-    	    lastNode = 0;
+    		firstNode = node;
+    		lastNode = node;
     	}
-
-    	~DblLinkList()
+    	else
     	{
-    		Clear();
+    		node->prev = lastNode;
+    		lastNode->next = node;
+    		lastNode = node;
     	}
+    	size++;
+    }
 
-    	DblLinkNode<T> * Begin()
+    void PushFront(T data)
+    {
+    	DblLinkNode<T> * node = new DblLinkNode<T>;
+    	node->data = data;
+    	node->next = NULL;
+    	node->prev = NULL;
+
+    	if (firstNode == NULL)
     	{
-    		assert(firstNode != NULL);
-    		return firstNode;
+    		firstNode = node;
+    		lastNode = node;
     	}
-
-    	DblLinkNode<T> * End()
+    	else
     	{
-    		assert(lastNode != NULL);
-    		return lastNode;
+    		node->next = firstNode;
+    		firstNode->prev = node;
+    		firstNode = node;
     	}
+    	size++;
+    }
 
-    	void Push(T data)
+    void Pop()
+    {
+    	assert(firstNode != NULL);
+
+    	if (firstNode->next == NULL)
     	{
-    		DblLinkNode<T> * node = new DblLinkNode<T>;
-    		node->data = data;
-    		node->next = NULL;
-    		node->prev = NULL;
-
-    		if (firstNode == NULL)
-    		{
-    			firstNode = node;
-    			lastNode = node;
-    		}
-    		else
-    		{
-    			node->prev = lastNode;
-    			lastNode->next = node;
-    			lastNode = node;
-    		}
-    		size++;
+    		delete firstNode;
+    		firstNode = NULL;
     	}
-
-    	void PushFront(T data)
+    	else
     	{
-    		DblLinkNode<T> * node = new DblLinkNode<T>;
-    		node->data = data;
-    		node->next = NULL;
-    		node->prev = NULL;
+    		DblLinkNode<T> * prevNode = firstNode;
 
-    		if (firstNode == NULL)
+    		while (prevNode->next != NULL && prevNode->next != lastNode)
     		{
-    			firstNode = node;
-    			lastNode = node;
-    		}
-    		else
-    		{
-    			node->next = firstNode;
-    			firstNode->prev = node;
-    			firstNode = node;
-    		}
-    		size++;
-    	}
-
-    	void Pop()
-    	{
-    		assert(firstNode != NULL);
-
-    		if (firstNode->next == NULL)
-    		{
-    			delete firstNode;
-    			firstNode = NULL;
-    		}
-    		else
-    		{
-    			DblLinkNode<T> * prevNode = firstNode;
-
-    			while (prevNode->next != NULL && prevNode->next != lastNode)
-    			{
-    				prevNode = prevNode->next;
-    			}
-
-    			delete lastNode;
-    			prevNode->next = NULL;
-    			lastNode = prevNode;
-    		}
-
-    		size = (size == 0 ? 0 : size - 1);
-    	}
-
-    	void PopFront()
-    	{
-    		assert(firstNode != NULL);
-
-    		if (firstNode->next == NULL)
-    		{
-    			delete firstNode;
-    			firstNode = NULL;
-    		}
-    		else
-    		{
-    			DblLinkNode<T> * temp = firstNode;
-
-    			firstNode = temp->next;
-    			firstNode->prev = NULL;
-
-    			delete temp;
-    			temp = NULL;
+    			prevNode = prevNode->next;
     		}
 
-    		size = (size == 0 ? 0 : size - 1);
+    		delete lastNode;
+    		prevNode->next = NULL;
+    		lastNode = prevNode;
     	}
 
-    	uint32_t GetSize()
+    	size = (size == 0 ? 0 : size - 1);
+    }
+
+    void PopFront()
+    {
+    	assert(firstNode != NULL);
+
+    	if (firstNode->next == NULL)
     	{
-    		return size;
+    		delete firstNode;
+    		firstNode = NULL;
     	}
-
-    	void Clear()
+    	else
     	{
-    		while (firstNode != NULL)
-    		{
-    			Pop();
-    		}
+    		DblLinkNode<T> * temp = firstNode;
+
+    		firstNode = temp->next;
+    		firstNode->prev = NULL;
+
+    		delete temp;
+    		temp = NULL;
     	}
 
-    };
+    	size = (size == 0 ? 0 : size - 1);
+    }
 
-}
+    uint32_t GetSize()
+    {
+    	return size;
+    }
+
+    void Clear()
+    {
+    	while (firstNode != NULL)
+    	{
+    		Pop();
+    	}
+    }
+
+};
+

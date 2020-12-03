@@ -162,6 +162,15 @@ enum class QueuePurpose
     NONE
 };
 
+enum class ShaderType
+{
+    VERTEX,
+    TESSELLATION,
+    GEOMETRY,
+    FRAGMENT,
+    COMPUTE
+};
+
 #if (RENDERING_API == VULKAN)
 
     struct ImageInfo

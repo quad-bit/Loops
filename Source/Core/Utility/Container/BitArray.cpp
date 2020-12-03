@@ -2,8 +2,6 @@
 #include <assert.h>
 #include <stdint.h>
 
-using namespace Loops::Core::Utils::Container;
-
 BitArray::BitArray(unsigned int size)
 {
 	assert(size > 0);
