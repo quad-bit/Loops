@@ -5,6 +5,7 @@
 
 class Entity;
 class World;
+class Transform;
 
 template< typename ComponentType>
 class ComponentHandle;
@@ -14,10 +15,12 @@ class EntityHandle
 private:
     Entity * entityObj;
     World * worldObj;
+    Transform * transform;
 
 public:
     EntityHandle(Entity * entityObj, World * worldObj) {
         this->entityObj = entityObj;
+        //this->transform = entityObj->transform;
         this->worldObj = worldObj;
     }
 
@@ -27,6 +30,7 @@ public:
     }
 
     Entity * GetEntity() { return entityObj; }
+    Transform * GetTransform(){ return entityObj->transform; }
 
     template<typename ComponentType>
     void AddComponent(ComponentType* componentType);

@@ -1,17 +1,21 @@
 #pragma once
 #include <iostream>
-//#include <string>
+#include <string>
+
+using namespace std;
 
 class Transform;
 class Entity
 {
+private:
+
 public:
     uint32_t id;
 
     Transform * transform;
-    const char * entityName;
-    const char * entityTag;
-    const char * entityLayer;
+    string entityName;
+    string entityTag ;
+    string entityLayer ;
     bool isStatic;
 
     // To put it in maps
@@ -20,4 +24,5 @@ public:
     ~Entity()
     {
     }
+
 };

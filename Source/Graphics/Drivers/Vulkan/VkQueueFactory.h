@@ -23,9 +23,10 @@ public:
     uint32_t queueFamilyIndex;
     uint32_t queueId;
     uint32_t indexInFamily;
-    VkQueue * queue;
+    VkQueue * queue = NULL;
     QueueType queueType;
     QueuePurpose * purpose;
+    bool isQueueEnabled = false;
 };
 
 

@@ -224,7 +224,7 @@ void VulkanManager::Init(QueueWrapper * queueRequirement, const uint32_t & count
 
 void VulkanManager::DeInit()
 {
-    VkSynchroniserFactory::GetInstance()->Init();
+    VkSynchroniserFactory::GetInstance()->DeInit();
     delete VkSynchroniserFactory::GetInstance();
 
     VkCommandBufferFactory::GetInstance()->DeInit();
@@ -236,10 +236,12 @@ void VulkanManager::DeInit()
     vkDestroySurfaceKHR(vkInstanceObj, surface, pAllocator);
     vkDestroyDevice(vkLogicalDeviceObj, pAllocator);
     validationManagerObj->DeinitDebug();
-    vkDestroyInstance(vkInstanceObj, pAllocator);
 
     VkQueueFactory::GetInstance()->DeInit();
     delete VkQueueFactory::GetInstance();
+
+    vkDestroyInstance(vkInstanceObj, pAllocator);
+
 }
 
 void VulkanManager::Update()

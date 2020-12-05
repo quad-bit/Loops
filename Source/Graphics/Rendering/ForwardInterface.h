@@ -151,6 +151,8 @@ inline void ForwardRendering<T>::SetupRenderer()
     defaultFbos.resize(numFbos);
     apiInterface->CreateFrameBuffer(numFbos, imageIds, imagesPerFbo, defaultRenderPassId,
         Settings::windowWidth, Settings::windowHeight, &defaultFbos[0]);
+
+    delete[] imageIds;
 }
 
 template<typename T>

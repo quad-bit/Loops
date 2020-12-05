@@ -42,11 +42,13 @@ void TransformSystem::DeInit()
 
 void TransformSystem::Update(float dt)
 {
+    /*
 	for (auto & entity : registeredEntities)
 	{
 		ComponentHandle<Transform> transformHandle;
 		worldObj->Unpack(entity, transformHandle);
-
+        
+        
         if (transformHandle->GetParent() != nullptr)
         {
             if (transformHandle->GetParent()->isTransformUpdated)
@@ -71,7 +73,7 @@ void TransformSystem::Update(float dt)
                 transformHandle->isTransformUpdated = true;
             }
         }
-	}
+	}*/
 }
 
 TransformSystem::TransformSystem()

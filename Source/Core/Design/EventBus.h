@@ -55,6 +55,7 @@ private:
 public:
 
     static EventBus* GetInstance();
+    void DeInit();
 
     template <typename EventType>
     void Publish(EventType * event)
@@ -82,7 +83,7 @@ public:
         if (handlers == nullptr)
         {
             handlers = new HandlerList;
-            //subscribers.insert({ typeid(EventType), handlers });
+            //subscribers.insert(std::pair<std::type_index, HandlerList*> ( typeid(EventType), handlers ));
             subscribers[typeid(EventType)] = handlers;
         }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAX_NUM_OF_UNIQUE_COMPONENTS 20
+#define MAX_NUM_OF_UNIQUE_COMPONENT 20
 
 class World;
 

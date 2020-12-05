@@ -1,7 +1,8 @@
 #pragma once
-#include "DoublyLinkedList.h"
+//#include "DoublyLinkedList.h"
 #include <iostream>
 #include <string>
+#include <Assertion.h>
 
 template <class T>
 class Tree;
@@ -13,7 +14,7 @@ class TreeNode
 
 private:
     T * data;
-    TreeNode<T> * parent;
+    TreeNode<T> * nodeParent;
     TreeNode<T> *next, *prev, *child;
 
     TreeNode<T> * treeRoot;
@@ -29,7 +30,7 @@ public:
 	void AddChild(TreeNode<T> * child);
 	void DetachChild(TreeNode<T> * child);
 	void DeleteChild(TreeNode<T> * child);
-	void SetParent(TreeNode<T> * parent);
+	void SetParent(TreeNode<T> * nodeParent);
 };
 
 template <typename T>
@@ -42,7 +43,9 @@ inline TreeNode<T>::TreeNode(T * data)
 	next = NULL;
 	prev = NULL;
 	child = NULL;
-    parent = NULL;
+    nodeParent = NULL;
+
+    AssignId();
 }
 
 template<class T>
@@ -104,13 +107,19 @@ inline void TreeNode<T>::AddChild(TreeNode<T>* node)
 		child->AddSibling(node);
 	}
 
-    node->parent = this;
+    node->nodeParent = this;
 }
 
 template<class T>
 inline void TreeNode<T>::DetachChild(TreeNode<T>* child)
 {
-    // detach child from parent
+    if (child->nodeParent->idCounter == treeRoot->idCounter)
+    {
+        ASSERT_MSG(0, "Only node deletion possible, if nodeParent is root");
+        return;
+    }
+
+    // detach child from nodeParent
     // is this the first child
     if (child->prev == NULL)
     {
@@ -137,6 +146,8 @@ inline void TreeNode<T>::DetachChild(TreeNode<T>* child)
 
     child->next = NULL;
     child->prev = NULL;
+
+    child->SetParent(treeRoot);
 }
 
 template<class T>
@@ -163,7 +174,7 @@ inline void TreeNode<T>::AddSibling(TreeNode<T>* node)
 		ptr->next = node;
 		node->prev = ptr;
 	}
-    node->parent = this->parent;
+    node->nodeParent = this->nodeParent;
 }
 
 template<class T>
@@ -174,29 +185,29 @@ inline void TreeNode<T>::DeleteChild(TreeNode<T>* child)
 }
 
 template<class T>
-inline void TreeNode<T>::SetParent(TreeNode<T>* parent)
+inline void TreeNode<T>::SetParent(TreeNode<T>* nodeParent)
 {
-    if (this->parent == this->treeRoot)
+    if (this->nodeParent == NULL )//|| this->nodeParent->nodeId == this->treeRoot->nodeId)
     {
-        this->parent = parent;
-        parent->AddChild(this);
+        this->nodeParent = nodeParent;
+        nodeParent->AddChild(this);
     }
     else
     {
-        // detach child from parent
+        // detach child from nodeParent
         // is this the first child
-        if (this->prev == NULL) // (this->parent->child->nodeId == this->nodeId)
+        if (this->prev == NULL) // (this->nodeParent->child->nodeId == this->nodeId)
         {
-            if (this->parent->child->next != NULL)
+            if (this->nodeParent->child->next != NULL)
             {
-                TreeNode<T> * newChild = this->parent->child->next;
-                this->parent->child = newChild;
+                TreeNode<T> * newChild = this->nodeParent->child->next;
+                this->nodeParent->child = newChild;
                 newChild->prev = NULL;
             }
             //no siblings
             else
             {
-                this->parent->child = NULL;
+                this->nodeParent->child = NULL;
             }
         }
         else
@@ -211,9 +222,9 @@ inline void TreeNode<T>::SetParent(TreeNode<T>* parent)
         this->prev = NULL;
         this->next = NULL;
 
-        //attach it to new parent
-        this->parent = parent;
-        parent->AddChild(this);
+        //attach it to new nodeParent
+        this->nodeParent = nodeParent;
+        nodeParent->AddChild(this);
     }
 }
 
@@ -226,6 +237,7 @@ private:
 
 public:
     Tree();
+    Tree(TreeNode<T> * root);
     ~Tree();
     void AddToTree(TreeNode<T> * node);
     bool Search(TreeNode<T> * root, T * data);
@@ -243,37 +255,44 @@ inline Tree<T>::Tree()
 }
 
 template<class T>
+inline Tree<T>::Tree(TreeNode<T>* root)
+{
+    this->root = root;
+}
+
+template<class T>
 inline Tree<T>::~Tree()
 {
-    delete root;
+    delete root; // TODO: Handle deletion.
 }
 
 template<class T>
 inline void Tree<T>::AddToTree(TreeNode<T>* node)
 {
-    if (node->parent == NULL)
+    if (node->nodeParent == NULL)
     {
-        node->SetParent(root);
+        //node->SetParent(root);
+        root->AddChild(node);
     }
     
     node->treeRoot = root;
 }
 
 template<class T>
-inline bool Tree<T>::Search(TreeNode<T>* parent, T * data)
+inline bool Tree<T>::Search(TreeNode<T>* nodeParent, T * data)
 {
-    if (parent->data == data)
+    if (nodeParent->data == data)
     	return true;
 
-    if (parent->child != NULL)
+    if (nodeParent->child != NULL)
     {
-    	if (Search(parent->child, data) == true)
+    	if (Search(nodeParent->child, data) == true)
     		return true;
     }
 
-    if (parent->next != NULL)
+    if (nodeParent->next != NULL)
     {
-    	if (Search(parent->next, data) == true)
+    	if (Search(nodeParent->next, data) == true)
     		return true;
     }
 
@@ -283,20 +302,20 @@ inline bool Tree<T>::Search(TreeNode<T>* parent, T * data)
 template<class T>
 inline bool Tree<T>::Search(T * data)
 {
-    TreeNode<T> * parent = root;
+    TreeNode<T> * nodeParent = root;
 
-    if (parent->data == data)
+    if (nodeParent->data == data)
     	return true;
 
-    if (parent->child != NULL)
+    if (nodeParent->child != NULL)
     {
-    	if (Search(parent->child, data) == true)
+    	if (Search(nodeParent->child, data) == true)
     		return true;
     }
 
-    if (parent->next != NULL)
+    if (nodeParent->next != NULL)
     {
-    	if (Search(parent->next, data) == true)
+    	if (Search(nodeParent->next, data) == true)
     		return true;
     }
 
@@ -307,7 +326,7 @@ template<class T>
 inline void Tree<T>::Traversal(TreeNode<T> * node)
 {
     if (node->data != NULL)
-    	std::cout << node->data;
+        node->data->Execute();
 
     if (node->child != NULL)
     {
@@ -328,7 +347,7 @@ inline void Tree<T>::Traversal()
     TreeNode<T> * node = root;
 
     if (node->data != NULL)
-    	std::cout << node->data;
+    	node->data->Execute();
 
     if (node->child != NULL)
     {

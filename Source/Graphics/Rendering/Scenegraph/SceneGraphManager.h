@@ -1,12 +1,16 @@
 #pragma once
-
+#include <map>
 #include "SceneNode.h"
 
 template<typename T>
 class TreeNode;
 
 template<typename T>
-class TreeNode;
+class Tree;
+
+class SceneNode;
+struct NodeAdditionEvent;
+struct TreeModificationEvent;
 
 class SceneGraphManager
 {
@@ -18,12 +22,20 @@ private:
 
     static SceneGraphManager* instance;
     
+    SceneNode * rootNode;
+    TreeNode<SceneNode> * rootTreeNode;
+    Tree<SceneNode> * sceneTree;
+
+    std::map<SceneNode *, TreeNode<SceneNode>* > sceneToTreenodeMap;
+
 public:
-    void Init();
+    void Init(SceneNode * rootNode );
     void DeInit();
-    void Update();
+    void Update(float dt);
     static SceneGraphManager* GetInstance();
     ~SceneGraphManager();
 
     void CreateSceneGraph();
+    void NodeCreationEventHandler(NodeAdditionEvent * event);
+    void TreeModificationEventHandler(TreeModificationEvent * event);
 };

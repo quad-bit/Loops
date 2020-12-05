@@ -5,6 +5,7 @@
 #include "Scriptable.h"
 #include "ScriptableSystem.h"
 #include "ECS_Setting.h"
+#include "EventBus.h"
 
 ECS_Manager* ECS_Manager::instance = nullptr;
 World * worldObj;
@@ -27,11 +28,18 @@ void ECS_Manager::Init()
 
 void ECS_Manager::DeInit()
 {
+
+    EventBus::GetInstance()->DeInit();
+    delete EventBus::GetInstance();
+
     worldObj->DeInit();
 
     //delete transformManager;
     //delete scriptableManager;
     delete worldObj;
+
+    delete transformSystemObj;
+    delete scriptableSystemObj;
 }
 
 void ECS_Manager::Update()

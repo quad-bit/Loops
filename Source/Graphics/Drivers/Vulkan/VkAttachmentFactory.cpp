@@ -72,12 +72,12 @@ uint32_t VkAttachmentFactory::FindBestDepthFormat(ImageFormat * imageFormat, uin
         vkGetPhysicalDeviceFormatProperties(*CoreObjects::physicalDeviceObj, formatList[i], &props);
         if (props.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
         {
+            delete[] formatList;
             return i;
         }
     }
 
-    delete [] formatList;
-
+    delete[] formatList;
     return -1;
 }
 

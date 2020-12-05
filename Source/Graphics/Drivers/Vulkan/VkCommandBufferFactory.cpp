@@ -60,11 +60,13 @@ void VkCommandBufferFactory::DeInit()
 
     poolList.clear();
 
-    for each (VkDrawCommandBuffer* buf in drawCommandBufferList)
+    //for each (VkDrawCommandBuffer* buf in drawCommandBufferList)
+    for(uint32_t i = 0; i < drawCommandBufferList.size();i++)
     {
-        delete buf->commandBuffer;
+        delete drawCommandBufferList[i]->commandBuffer;
+        delete drawCommandBufferList[i];
     }
-
+    
     drawCommandBufferList.clear();
 }
 

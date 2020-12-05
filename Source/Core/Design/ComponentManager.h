@@ -20,7 +20,7 @@ class ComponentData
 {
 public:
     uint32_t size = 1;
-    std::array<ComponentType*, MAX_NUM_OF_UNIQUE_COMPONENTS>* data;
+    std::array<ComponentType*, MAX_NUM_OF_UNIQUE_COMPONENT>* data;
 };
 
 class BaseComponentManager {
@@ -61,13 +61,16 @@ public:
 template<typename ComponentType>
 inline ComponentManager<ComponentType>::ComponentManager()
 {
-    componentDataObj.data = static_cast<std::array<ComponentType*, MAX_NUM_OF_UNIQUE_COMPONENTS>* >(malloc(sizeof(ComponentType) * MAX_NUM_OF_UNIQUE_COMPONENTS));
+    componentDataObj.data = static_cast<std::array<ComponentType*, MAX_NUM_OF_UNIQUE_COMPONENT>* >(malloc(sizeof(ComponentType) * MAX_NUM_OF_UNIQUE_COMPONENT));
     entityMapObj = new EntityMap();
 }
 
 template<typename ComponentType>
 inline ComponentManager<ComponentType>::~ComponentManager()
 {
+    free(componentDataObj.data);
+    //TODO : Delete contents of the array componentDataObj.data, allocation is deleted but the pointer 
+    //variable stays
     delete entityMapObj;
 }
 

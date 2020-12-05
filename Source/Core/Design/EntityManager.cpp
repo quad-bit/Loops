@@ -1,7 +1,8 @@
 #include "EntityManager.h"
 #include "Entity.h"
 #include "EntityHandle.h"
-
+#include "Transform.h"
+#include <string>
 
 EntityManager* EntityManager::entityManagerInstance = nullptr;
 
@@ -35,6 +36,9 @@ Entity * EntityManager::CreateEntity()
     lastEntity++;
     Entity * obj = new Entity();
     obj->id = lastEntity;
+    string name = "Entity" + std::to_string(obj->id);
+    
+    obj->entityName = name;
 	entityList.push_back(obj);
     return obj;
 }
@@ -58,7 +62,23 @@ void EntityManager::DestroyEntity(Entity * entity)
 			break;
 		}
     } 
+    
+    if (entity != nullptr)
+    {
+        if (entity->transform != nullptr)
+        {
+            delete entity->transform;
+        }
+
+        delete entity;
+    }
 
 	entityList.erase(entityList.begin() + pos);
+
+    if (entityHandleList[pos])
+    {
+        delete entityHandleList[pos];
+    }
+
 	entityHandleList.erase(entityHandleList.begin() + pos);
 }

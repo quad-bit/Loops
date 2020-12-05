@@ -40,6 +40,8 @@ void VkDrawCommandBuffer::BeginRenderPass(RenderPassBeginInfo * renderPassBeginI
     }
 
     vkCmdBeginRenderPass(*commandBuffer, &vkRenderPassBeginInfo, subpassContent);
+
+    delete vkRenderPassBeginInfo.pClearValues;
 }
 
 void VkDrawCommandBuffer::EndRenderPass()

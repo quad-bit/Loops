@@ -4,6 +4,7 @@
 #include <GraphicsManager.h>
 #include <ECS_EngineManager.h>
 #include <InputManager.h>
+//#include <SceneGraphManager.h>
 #include "SceneManager.h"
 
 EngineManager* EngineManager::instance = nullptr;
@@ -13,7 +14,6 @@ void EngineManager::Init()
     CoreManager::GetInstance()->Init();
     GraphicsManager::GetInstance()->Init(800, 600, "Loops");
     ECS_Manager::GetInstance()->Init();
-
     sceneManagerObj = new SceneManager();
 }
 

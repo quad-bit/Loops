@@ -11,7 +11,7 @@ EntityHandle* World::CreateEntity()
     ComponentMask mask;
     entityMasks.insert({ *obj, mask });
 
-    Transform * transform = new Transform;
+    Transform * transform = new Transform(obj);
     handle->AddComponent<Transform>(transform);
     obj->transform = transform;
 
@@ -92,13 +92,17 @@ void World::DestroyEntity(Entity* entityObj)
         system->UnRegisterEntity(entityObj);
     }
 
-    if (entityObj != nullptr)
+    /*if (entityObj != nullptr)
     {
         if (entityObj->transform != nullptr)
+        {
             delete entityObj->transform;
+        }
 
         delete entityObj;
-    }
+    }*/
+
+    EntityManager::GetSingleton()->DestroyEntity(entityObj);
 }
 
 void World::DestroyEntity(EntityHandle * entityHandleObj)

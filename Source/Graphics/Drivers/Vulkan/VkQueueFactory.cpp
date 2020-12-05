@@ -85,13 +85,33 @@ void VkQueueFactory::DeInit()
     if(transferQueuePriority != nullptr)
     delete[] transferQueuePriority;
 
-    /*for each(QueueWrapper obj in queueWrapperList)
+    for each(VkQueueWrapper obj in graphicsQueueWrapperList)
     {
-        vkQueueWaitIdle(*obj.queue);
-        delete obj.queue;
+        //if (obj.isQueueEnabled)
+        {
+            delete obj.queue;
+        }
     }
 
-    queueWrapperList.clear();*/
+    for each(VkQueueWrapper obj in computeQueueWrapperList)
+    {
+        //if (obj.isQueueEnabled)
+        {
+            delete obj.queue;
+        }
+    }
+
+    for each(VkQueueWrapper obj in transferQueueWrapperList)
+    {
+        //if (obj.isQueueEnabled)
+        {
+            delete obj.queue;
+        }
+    }
+
+    graphicsQueueWrapperList.clear();
+    computeQueueWrapperList.clear();
+    transferQueueWrapperList.clear();
 }
 
 void VkQueueFactory::Update()
@@ -110,6 +130,7 @@ VkQueueFactory * VkQueueFactory::GetInstance()
 
 VkQueueFactory::~VkQueueFactory()
 {
+    
 }
 
 std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
@@ -470,6 +491,7 @@ void VkQueueFactory::CreateGraphicsQueues(uint32_t * ids, const uint32_t & count
         ASSERT_MSG(*graphicsQueueWrapperList[graphicQueueInitCounter].queue != VK_NULL_HANDLE, "Graphics Queue not available ");
 
         ids[i] = graphicsQueueWrapperList[graphicQueueInitCounter].queueId;
+        graphicsQueueWrapperList[graphicQueueInitCounter].isQueueEnabled = true;
         graphicQueueInitCounter++;
     }
 }
@@ -486,6 +508,7 @@ void VkQueueFactory::CreateComputeQueues(uint32_t * ids, const uint32_t & count)
         ASSERT_MSG(*computeQueueWrapperList[computeQueueInitCounter].queue != VK_NULL_HANDLE, "Compute Queue not available ");
 
         ids[i] = computeQueueWrapperList[computeQueueInitCounter].queueId;
+        computeQueueWrapperList[computeQueueInitCounter].isQueueEnabled = true;
         computeQueueInitCounter++;
     }
 }
@@ -502,6 +525,7 @@ void VkQueueFactory::CreateTransferQueues(uint32_t * ids, const uint32_t & count
             transferQueueWrapperList[transferQueueInitCounter].indexInFamily, transferQueueWrapperList[transferQueueInitCounter].queue);
         ASSERT_MSG(*transferQueueWrapperList[transferQueueInitCounter].queue != VK_NULL_HANDLE, "Transfer Queue not available ");
         ids[i] = transferQueueWrapperList[transferQueueInitCounter].queueId;
+        transferQueueWrapperList[transferQueueInitCounter].isQueueEnabled = true;
         transferQueueInitCounter++;
     }
 }
@@ -537,6 +561,19 @@ void VkQueueFactory::WaitForAllQueues()
 
     for each(VkQueueWrapper wrapper in transferQueueWrapperList)
     {
+        if (wrapper.isQueueEnabled)
+        vkQueueWaitIdle(*wrapper.queue);
+    }
+
+    for each(VkQueueWrapper wrapper in computeQueueWrapperList)
+    {
+        if (wrapper.isQueueEnabled)
+        vkQueueWaitIdle(*wrapper.queue);
+    }
+
+    for each(VkQueueWrapper wrapper in graphicsQueueWrapperList)
+    {
+        if (wrapper.isQueueEnabled)
         vkQueueWaitIdle(*wrapper.queue);
     }
 

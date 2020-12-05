@@ -101,7 +101,9 @@ uint32_t VkSynchroniserFactory::Create_Semaphore(bool isSemaphoreSignaled)
 
 void VkSynchroniserFactory::DestroySemaphore(uint32_t id)
 {
-    vkDestroySemaphore(*CoreObjects::logicalDeviceObj, *GetSemaphore(id), CoreObjects::pAllocator);
+    VkSemaphore * semaphore = GetSemaphore(id);
+    vkDestroySemaphore(*CoreObjects::logicalDeviceObj, *semaphore, CoreObjects::pAllocator);
+    //delete semaphore;
 }
 
 VkSemaphore* VkSynchroniserFactory::GetSemaphore(uint32_t id)
