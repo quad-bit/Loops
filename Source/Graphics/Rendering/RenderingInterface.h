@@ -50,6 +50,8 @@ public:
 
 #include "ForwardInterface.h"
 #include "CommandBufferManager.h"
+#include "MeshFactory.h"
+
 //#include <Settings.h>
 
 template<typename T>
@@ -115,6 +117,8 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     forwardRenderer = new ForwardRendering<T>();
     forwardRenderer->Init(apiInterface);
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);
+    MeshFactory::GetInstance()->Init(apiInterface);
+
     this->apiInterface = apiInterface;
 
     Settings::clearColorValue[0] = 164.0f / 256.0f; // Red
@@ -198,6 +202,9 @@ inline void RenderingInterface<T>::DislogeRenderer()
 template<typename T>
 inline void RenderingInterface<T>::DeInit()
 {
+    MeshFactory::GetInstance()->DeInit();
+    delete MeshFactory::GetInstance();
+
     CommandBufferManager<T>::GetInstance()->DeInit();
     delete CommandBufferManager<T>::GetInstance();
 

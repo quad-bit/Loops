@@ -63,11 +63,14 @@ void EntityManager::DestroyEntity(Entity * entity)
 		}
     } 
     
+    entityHandleList[pos]->RemoveComponent<Transform>(entity->transform);
+
     if (entity != nullptr)
     {
         if (entity->transform != nullptr)
         {
             delete entity->transform;
+            entity->transform = NULL;
         }
 
         delete entity;

@@ -3,6 +3,10 @@
 #include <EntityHandle.h>
 #include <typeinfo>
 #include <Transform.h>
+#include <Mesh.h>
+#include <AttributeHelper.h>
+#include <MeshFactory.h>
+#include <BitArray.h>
 
 PlayerHandlerScript::PlayerHandlerScript()
 {
@@ -12,29 +16,41 @@ PlayerHandlerScript::PlayerHandlerScript()
     playerHandle->GetEntity()->entityName = "player";
     Transform * playerTrf = playerHandle->GetTransform();
     
+    // TORSO
     torso = worldObj->CreateEntity();
     torso->GetEntity()->entityName = "torso";
     Transform * torsoTrf = torso->GetTransform();
     torsoTrf->SetParent(playerTrf);
+    
+    BitArray req(10);
+    req.SetBit((unsigned int)ATTRIBUTES::POSITION);
+    req.SetBit((unsigned int)ATTRIBUTES::COLOR);
+    MESH_TYPE meshType = MESH_TYPE::CUBE;
+    Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(req, &meshType, true, false);
+    torso->AddComponent<Mesh>(torsoMesh);
 
+    // HEAD
     head = worldObj->CreateEntity();
     head->GetEntity()->entityName = "head";
     Transform * headTrf = head->GetTransform();
     headTrf->SetParent(torsoTrf);
 
+    //LEFT ARM
     leftArm = worldObj->CreateEntity();
     leftArm->GetEntity()->entityName = "leftArm";
     leftArm->GetTransform()->SetParent(torsoTrf);
 
+    //RIGHT ARM
     rightArm = worldObj->CreateEntity();
     rightArm->GetEntity()->entityName = "rightArm";
     rightArm->GetTransform()->SetParent(torsoTrf);
 
-
+    //RIGHT LEG
     rightLeg = worldObj->CreateEntity();
     rightLeg->GetEntity()->entityName = "rightLeg";
     rightLeg->GetTransform()->SetParent(torsoTrf);
 
+    //LEFT LEG
     leftLeg = worldObj->CreateEntity();
     leftLeg->GetEntity()->entityName = "leftLeg";
     leftLeg->GetTransform()->SetParent(torsoTrf);
@@ -59,6 +75,12 @@ PlayerHandlerScript::~PlayerHandlerScript()
 {
     worldObj->DestroyEntity(playerHandle);
     worldObj->DestroyEntity(head);
+
+    ComponentHandle<Mesh> torsoMesh = torso->GetComponent<Mesh>();
+    MeshFactory::GetInstance()->DestroyMesh(torsoMesh->meshId);
+    torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
+    delete torsoMesh.GetComponent();
+
     worldObj->DestroyEntity(torso);
     worldObj->DestroyEntity(leftArm);
     worldObj->DestroyEntity(rightArm);

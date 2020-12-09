@@ -17,11 +17,14 @@ enum class PipelineType;
 enum class CommandPoolProperty;
 enum class PipelineStage;
 enum class CommandBufferUsage;
+enum class MemoryType;
+enum class BufferType;
 
 struct CommandBufferInheritanceInfo;
 struct SubmitInfo;
 struct PresentInfo;
 struct QueueWrapper;
+struct BufferInfo;
 
 class VkDrawCommandBuffer;
 
@@ -38,6 +41,8 @@ private:
     VkCommandBufferUsageFlagBits UnwrapCommandBufferUsage(const CommandBufferUsage * info);
     VkSubmitInfo * UnwrapSubmitInfo(const SubmitInfo * info);
     VkPipelineStageFlags * UnwrapStageFlags(const PipelineStage * pipelineStage);
+    VkMemoryPropertyFlags UnwrapMemoryProperty(const MemoryType * memType);
+    VkBufferUsageFlags UnwrapBufferUsageFlags(const BufferType * type);
 
 public:
     VulkanInterface();
@@ -100,4 +105,7 @@ public:
     void PresentSwapchainImage(const QueueWrapper * queueWrapper, const PresentInfo * info, const uint32_t & presentQueueId);
 
     bool IsApplicationSafeForClosure();
+
+    uint32_t * CreateBuffer(BufferInfo * info, const uint32_t & count);
+    void DestroyBuffer(uint32_t * ids, const uint32_t & count);
 };

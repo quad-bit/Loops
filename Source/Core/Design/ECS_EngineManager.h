@@ -4,6 +4,7 @@ class World;
 class System;
 class Transform;
 class Scriptable;
+class Mesh;
 
 template<typename T>
 class ComponentManager;
@@ -25,6 +26,8 @@ public:
     
     ComponentManager<Scriptable>* scriptableManager;
     System* scriptableSystemObj;
+
+    ComponentManager<Mesh>* meshManager;
 
     void Init();
     void DeInit();

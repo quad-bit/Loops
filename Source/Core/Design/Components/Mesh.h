@@ -2,32 +2,56 @@
 
 #include "Component.h"
 #include "BoundingBox.h"
-
+#include <stdint.h>
 #include <glm/glm.hpp>
 
-class Geometry : public Component<Geometry>
+enum class MESH_TYPE
+{
+    TRIANGLE,
+    QUAD,
+    CUBE,
+    SPHERE,
+    CYLINDER
+};
+
+class Mesh : public Component<Mesh>
 {
 public:
+
+    uint32_t meshId;
     BoundingBox bounds;
     uint32_t submeshCount;
-    std::vector<glm::vec2> uv;
-    std::vector<glm::vec2> uv2;
-    std::vector<glm::vec2> uv3;
-    std::vector<glm::vec2> uv4;
-    std::vector<glm::vec2> uv5;
-    std::vector<glm::vec2> uv6;
-    std::vector<glm::vec2> uv7;
-    std::vector<glm::vec2> uv8;
 
-    uint32_t vertexAttributeCount;//read only
+    std::vector<glm::vec2*> uv;
+    std::vector<glm::vec2*> uv2;
+    std::vector<glm::vec2*> uv3;
+    std::vector<glm::vec2*> uv4;
+    std::vector<glm::vec2*> uv5;
+    std::vector<glm::vec2*> uv6;
+    std::vector<glm::vec2*> uv7;
+    std::vector<glm::vec2*> uv8;
+
+    std::vector<glm::vec3*> positions;
+    std::vector<glm::uvec4*> colors;
+    std::vector<glm::vec3*> normals;
+    std::vector<glm::vec3*> tangents;
+    std::vector<uint32_t*> indicies;
+
+    uint32_t vertexAttributeCount;
     uint32_t vertexBufferCount;
     uint32_t vertexCount;
 
-    std::vector<glm::vec3> vertices;
-    std::vector<glm::vec4> colors;
-    std::vector<glm::vec3> normals;
-    std::vector<glm::vec3> tangents;
-    std::vector<glm::uvec3> triangles;
+    uint32_t * vertexBuffersIds;
+    uint32_t indexBufferId;
+
+    void ** pGpuMemVB;
+    void * pGpuMemIB;
+
+    ~Mesh()
+    {
+        delete[] vertexBuffersIds;
+        delete[] pGpuMemVB;
+    }
 };
 
 //Unity ref

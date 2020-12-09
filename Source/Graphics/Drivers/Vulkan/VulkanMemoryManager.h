@@ -24,7 +24,7 @@ public:
 	void DeInit();
 		
 	void AllocateImageMemory(VkImage * imageObj, VkMemoryPropertyFlags userReq, VkDeviceMemory * memoryObj);
-	void AllocateBufferMemory(VkBuffer * bufferObj, VkMemoryPropertyFlags userReq, VkMemoryRequirements* memoryReqObj, VkDeviceMemory * memoryObj);
+    VkMemoryRequirements AllocateBufferMemory(VkBuffer * bufferObj, VkMemoryPropertyFlags userReq, VkDeviceMemory * memoryObj);
 
 };
 

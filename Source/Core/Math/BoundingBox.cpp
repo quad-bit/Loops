@@ -16,7 +16,7 @@ BoundingBox::~BoundingBox()
 {
 }
 
-void BoundingBox::CalculateBB(vec3 * vertices, int numVertices)
+void BoundingBox::CalculateBB(glm::vec3 * vertices, int numVertices)
 {
 	if (vertices == NULL)
 	{

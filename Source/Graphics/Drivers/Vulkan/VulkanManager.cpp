@@ -123,18 +123,38 @@ void VulkanManager::GetPhysicalDevice()
     std::vector<VkPhysicalDevice> deviceList(count);
     vkEnumeratePhysicalDevices(vkInstanceObj, &count, deviceList.data());
 
+    VkPhysicalDevice discreteGpu = VK_NULL_HANDLE;
+    VkPhysicalDevice integratedGpu = VK_NULL_HANDLE;
     for (auto dev : deviceList)
     {
         VkPhysicalDeviceProperties deviceProp = {};
         vkGetPhysicalDeviceProperties(dev, &deviceProp);
 
-        if (deviceProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ||
-            deviceProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+        if (deviceProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) // deviceProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU ||
         {
-            vkPhysicalDeviceObj = dev;
-            CoreObjects::physicalDeviceObj = &vkPhysicalDeviceObj;
+            //vkPhysicalDeviceObj = dev;
+            //CoreObjects::physicalDeviceObj = &vkPhysicalDeviceObj;
+            discreteGpu = dev;
             break;
         }
+
+        if (deviceProp.deviceType == VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU)
+        {
+            //vkPhysicalDeviceObj = dev;
+            //CoreObjects::physicalDeviceObj = &vkPhysicalDeviceObj;
+            integratedGpu = dev;
+        }
+    }
+
+    if (discreteGpu != VK_NULL_HANDLE)
+    {
+        vkPhysicalDeviceObj = discreteGpu;
+        CoreObjects::physicalDeviceObj = &vkPhysicalDeviceObj;
+    }
+    else if (integratedGpu!= VK_NULL_HANDLE)
+    {
+        vkPhysicalDeviceObj = integratedGpu;
+        CoreObjects::physicalDeviceObj = &vkPhysicalDeviceObj;
     }
 
     if (vkPhysicalDeviceObj == VK_NULL_HANDLE)

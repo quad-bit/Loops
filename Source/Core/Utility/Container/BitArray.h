@@ -21,6 +21,6 @@ public:
     void SetAllBits();
     void SetByte(unsigned int byte, unsigned char val);
     void SetBit(unsigned int bit);
-    void CleatBit(unsigned int bit);
+    void ClearBit(unsigned int bit);
     bool operator [] (unsigned int bit) const;
 };

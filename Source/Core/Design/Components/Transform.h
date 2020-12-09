@@ -41,4 +41,7 @@ public:
 
     virtual void Execute() override;
 
+    ~Transform()
+    {
+    }
 };

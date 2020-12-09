@@ -2,17 +2,17 @@
 
 #include <glm\glm.hpp>
 
-using namespace glm;
+//using namespace glm;
 
 class BoundingBox
 {
 private:
-    vec3 min, max, center;
+    glm::vec3 min, max, center;
 
 public:
     BoundingBox();
     BoundingBox(const BoundingBox& AABB);
     virtual ~BoundingBox();
 
-    void CalculateBB(vec3 * vertices, int numVertices);
+    void CalculateBB(glm::vec3 * vertices, int numVertices);
 };

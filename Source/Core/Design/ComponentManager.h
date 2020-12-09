@@ -68,6 +68,12 @@ inline ComponentManager<ComponentType>::ComponentManager()
 template<typename ComponentType>
 inline ComponentManager<ComponentType>::~ComponentManager()
 {
+    for (uint32_t i = 0; i < MAX_NUM_OF_UNIQUE_COMPONENT; i++)
+    {
+        if(componentDataObj.data->at(i) == NULL)
+            delete componentDataObj.data->at(i);
+    }
+
     free(componentDataObj.data);
     //TODO : Delete contents of the array componentDataObj.data, allocation is deleted but the pointer 
     //variable stays

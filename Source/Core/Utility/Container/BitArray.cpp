@@ -38,7 +38,7 @@ void BitArray::SetBit(unsigned int bit)
 	m_bits[index] |= (1 << offset);
 }
 
-void BitArray::CleatBit(unsigned int bit)
+void BitArray::ClearBit(unsigned int bit)
 {
 	assert(totalBits > bit);
 	unsigned char mask = BIT_IN_CHAR(bit);

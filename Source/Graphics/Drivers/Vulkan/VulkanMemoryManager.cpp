@@ -87,21 +87,23 @@ void VulkanMemoryManager::AllocateImageMemory(VkImage * imageObj, VkMemoryProper
 	// allocated memory
 }
 
-void VulkanMemoryManager::AllocateBufferMemory(VkBuffer * bufferObj, VkMemoryPropertyFlags userReq, VkMemoryRequirements* memoryReqObj, VkDeviceMemory * memoryObj)
+VkMemoryRequirements VulkanMemoryManager::AllocateBufferMemory(VkBuffer * bufferObj, VkMemoryPropertyFlags userReq, VkDeviceMemory * memoryObj)
 {
-	//buffer memory requirement
-	vkGetBufferMemoryRequirements(vulkanLogicalDevice, *bufferObj, memoryReqObj);
+    //buffer memory requirement
+    VkMemoryRequirements memoryReqObj{};
+	vkGetBufferMemoryRequirements(vulkanLogicalDevice, *bufferObj, &memoryReqObj);
 
-
-	uint32_t memIndex = VulkanMemoryManager::FindMemoryTypeIndex(&physicalDeviceMemoryPropertiesObj, memoryReqObj, userReq);
+	uint32_t memIndex = VulkanMemoryManager::FindMemoryTypeIndex(&physicalDeviceMemoryPropertiesObj, &memoryReqObj, userReq);
 	// found memory index..
 
 	VkMemoryAllocateInfo allocateInfoObj{};
-	allocateInfoObj.allocationSize = memoryReqObj->size;
+	allocateInfoObj.allocationSize = memoryReqObj.size;
 	allocateInfoObj.memoryTypeIndex = memIndex;
 	allocateInfoObj.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
 	ErrorCheck(vkAllocateMemory(vulkanLogicalDevice, &allocateInfoObj, CoreObjects::pAllocator, memoryObj));
+
+    return memoryReqObj;
 }
 
 VulkanMemoryManager::VulkanMemoryManager()

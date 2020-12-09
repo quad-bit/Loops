@@ -11,6 +11,8 @@
 #include <VkQueueFactory.h>
 #include <VulkanUtility.h>
 #include <RendererSettings.h>
+#include <VkBufferFactory.h>
+#include <RenderingWrapper.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
 {
@@ -169,6 +171,8 @@ VkCommandBufferUsageFlagBits VulkanInterface::UnwrapCommandBufferUsage(const Com
     default:
         ASSERT_MSG(0, "No usage found.");
     }
+
+    return VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM;
 }
 
 VkSubmitInfo * VulkanInterface::UnwrapSubmitInfo(const SubmitInfo * info)
@@ -275,6 +279,86 @@ VkPipelineStageFlags * VulkanInterface::UnwrapStageFlags(const PipelineStage * p
     }
 
     return flags;
+}
+
+VkMemoryPropertyFlags VulkanInterface::UnwrapMemoryProperty(const MemoryType * memType)
+{
+    VkMemoryPropertyFlags memProp;
+
+    switch (*memType)
+    {
+    case MemoryType::DEVICE_LOCAL_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        break;
+
+    case MemoryType::HOST_VISIBLE_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+        break;
+
+    case MemoryType::HOST_COHERENT_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        break;
+
+    case MemoryType::HOST_CACHED_BIT :
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+        break;
+
+    case MemoryType::LAZILY_ALLOCATED_BIT :
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
+        break;
+
+    case MemoryType::PROTECTED_BIT :
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_PROTECTED_BIT;
+        break;
+    }
+
+    return memProp;
+}
+
+VkBufferUsageFlags VulkanInterface::UnwrapBufferUsageFlags(const BufferType * type)
+{
+    VkBufferUsageFlags bufferUsage;
+
+    switch (*type)
+    {
+    case BufferType::TRANSFER_SRC_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+        break;
+
+    case BufferType::TRANSFER_DST_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+        break;
+
+    case BufferType::UNIFORM_TEXEL_BUFFER_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
+        break;
+
+    case BufferType::STORAGE_TEXEL_BUFFER_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
+        break;
+
+    case BufferType::UNIFORM_BUFFER_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        break;
+
+    case BufferType::STORAGE_BUFFER_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+        break;
+
+    case BufferType::INDEX_BUFFER_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        break;
+
+    case BufferType::VERTEX_BUFFER_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        break;
+
+    case BufferType::INDIRECT_BUFFER_BIT:
+        bufferUsage = VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+        break;
+    }
+
+    return bufferUsage;
 }
 
 VulkanInterface::VulkanInterface()
@@ -489,6 +573,32 @@ bool VulkanInterface::IsApplicationSafeForClosure()
     vkDeviceWaitIdle(*CoreObjects::logicalDeviceObj);
 
     return true;
+}
+
+uint32_t * VulkanInterface::CreateBuffer(BufferInfo * info, const uint32_t & count)
+{
+    VkBufferUsageFlags * bufferUsage = new VkBufferUsageFlags[count]; 
+    VkMemoryPropertyFlags * memProp = new VkMemoryPropertyFlags[count];
+
+    uint32_t * ids = new uint32_t[count];
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        bufferUsage[i] = UnwrapBufferUsageFlags(info->bufType);
+        memProp[i] = UnwrapMemoryProperty(info->memType);
+        ids[i] = *VkBufferFactory::GetInstance()->CreateBuffer(&bufferUsage[i], &memProp[i], info->data, info->dataSize, info->pGpuMem);
+    }
+    
+    delete[] memProp;
+    return ids;
+}
+
+void VulkanInterface::DestroyBuffer(uint32_t * ids, const uint32_t & count)
+{
+    for (uint32_t i = 0; i < count; i++)
+    {
+        VkBufferFactory::GetInstance()->DestroyBuffer(ids[i]);
+    }
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)

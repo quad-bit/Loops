@@ -46,7 +46,7 @@ private:
     const float* graphicQueuePriority, *computeQueuePriority, *transferQueuePriority;
     //uint32_t familyIndex = -1;
 
-    uint32_t maxGraphicQueues = 3, maxComputeQueues = 2, maxTransferQueue = 1;
+    uint32_t minGraphicQueueRequired = 2, minCopmuteQueueRequired = 2, minTransferQueueRequired = 1;
     uint32_t graphicsQueueFamilyIndex = -1, computeQueueFamilyIndex = -1, transferQueueFamilyIndex = -1;
     uint32_t graphicQueueInitCounter = 0, computeQueueInitCounter = 0, transferQueueInitCounter = 0;
 

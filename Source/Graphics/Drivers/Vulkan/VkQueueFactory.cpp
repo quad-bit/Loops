@@ -52,19 +52,19 @@ void VkQueueFactory::Init()
     for (uint32_t j = 0; j < qFamilyCount; j++)
     {
         if (graphicsQueueFamilyIndex == -1 && ((propertyList[j].queueFlags & graphicsReq) == graphicsReq)
-            && propertyList[j].queueCount >= maxGraphicQueues)
+            && propertyList[j].queueCount >= minGraphicQueueRequired)
         {
             graphicsQueueFamilyIndex = j;
         }
 
         if (computeQueueFamilyIndex == -1 && ((propertyList[j].queueFlags & computeReq) == computeReq)
-            && propertyList[j].queueCount >= maxComputeQueues)
+            && propertyList[j].queueCount >= minCopmuteQueueRequired)
         {
             computeQueueFamilyIndex = j;
         }
 
         if (transferQueueFamilyIndex == -1 && ((propertyList[j].queueFlags & transferReq) == transferReq)
-            && propertyList[j].queueCount >= maxTransferQueue)
+            && propertyList[j].queueCount >= minTransferQueueRequired)
         {
             transferQueueFamilyIndex = j;
         }
@@ -135,7 +135,7 @@ VkQueueFactory::~VkQueueFactory()
 
 std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
 {
-    graphicQueuePriority = new float[maxGraphicQueues] {1.0f};
+    graphicQueuePriority = new float[minGraphicQueueRequired] {1.0f};
 
     std::vector<VkDeviceQueueCreateInfo> creatInfoList;
 
@@ -143,16 +143,16 @@ std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
     info.flags = 0;
     info.pNext = nullptr;
     info.pQueuePriorities = graphicQueuePriority;
-    info.queueCount = maxGraphicQueues;
+    info.queueCount = minGraphicQueueRequired;
     info.queueFamilyIndex = graphicsQueueFamilyIndex;
     info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 
     creatInfoList.push_back(info);
 
-    graphicsQueueWrapperList.resize(maxGraphicQueues);
+    graphicsQueueWrapperList.resize(minGraphicQueueRequired);
 
     uint32_t indexInGraphicFamily = 0;
-    for (uint32_t i = 0; i < maxGraphicQueues; i++)
+    for (uint32_t i = 0; i < minGraphicQueueRequired; i++)
     {
         graphicsQueueWrapperList[i].queueFamilyIndex = graphicsQueueFamilyIndex;
         graphicsQueueWrapperList[i].queueType = QueueType::GRAPHICS;
@@ -166,22 +166,22 @@ std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
 
     if (graphicsQueueFamilyIndex == computeQueueFamilyIndex)
     {
-        creatInfoList[0].queueCount = maxGraphicQueues + maxComputeQueues;
+        creatInfoList[0].queueCount = minGraphicQueueRequired + minCopmuteQueueRequired;
         indexInComputeFamily = indexInGraphicFamily;
         delete [] graphicQueuePriority;
-        graphicQueuePriority = new float[maxGraphicQueues + maxComputeQueues]{ 1.0f };
+        graphicQueuePriority = new float[minGraphicQueueRequired + minCopmuteQueueRequired]{ 1.0f };
         creatInfoList[0].pQueuePriorities = graphicQueuePriority;
         computeQueuePriority = nullptr;
     }
     else
     {
-        computeQueuePriority = new float[maxComputeQueues] {1.0f};
+        computeQueuePriority = new float[minCopmuteQueueRequired] {1.0f};
 
         VkDeviceQueueCreateInfo info = {};
         info.flags = 0;
         info.pNext = nullptr;
         info.pQueuePriorities = computeQueuePriority;
-        info.queueCount = maxComputeQueues;
+        info.queueCount = minCopmuteQueueRequired;
         info.queueFamilyIndex = computeQueueFamilyIndex;
         info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         creatInfoList.push_back(info);
@@ -189,8 +189,8 @@ std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
         indexInComputeFamily = 0;
     }
 
-    computeQueueWrapperList.resize(maxComputeQueues);
-    for (uint32_t i = 0; i < maxComputeQueues; i++)
+    computeQueueWrapperList.resize(minCopmuteQueueRequired);
+    for (uint32_t i = 0; i < minCopmuteQueueRequired; i++)
     {
         computeQueueWrapperList[i].queueFamilyIndex = computeQueueFamilyIndex;
         computeQueueWrapperList[i].queueType = QueueType::COMPUTE;
@@ -205,32 +205,32 @@ std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
     if (graphicsQueueFamilyIndex == transferQueueFamilyIndex && 
         graphicsQueueFamilyIndex == computeQueueFamilyIndex)
     {
-        creatInfoList[0].queueCount = maxGraphicQueues + maxComputeQueues + maxTransferQueue;
+        creatInfoList[0].queueCount = minGraphicQueueRequired + minCopmuteQueueRequired + minTransferQueueRequired;
         indexInTransferFamily = indexInComputeFamily ;
         delete[] graphicQueuePriority;
-        graphicQueuePriority = new float[maxGraphicQueues + maxComputeQueues + maxTransferQueue]{ 1.0f };
+        graphicQueuePriority = new float[minGraphicQueueRequired + minCopmuteQueueRequired + minTransferQueueRequired]{ 1.0f };
         creatInfoList[0].pQueuePriorities = graphicQueuePriority;
         transferQueuePriority = nullptr;
     }
     else if(transferQueueFamilyIndex == computeQueueFamilyIndex )
     {
-        creatInfoList[1].queueCount = maxComputeQueues + maxTransferQueue;
+        creatInfoList[1].queueCount = minCopmuteQueueRequired + minTransferQueueRequired;
         indexInTransferFamily = indexInComputeFamily;
 
         delete[] computeQueuePriority;
-        computeQueuePriority = new float[maxComputeQueues + maxTransferQueue]{ 1.0f };
+        computeQueuePriority = new float[minCopmuteQueueRequired + minTransferQueueRequired]{ 1.0f };
         creatInfoList[1].pQueuePriorities = computeQueuePriority;
         transferQueuePriority = nullptr;
     }
     else if (transferQueueFamilyIndex != computeQueueFamilyIndex &&
         transferQueueFamilyIndex != graphicsQueueFamilyIndex)
     {
-        transferQueuePriority = new float[maxTransferQueue] {1.0f};
+        transferQueuePriority = new float[minTransferQueueRequired] {1.0f};
         VkDeviceQueueCreateInfo info = {};
         info.flags = 0;
         info.pNext = nullptr;
         info.pQueuePriorities = transferQueuePriority;
-        info.queueCount = maxTransferQueue;
+        info.queueCount = minTransferQueueRequired;
         info.queueFamilyIndex = transferQueueFamilyIndex;
         info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
         creatInfoList.push_back(info);
@@ -238,8 +238,8 @@ std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
         indexInTransferFamily = 0;
     }
 
-    transferQueueWrapperList.resize(maxTransferQueue);
-    for (uint32_t i = 0; i < maxTransferQueue; i++)
+    transferQueueWrapperList.resize(minTransferQueueRequired);
+    for (uint32_t i = 0; i < minTransferQueueRequired; i++)
     {
         transferQueueWrapperList[i].queueFamilyIndex = transferQueueFamilyIndex;
         transferQueueWrapperList[i].queueType = QueueType::TRANSFER;
@@ -254,21 +254,21 @@ std::vector<VkDeviceQueueCreateInfo> VkQueueFactory::FindQueue()
 
 void VkQueueFactory::InitQueues()
 {
-    for (uint32_t i = 0; i < maxGraphicQueues; i++)
+    for (uint32_t i = 0; i < minGraphicQueueRequired; i++)
     {
         vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, graphicsQueueWrapperList[i].queueFamilyIndex,
             graphicsQueueWrapperList[i].indexInFamily, graphicsQueueWrapperList[i].queue);
         ASSERT_MSG(*graphicsQueueWrapperList[i].queue != VK_NULL_HANDLE, "Graphics Queue not available ");
     }
 
-    for (uint32_t i = 0; i < maxComputeQueues; i++)
+    for (uint32_t i = 0; i < minCopmuteQueueRequired; i++)
     {
         vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, computeQueueWrapperList[i].queueFamilyIndex,
             computeQueueWrapperList[i].indexInFamily, computeQueueWrapperList[i].queue);
         ASSERT_MSG(*computeQueueWrapperList[i].queue != VK_NULL_HANDLE, "Compute Queue not available ");
     }
 
-    for (uint32_t i = 0; i < maxTransferQueue; i++)
+    for (uint32_t i = 0; i < minTransferQueueRequired; i++)
     {
         vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, transferQueueWrapperList[i].queueFamilyIndex, 
             transferQueueWrapperList[i].indexInFamily, transferQueueWrapperList[i].queue);
@@ -480,11 +480,11 @@ uint32_t VkQueueFactory::GetQueueFamilyIndex(VkQueueFlagBits qType, uint32_t que
 
 void VkQueueFactory::CreateGraphicsQueues(uint32_t * ids, const uint32_t & count)
 {
-    ASSERT_MSG(count <= maxGraphicQueues, "Not enough Compute Queue");
+    ASSERT_MSG(count <= minGraphicQueueRequired, "Not enough graphics Queue");
     
     for (uint32_t i = 0; i < count; i++)
     {
-        ASSERT_MSG(graphicQueueInitCounter <= maxGraphicQueues, "Graphics Queue exhausted ");
+        ASSERT_MSG(graphicQueueInitCounter <= minGraphicQueueRequired, "Graphics Queue exhausted ");
 
         vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, graphicsQueueWrapperList[graphicQueueInitCounter].queueFamilyIndex,
             graphicsQueueWrapperList[graphicQueueInitCounter].indexInFamily, graphicsQueueWrapperList[graphicQueueInitCounter].queue);
@@ -498,10 +498,10 @@ void VkQueueFactory::CreateGraphicsQueues(uint32_t * ids, const uint32_t & count
 
 void VkQueueFactory::CreateComputeQueues(uint32_t * ids, const uint32_t & count)
 {
-    ASSERT_MSG(count <= maxComputeQueues, "Not enough Compute Queue");
+    ASSERT_MSG(count <= minCopmuteQueueRequired, "Not enough Compute Queue");
     for (uint32_t i = 0; i < count; i++)
     {
-        ASSERT_MSG(computeQueueInitCounter <= maxComputeQueues, "Compute Queue exhausted ");
+        ASSERT_MSG(computeQueueInitCounter <= minCopmuteQueueRequired, "Compute Queue exhausted ");
 
         vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, computeQueueWrapperList[computeQueueInitCounter].queueFamilyIndex,
             computeQueueWrapperList[computeQueueInitCounter].indexInFamily, computeQueueWrapperList[computeQueueInitCounter].queue);
@@ -515,11 +515,11 @@ void VkQueueFactory::CreateComputeQueues(uint32_t * ids, const uint32_t & count)
 
 void VkQueueFactory::CreateTransferQueues(uint32_t * ids, const uint32_t & count)
 {
-    ASSERT_MSG(count <= maxTransferQueue, "Not enough transfer Queue");
+    ASSERT_MSG(count <= minTransferQueueRequired, "Not enough transfer Queue");
 
     for (uint32_t i = 0; i < count; i++)
     {
-        ASSERT_MSG(transferQueueInitCounter <= maxTransferQueue, "Compute Queue exhausted ");
+        ASSERT_MSG(transferQueueInitCounter <= minTransferQueueRequired, "Compute Queue exhausted ");
 
         vkGetDeviceQueue(*CoreObjects::logicalDeviceObj, transferQueueWrapperList[transferQueueInitCounter].queueFamilyIndex,
             transferQueueWrapperList[transferQueueInitCounter].indexInFamily, transferQueueWrapperList[transferQueueInitCounter].queue);

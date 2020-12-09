@@ -27,6 +27,7 @@ SceneManager::~SceneManager()
 {
     scriptableParent->RemoveComponent<Scriptable>(playerHandlerScript);
     delete playerHandlerScript;
+    playerHandlerScript = NULL;
     worldObj->DestroyEntity(scriptableParent);
 
     SceneGraphManager::GetInstance()->DeInit();
