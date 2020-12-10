@@ -4,7 +4,7 @@
 #include <array>
 #include <functional>
 #include "ECS_Setting.h"
-
+#include "CorePrecompiled.h"
 using namespace std;
 
 class EntityMap;
@@ -61,6 +61,7 @@ public:
 template<typename ComponentType>
 inline ComponentManager<ComponentType>::ComponentManager()
 {
+    PLOGD << "ComponentManager contructor";
     componentDataObj.data = static_cast<std::array<ComponentType*, MAX_NUM_OF_UNIQUE_COMPONENT>* >(malloc(sizeof(ComponentType) * MAX_NUM_OF_UNIQUE_COMPONENT));
     entityMapObj = new EntityMap();
 }
@@ -68,6 +69,8 @@ inline ComponentManager<ComponentType>::ComponentManager()
 template<typename ComponentType>
 inline ComponentManager<ComponentType>::~ComponentManager()
 {
+    PLOGD << "ComponentManager destructor";
+
     for (uint32_t i = 0; i < MAX_NUM_OF_UNIQUE_COMPONENT; i++)
     {
         if(componentDataObj.data->at(i) == NULL)
@@ -100,10 +103,10 @@ inline void ComponentManager<ComponentType>::RemoveComponent(Entity * e)
 
     componentDataObj.data->at(ind) = componentDataObj.data->at(lastIndex);
 
-    Entity lastEntity = entityMapObj->GetEntity(&lastIndex);
+    Entity * lastEntity = entityMapObj->GetEntity(&lastIndex);
 
     entityMapObj->RemoveFromMap(e);
-    entityMapObj->UpdateMap(&lastEntity, &ind);
+    entityMapObj->UpdateMap(lastEntity, &ind);
 
     componentDataObj.size--;
 }

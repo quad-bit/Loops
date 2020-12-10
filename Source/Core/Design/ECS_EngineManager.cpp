@@ -7,12 +7,15 @@
 #include "ECS_Setting.h"
 #include "EventBus.h"
 #include "Mesh.h"
+#include <CorePrecompiled.h>
 
 ECS_Manager* ECS_Manager::instance = nullptr;
 World * worldObj;
 
 void ECS_Manager::Init()
 {
+    PLOGD << "ECS Manager Init";
+
     worldObj = new World();
     
     scriptableManager = worldObj->CreateManager<Scriptable>();
@@ -30,6 +33,8 @@ void ECS_Manager::Init()
 
 void ECS_Manager::DeInit()
 {
+    PLOGD << "ECS Manager DeInit";
+
     EventBus::GetInstance()->DeInit();
     delete EventBus::GetInstance();
 
@@ -37,11 +42,11 @@ void ECS_Manager::DeInit()
 
     //delete transformManager;
     //delete scriptableManager;
-    delete worldObj;
 
     delete transformSystemObj;
     delete scriptableSystemObj;
 
+    delete worldObj;
 }
 
 void ECS_Manager::Update()

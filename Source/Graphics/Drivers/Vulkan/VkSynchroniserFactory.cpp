@@ -1,17 +1,19 @@
 #include "VkSynchroniserFactory.h"
 #include "VulkanUtility.h"
-#include <algorithm>
-#include <Assertion.h>
+#include <CorePrecompiled.h>
+
 
 VkSynchroniserFactory* VkSynchroniserFactory::instance = nullptr;
 
 void VkSynchroniserFactory::Init()
 {
-
+    PLOGD << "VkSynchroniserFactory init";
 }
 
 void VkSynchroniserFactory::DeInit()
 {
+    PLOGD << "VkSynchroniserFactory Deinit";
+
     for each(FenceWrapper wrapper in fenceList)
     {
         if (wrapper.fence != nullptr)

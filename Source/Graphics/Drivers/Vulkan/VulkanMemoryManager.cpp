@@ -2,6 +2,7 @@
 
 #include "VulkanMemoryManager.h"
 #include "VulkanUtility.h"
+#include <CorePrecompiled.h>
 
 VulkanMemoryManager * VulkanMemoryManager::memManagerInstance = nullptr;
 
@@ -14,7 +15,8 @@ VulkanMemoryManager * VulkanMemoryManager::GetSingleton()
 
 void VulkanMemoryManager::Init(VkPhysicalDeviceMemoryProperties physicalDeviceMemoryPropertiesObj)
 {
-	
+    PLOGD << "VulkanMemoryManager init";
+
     this->physicalDeviceMemoryPropertiesObj = physicalDeviceMemoryPropertiesObj;
     vulkanLogicalDevice = *CoreObjects::logicalDeviceObj;
 
@@ -52,6 +54,7 @@ void VulkanMemoryManager::Init(VkPhysicalDeviceMemoryProperties physicalDeviceMe
 
 void VulkanMemoryManager::DeInit()
 {
+    PLOGD << "VulkanMemoryManager Deinit";
 	vmaDestroyAllocator(allocator);
 }
 

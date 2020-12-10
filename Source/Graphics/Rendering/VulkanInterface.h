@@ -11,7 +11,7 @@ struct SubpassInfo;
 struct SubpassDependency;
 struct RenderPassBeginInfo;
 
-enum class ImageFormat;
+enum class Format;
 enum class CommandBufferLevel;
 enum class PipelineType;
 enum class CommandPoolProperty;
@@ -25,6 +25,8 @@ struct SubmitInfo;
 struct PresentInfo;
 struct QueueWrapper;
 struct BufferInfo;
+struct VertexInputAttributeInfo;
+struct VertexInputBindingInfo;
 
 class VkDrawCommandBuffer;
 
@@ -51,7 +53,7 @@ public:
     void Init();
     void DeInit();
   
-    uint32_t FindBestDepthFormat(ImageFormat * imageFormat, const uint32_t & count);
+    uint32_t FindBestDepthFormat(Format * imageFormat, const uint32_t & count);
 
     void CreateRenderTarget(ImageInfo * info, const uint32_t & count, bool defaultTarget,
         std::vector<uint32_t>* ids);
@@ -108,4 +110,8 @@ public:
 
     uint32_t * CreateBuffer(BufferInfo * info, const uint32_t & count);
     void DestroyBuffer(uint32_t * ids, const uint32_t & count);
+
+    void InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount);
+    void CreateGraphicsPipeline();
+    void DestroyGraphicsPipeline();
 };

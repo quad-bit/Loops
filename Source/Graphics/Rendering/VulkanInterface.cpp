@@ -13,6 +13,8 @@
 #include <RendererSettings.h>
 #include <VkBufferFactory.h>
 #include <RenderingWrapper.h>
+#include <VulkanGraphicsPipelineFactory.h>
+#include <CorePrecompiled.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
 {
@@ -367,6 +369,8 @@ VulkanInterface::VulkanInterface()
 
 void VulkanInterface::Init()
 {
+    PLOGD << "Vulkan interface Init";
+
     //VulkanManager::GetInstance()->Init();
     VulkanManager::GetInstance()->Init(RendererSettings::queueReq , RendererSettings::queueRequirementCount );
     VulkanManager::GetInstance()->CreateSurface(WindowManager::GetInstance()->glfwWindow);
@@ -378,6 +382,8 @@ void VulkanInterface::Init()
 
 void VulkanInterface::DeInit()
 {
+    PLOGD << "Vulkan interface DeInit";
+
     VkFrameBufferFactory::GetInstance()->DeInit();
     delete VkFrameBufferFactory::GetInstance();
 
@@ -394,7 +400,7 @@ void VulkanInterface::DeInit()
     delete VulkanManager::GetInstance();
 }
 
-uint32_t VulkanInterface::FindBestDepthFormat(ImageFormat * imageFormat, const uint32_t & count)
+uint32_t VulkanInterface::FindBestDepthFormat(Format * imageFormat, const uint32_t & count)
 {
     return VkAttachmentFactory::GetInstance()->FindBestDepthFormat(imageFormat, count);
 }
@@ -599,6 +605,11 @@ void VulkanInterface::DestroyBuffer(uint32_t * ids, const uint32_t & count)
     {
         VkBufferFactory::GetInstance()->DestroyBuffer(ids[i]);
     }
+}
+
+void VulkanInterface::InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount )
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->InitiatePipelineCreation(meshId, attribInfo, attribCount, bindingInfo, bindingCount);
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)

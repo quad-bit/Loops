@@ -21,10 +21,12 @@ EntityManager * EntityManager::GetSingleton()
 
 void EntityManager::Init()
 {
+    PLOGD << "EntityManager init";
 }
 
 void EntityManager::DeInit()
 {
+    PLOGD << "EntityManager Deinit";
 
 	entityList.clear();
 	entityHandleList.clear();
@@ -74,6 +76,7 @@ void EntityManager::DestroyEntity(Entity * entity)
         }
 
         delete entity;
+        entity = nullptr;
     }
 
 	entityList.erase(entityList.begin() + pos);

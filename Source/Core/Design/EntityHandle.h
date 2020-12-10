@@ -15,7 +15,7 @@ class EntityHandle
 private:
     Entity * entityObj;
     World * worldObj;
-    Transform * transform;
+    //Transform * transform;
 
 public:
     EntityHandle(Entity * entityObj, World * worldObj) {

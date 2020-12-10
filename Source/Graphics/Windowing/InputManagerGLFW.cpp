@@ -1,6 +1,7 @@
 #include "InputManager.h"
 #include <Assertion.h>
 #include "WindowManager.h"
+#include "CorePrecompiled.h"
 
 #if defined(GLFW_ENABLED)
 #define GLFW_INCLUDE_VULKAN
@@ -256,11 +257,14 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
 
 void InputManager::Init()
 {
+    PLOGD << "Input manager Init";
+
     glfwSetKeyCallback(WindowManager::GetInstance()->glfwWindow, key_callback);
 }
 
 void InputManager::DeInit()
 {
+    PLOGD << "Input manager DeInit";
 
 }
 

@@ -6,10 +6,14 @@
 
 void ScriptableSystem::Init()
 {
+    PLOGD << "ScriptableSystem init";
+
 }
 
 void ScriptableSystem::DeInit()
 {
+    PLOGD << "ScriptableSystem Deinit";
+
 }
 
 void ScriptableSystem::Update(float dt)

@@ -1,7 +1,6 @@
 #include "VkQueueFactory.h"
 #include "VulkanUtility.h"
-#include <Assertion.h>
-#include <algorithm>
+#include <CorePrecompiled.h>
 
 VkQueueFactory* VkQueueFactory::instance = nullptr;
 
@@ -40,6 +39,8 @@ VkQueueWrapper * VkQueueFactory::MapQueueWrapper(const QueueWrapper * wrapper)
 
 void VkQueueFactory::Init()
 {
+    PLOGD << "VkQueueFactory Init";
+
     uint32_t graphicsReq = VK_QUEUE_GRAPHICS_BIT;
     uint32_t computeReq = VK_QUEUE_COMPUTE_BIT;
     uint32_t transferReq = VK_QUEUE_TRANSFER_BIT;
@@ -77,6 +78,8 @@ void VkQueueFactory::Init()
 
 void VkQueueFactory::DeInit()
 {
+    PLOGD << "VkQueueFactory DeInit";
+
     delete[] graphicQueuePriority;
 
     if (computeQueuePriority != nullptr)

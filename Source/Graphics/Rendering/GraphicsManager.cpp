@@ -6,11 +6,14 @@
 #include "RenderingWrapper.h"
 #include "RendererSettings.h"
 #include "InputManager.h"
+#include <CorePrecompiled.h>
 
 GraphicsManager* GraphicsManager::instance = nullptr;
 
 void GraphicsManager::Init(uint32_t winWidth, uint32_t winHeight, std::string winName)
 {
+    PLOGD << "Graphics manager Init";
+
     Settings::windowWidth   = winWidth;
     Settings::windowHeight  = winHeight;
     Settings::windowName    = winName;
@@ -43,11 +46,12 @@ void GraphicsManager::Init(uint32_t winWidth, uint32_t winHeight, std::string wi
     
     renderingInterfaceObj->Init(apiInterface);
     renderingInterfaceObj->SetupRenderer();
-
 }
 
 void GraphicsManager::DeInit()
 {
+    PLOGD << "Graphics manager DeInit";
+
     renderingInterfaceObj->DislogeRenderer();
     renderingInterfaceObj->DeInit();
     delete renderingInterfaceObj;

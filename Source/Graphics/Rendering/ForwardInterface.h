@@ -2,8 +2,7 @@
 
 #include "VulkanInterface.h"
 #include "DxInterface.h"
-#include <Assertion.h>
-#include <vector>
+#include <CorePrecompiled.h>
 
 template <typename T>
 class DrawCommandBuffer;
@@ -15,7 +14,7 @@ private:
     T * apiInterface;
     std::vector<uint32_t> defaultRenderTargetList, defaultDepthTargetList;
     uint32_t defaultRenderPassId;
-    ImageFormat bestDepthFormat;
+    Format bestDepthFormat;
     std::vector<uint32_t> defaultFbos;
 
 public:
@@ -30,10 +29,13 @@ public:
 
 #include "RenderingWrapper.h"
 #include <Settings.h>
+#include <CorePrecompiled.h>
 
 template<typename T>
 inline void ForwardRendering<T>::Init()
 {
+    PLOGD << "Forward rendering Init";
+
     apiInterface = new T();
     apiInterface->Init();
 }
@@ -41,6 +43,8 @@ inline void ForwardRendering<T>::Init()
 template<typename T>
 inline void ForwardRendering<T>::Init(T * apiInterface)
 {
+    PLOGD << "Forward rendering Init";
+
     this->apiInterface = apiInterface;
     apiInterface->Init();
 }
@@ -54,7 +58,7 @@ inline void ForwardRendering<T>::SetupRenderer()
     ImageInfo * info = new ImageInfo();
     info->colorSpace = ColorSpace::COLOR_SPACE_SRGB_NONLINEAR_KHR;
     info->degree = Dimensions::Dim2;
-    info->format = ImageFormat::B8G8R8A8_UNORM;
+    info->format = Format::B8G8R8A8_UNORM;
     info->height = Settings::windowHeight;
     info->layers = 1;
     info->mips = 1;
@@ -65,12 +69,12 @@ inline void ForwardRendering<T>::SetupRenderer()
 
     apiInterface->CreateRenderTarget(info, Settings::swapBufferCount, true, &defaultRenderTargetList);
 
-    ImageFormat * depthFormats = new ImageFormat[5];
-    depthFormats[0] = ImageFormat::D32_SFLOAT_S8_UINT;
-    depthFormats[1] = ImageFormat::D24_UNORM_S8_UINT;
-    depthFormats[2] = ImageFormat::D16_UNORM_S8_UINT;
-    depthFormats[3] = ImageFormat::D32_SFLOAT;
-    depthFormats[4] = ImageFormat::D16_UNORM;
+    Format * depthFormats = new Format[5];
+    depthFormats[0] = Format::D32_SFLOAT_S8_UINT;
+    depthFormats[1] = Format::D24_UNORM_S8_UINT;
+    depthFormats[2] = Format::D16_UNORM_S8_UINT;
+    depthFormats[3] = Format::D32_SFLOAT;
+    depthFormats[4] = Format::D16_UNORM;
 
     uint32_t index = apiInterface->FindBestDepthFormat(depthFormats, 5);
     
@@ -98,7 +102,7 @@ inline void ForwardRendering<T>::SetupRenderer()
     RenderPassAttachmentInfo attchmentDescList[2];
 
     attchmentDescList[0].finalLayout = ImageLayout::LAYOUT_PRESENT_SRC_KHR;
-    attchmentDescList[0].format = ImageFormat::B8G8R8A8_UNORM;
+    attchmentDescList[0].format = Format::B8G8R8A8_UNORM;
     attchmentDescList[0].initialLayout = ImageLayout::LAYOUT_UNDEFINED;
     attchmentDescList[0].loadOp = LoadOperation::LOAD_OP_CLEAR;
     attchmentDescList[0].sampleCount = sampleCount;
@@ -199,5 +203,7 @@ inline void ForwardRendering<T>::EndRender(DrawCommandBuffer<T>* drawCommandBuff
 template<typename T>
 inline void ForwardRendering<T>::DeInit()
 {
+    PLOGD << "Forward rendering deinit";
+
     apiInterface->DeInit();
 }

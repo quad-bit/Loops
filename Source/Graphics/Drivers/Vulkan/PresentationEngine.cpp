@@ -4,6 +4,7 @@
 #include <Settings.h>
 #include <Assertion.h>
 #include <vector>
+#include <CorePrecompiled.h>
 
 using namespace std;
 
@@ -11,6 +12,8 @@ PresentationEngine* PresentationEngine::instance = nullptr;
 
 void PresentationEngine::Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * surfaceFormat)
 {
+    PLOGD << "PresentationEngine Init";
+
     this->surfaceObj = surfaceObj;
     this->surfaceFormat = surfaceFormat;
 
@@ -117,7 +120,7 @@ void PresentationEngine::DestroySwapChainImageView()
 
 void PresentationEngine::DeInit()
 {
-    
+    PLOGD << "PresentationEngine DeInit";
 }
 
 void PresentationEngine::Update()

@@ -2,8 +2,7 @@
 #include "VulkanUtility.h"
 #include "VulkanSettings.h"
 #include "VulkanMemoryManager.h"
-#include <Assertion.h>
-#include <algorithm>
+#include <CorePrecompiled.h>
 
 VkBufferFactory* VkBufferFactory::instance = nullptr;
 
@@ -14,11 +13,13 @@ uint32_t VkBufferFactory::GetId()
 
 void VkBufferFactory::Init()
 {
+    PLOGD << "VKBUfferFactory init";
 
 }
 
 void VkBufferFactory::DeInit()
 {
+    PLOGD << "VKBUfferFactory Deinit";
 
 }
 

@@ -5,7 +5,7 @@
 
 using namespace std;
 
-enum class ImageFormat;
+enum class Format;
 struct ImageInfo;
 
 class AttachmentWrapper
@@ -67,7 +67,7 @@ public:
     static VkAttachmentFactory* GetInstance();
     ~VkAttachmentFactory();
 
-    uint32_t FindBestDepthFormat(ImageFormat * format, uint32_t count);
+    uint32_t FindBestDepthFormat(Format * format, uint32_t count);
 
     void CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids);
     //void CreateDepthAttachment(ImageInfo * info, uint32_t count, bool stencilRequired, bool defaultTarget, vector<uint32_t>* ids);

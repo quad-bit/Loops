@@ -73,13 +73,16 @@ void PlayerHandlerScript::DeInit()
 
 PlayerHandlerScript::~PlayerHandlerScript()
 {
+    //return;
+
     worldObj->DestroyEntity(playerHandle);
     worldObj->DestroyEntity(head);
 
     ComponentHandle<Mesh> torsoMesh = torso->GetComponent<Mesh>();
     MeshFactory::GetInstance()->DestroyMesh(torsoMesh->meshId);
+    torsoMesh.DestroyComponent();
     torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
-    delete torsoMesh.GetComponent();
+    //delete torsoMesh.GetComponent(); //TODO  fix this get component function
 
     worldObj->DestroyEntity(torso);
     worldObj->DestroyEntity(leftArm);

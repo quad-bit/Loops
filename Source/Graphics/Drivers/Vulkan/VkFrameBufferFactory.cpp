@@ -1,8 +1,7 @@
 #include "VkFrameBufferFactory.h"
 #include "VulkanUtility.h"
 #include "VulkanSettings.h"
-#include <Assertion.h>
-#include <algorithm>
+#include <CorePrecompiled.h>
 
 VkFrameBufferFactory* VkFrameBufferFactory::instance = nullptr;
 uint32_t VkFrameBufferFactory::fboId = 0;
@@ -14,11 +13,13 @@ uint32_t VkFrameBufferFactory::GetId()
 
 void VkFrameBufferFactory::Init()
 {
-
+    PLOGD << "VkFrameBufferFactory Init";
 }
 
 void VkFrameBufferFactory::DeInit()
 {
+    PLOGD << "VkFrameBufferFactory DeInit";
+
     uint32_t size = (uint32_t)fboList.size();
     for (uint32_t i = 0; i < size; i++)
     {

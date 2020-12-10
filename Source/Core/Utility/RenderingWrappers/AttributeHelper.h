@@ -5,7 +5,7 @@
 #include <vector>
 #include <Cube.h>
 #include <stdint.h>
-
+#include "RenderingWrapper.h"
 
 class Mesh;
 
@@ -25,8 +25,11 @@ enum class ATTRIBUTES
 struct VertexMetaData
 {
     uint32_t vertexDataStride, indexDataStride;
-    std::map<ATTRIBUTES, uint32_t> offets;
-    std::map<ATTRIBUTES, uint32_t> locations;
+    //std::map<ATTRIBUTES, uint32_t> offets;
+    //std::map<ATTRIBUTES, uint32_t> locations;
+    //std::map<ATTRIBUTES, Format> attributeFormats;
+
+    std::vector<VertexInputAttributeInfo> attribInfoList;
 };
 
 struct PC
@@ -56,25 +59,44 @@ struct WrapperPC : public WrapperBase
     std::vector<uint32_t> indicies;
     WrapperPC()
     {
-        
         metaData.vertexDataStride = sizeof(PC);
+        /*
         metaData.offets.insert(std::pair<ATTRIBUTES, uint32_t>(ATTRIBUTES::POSITION, (uint32_t)offsetof(PC, PC::position)));
         metaData.offets.insert(std::pair<ATTRIBUTES, uint32_t>(ATTRIBUTES::COLOR, (uint32_t)offsetof(PC, PC::color)));
         metaData.locations.insert(std::pair<ATTRIBUTES, uint32_t>(ATTRIBUTES::POSITION, 0));
         metaData.locations.insert(std::pair<ATTRIBUTES, uint32_t>(ATTRIBUTES::COLOR, 1));
+        metaData.attributeFormats.insert(std::pair<ATTRIBUTES, Format>(ATTRIBUTES::POSITION, Format::R32G32B32_SFLOAT));
+        metaData.attributeFormats.insert(std::pair<ATTRIBUTES, Format>(ATTRIBUTES::COLOR, Format::R32G32B32A32_SFLOAT));
+        */
+
+        // position
+        VertexInputAttributeInfo info = {};
+        info.binding = 0; // As a single vertex buffer is used per mesh
+        info.format = Format::R32G32B32_SFLOAT; //vec3 position
+        info.location = 0;
+        info.offset = (uint32_t)offsetof(PC, PC::position);
+        metaData.attribInfoList.push_back(info);
+
+        //color
+        info = {};
+        info.binding = 0; // As a single vertex buffer is used per mesh
+        info.format = Format::R32G32B32A32_SFLOAT; //uvec4 color
+        info.location = 1;
+        info.offset = (uint32_t)offsetof(PC, PC::color);
+        metaData.attribInfoList.push_back(info);
 
         metaData.indexDataStride = sizeof(uint32_t);
     }
 
     ~WrapperPC()
     {
-        metaData.locations.clear();
-        metaData.offets.clear();
+        //metaData.locations.clear();
+        //metaData.offets.clear();
+        metaData.attribInfoList.clear();
     }
 
     template<typename T>
     void FillData(Mesh * mesh);
-    
 };
 
 #include <Mesh.h>

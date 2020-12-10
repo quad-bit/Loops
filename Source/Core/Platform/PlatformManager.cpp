@@ -5,7 +5,6 @@ PlatformManager* PlatformManager::platformManagerInstance = nullptr;
 void PlatformManager::Init()
 {
 
-    
 }
 
 void PlatformManager::DeInit()

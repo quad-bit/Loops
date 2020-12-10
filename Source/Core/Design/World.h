@@ -28,7 +28,7 @@ private:
     std::vector<BaseComponentManager*> managerList;
     std::vector<System*> systemList;
 
-    std::map<Entity, ComponentMask> entityMasks;
+    std::map<Entity * , ComponentMask> entityMasks;
 
 public:
 
@@ -125,8 +125,8 @@ inline void World::AddComponent(ComponentType * componentType, Entity * entityOb
     ComponentManager<ComponentType>* manager = GetComponentManager<ComponentType>();
     manager->AddComponent(componentType, entityObj);
 
-    ComponentMask oldMask = entityMasks[*entityObj];
-    entityMasks[*entityObj].AddComponent<ComponentType>();
+    ComponentMask oldMask = entityMasks[entityObj];
+    entityMasks[entityObj].AddComponent<ComponentType>();
 
     UpdateEntityMask(entityObj, oldMask);
 }
@@ -137,8 +137,8 @@ inline void World::RemoveComponent(ComponentType * componentType, Entity * entit
     ComponentManager<ComponentType>* manager = GetComponentManager<ComponentType>();
     manager->RemoveComponent(entityObj);
 
-    ComponentMask oldMask = entityMasks[*entityObj];
-    entityMasks[*entityObj].RemoveComponent<ComponentType>();
+    ComponentMask oldMask = entityMasks[entityObj];
+    entityMasks[entityObj].RemoveComponent<ComponentType>();
 
     UpdateEntityMask(entityObj, oldMask);
 }

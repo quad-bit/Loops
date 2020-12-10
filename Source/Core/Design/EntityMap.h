@@ -13,13 +13,13 @@ class EntityMap
 {
 
 private:
-    std::array<Entity, MAX_NUM_OF_UNIQUE_COMPONENT> indexToEntity;
-    std::map<Entity, ComponentIndex> entityToIndex;
+    std::array<Entity * , MAX_NUM_OF_UNIQUE_COMPONENT> indexToEntity;
+    std::map<Entity *, ComponentIndex> entityToIndex;
 
 public:
     ComponentIndex& GetComponentIndex(Entity* e)
     {
-        std::map<Entity, ComponentIndex>::iterator it = entityToIndex.find(*e);
+        std::map<Entity* , ComponentIndex>::iterator it = entityToIndex.find(e);
 
         if (it == entityToIndex.end())
         {
@@ -27,10 +27,10 @@ public:
             std::exit(-1);
         }
 
-        return entityToIndex[*e];
+        return entityToIndex[e];
     }
 
-    Entity& GetEntity(ComponentIndex* c)
+    Entity* GetEntity(ComponentIndex* c)
     {
         /* std::array<Entity, MAX_NUM_OF_COMPONENTS>::iterator it = std::find_if(std::begin(indexToEntity), std::end(indexToEntity), [=](const EntityMap& e) {return e.indexToEntity. == valueToCompare; });
 
@@ -45,19 +45,19 @@ public:
 
     void AddToMap(Entity* e, ComponentIndex* c)
     {
-        entityToIndex.insert({ *e, *c });
-        indexToEntity[*c] = *e;
+        entityToIndex.insert({ e, *c });
+        indexToEntity[*c] = e;
     }
 
     void UpdateMap(Entity *e, ComponentIndex *c)
     {
-        entityToIndex[*e] = *c;
-        indexToEntity[*c] = *e;
+        entityToIndex[e] = *c;
+        indexToEntity[*c] = e;
     }
 
     void RemoveFromMap(Entity *e)
     {
-        entityToIndex.erase(*e);
+        entityToIndex.erase(e);
         //indexToEntity    THINK..!!!!
     }
 };

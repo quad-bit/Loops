@@ -55,10 +55,12 @@ public:
 #elif (RENDERING_API == DX)
 apiInterface = new DxInterface();
 #endif
+#include <CorePrecompiled.h>
 
 template<typename T>
 inline void DrawCommandBuffer<T>::Init(T * apiInterface, CommandBufferLevel * level, const uint32_t & poolId)
 {
+    PLOGD << "Draw command buffer Init";
     this->apiInterface = apiInterface;
 
     PipelineType * bufType = new PipelineType;
@@ -77,6 +79,8 @@ inline void DrawCommandBuffer<T>::Init(T * apiInterface, CommandBufferLevel * le
 template<typename T>
 inline void DrawCommandBuffer<T>::DeInit()
 {
+    PLOGD << "Draw command buffer DeInit";
+
     apiInterface->DestroyCommandBuffer(cmdBufferId);
     delete commandBufferLevel;
     delete bufferType;

@@ -1,6 +1,5 @@
 #include "VkCommandBufferFactory.h"
-#include <algorithm>
-#include <Assertion.h>
+#include <CorePrecompiled.h>
 #include <VulkanUtility.h>
 #include <VkQueueFactory.h>
 #include "VkDrawCommandBuffer.h"
@@ -42,6 +41,8 @@ uint32_t VkCommandBufferFactory::GetBufferId()
 
 void VkCommandBufferFactory::Init()
 {
+    PLOGD << "VkCommandBufferFactory init";
+
     renderQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT, CoreObjects::renderQueueId);
     computeQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT, CoreObjects::computeQueueId);
     transferQueue = VkQueueFactory::GetInstance()->GetQueue(VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT, CoreObjects::transferQueueId);
@@ -53,6 +54,7 @@ void VkCommandBufferFactory::Init()
 
 void VkCommandBufferFactory::DeInit()
 {
+    PLOGD << "VkCommandBufferFactory Deinit";
     for each (VkCommandPoolWrapper pool in poolList)
     {
         delete pool.pool;

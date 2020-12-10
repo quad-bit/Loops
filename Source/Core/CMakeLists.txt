@@ -48,6 +48,11 @@ ELSE()
   message (" glm include directory set to : ${glm_INCLUDE_DIR}")
 ENDIF()
 
+SET( plog_DIR "$ENV{GLM_PATH}" )
+SET ( plog_INCLUDE_DIR "${glm_INCLUDE_DIR}/../Logging/")
+message (" plog include directory set to : ${plog_INCLUDE_DIR}")
+
+
 #find glfw
 IF( DEFINED ENV{GLFW_PATH} )
   SET( glfw_DIR "$ENV{GLFW_PATH}" )
@@ -73,4 +78,18 @@ ${SourceList})
 target_include_directories(Core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Core PUBLIC ${SUBDIRS})
 target_include_directories(Core PUBLIC ${glm_INCLUDE_DIR})
+target_include_directories(Core PUBLIC ${plog_INCLUDE_DIR})
 target_include_directories(Core PUBLIC ${glfw3_INCLUDE_DIR})
+
+if (MSVC)
+    # For precompiled header.
+    # Set
+    # "Precompiled Header" to "Use (/Yu)"
+    # "Precompiled Header File" to "stdafx.h"
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /YuCorePrecompiled.h /FICorePrecompiled.h")
+endif()
+
+set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/CorePrecompiled.cpp"
+    PROPERTIES
+    COMPILE_FLAGS "/YcCorePrecompiled.h"
+)

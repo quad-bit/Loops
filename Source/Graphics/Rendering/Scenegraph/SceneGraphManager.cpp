@@ -3,11 +3,14 @@
 #include <Tree.h>
 #include <EventBus.h>
 #include <SceneChangeEvent.h>
+#include <CorePrecompiled.h>
 
 SceneGraphManager* SceneGraphManager::instance = nullptr;
 
 void SceneGraphManager::Init(SceneNode * rootNode)
 {
+    PLOGD << "Scenegraph Init";
+
     this->rootNode = rootNode;
     this->rootTreeNode = new TreeNode<SceneNode>(rootNode);
     sceneTree = new Tree<SceneNode>( rootTreeNode );
@@ -19,6 +22,8 @@ void SceneGraphManager::Init(SceneNode * rootNode)
 
 void SceneGraphManager::DeInit()
 {
+    PLOGD << "Scenegraph manager deinit";
+
     delete sceneTree;
 }
 

@@ -5,10 +5,9 @@
 #include "VkQueueFactory.h"
 #include "VkCommandBufferFactory.h"
 #include "VkSynchroniserFactory.h"
+#include "VulkanGraphicsPipelineFactory.h"
 #include <Settings.h>
-#include <Assertion.h>
-#include <algorithm>
-
+#include <CorePrecompiled.h>
 using namespace std;
 
 VulkanManager* VulkanManager::instance = nullptr;
@@ -170,6 +169,8 @@ void VulkanManager::GetPhysicalDevice()
 
 void VulkanManager::Init()
 {
+    PLOGD << "VulkanManager init";
+
     CreateInstance();
     GetPhysicalDevice();
     validationManagerObj->InitDebug(&vkInstanceObj, pAllocator);
@@ -196,6 +197,8 @@ void VulkanManager::Init()
 
 void VulkanManager::Init(QueueWrapper * queueRequirement, const uint32_t & count)
 {
+    PLOGD << "VulkanManager init";
+
     CreateInstance();
     GetPhysicalDevice();
     validationManagerObj->InitDebug(&vkInstanceObj, pAllocator);
@@ -240,10 +243,16 @@ void VulkanManager::Init(QueueWrapper * queueRequirement, const uint32_t & count
     VulkanMemoryManager::GetSingleton()->Init(physicalDeviceMemProps);
     VkCommandBufferFactory::GetInstance()->Init();
     VkSynchroniserFactory::GetInstance()->Init();
+    VulkanGraphicsPipelineFactory::GetInstance()->Init();
 }
 
 void VulkanManager::DeInit()
 {
+    PLOGD << "VulkanManager Deinit";
+
+    VulkanGraphicsPipelineFactory::GetInstance()->DeInit();
+    delete VulkanGraphicsPipelineFactory::GetInstance();
+
     VkSynchroniserFactory::GetInstance()->DeInit();
     delete VkSynchroniserFactory::GetInstance();
 

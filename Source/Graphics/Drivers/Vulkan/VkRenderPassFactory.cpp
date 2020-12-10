@@ -1,8 +1,7 @@
 #include "VkRenderPassFactory.h"
 #include "VkRenderingUnwrapper.h"
 #include "VulkanUtility.h"
-#include <Assertion.h>
-#include <algorithm>
+#include <CorePrecompiled.h>
 #include <array>
 
 VkRenderPassFactory* VkRenderPassFactory::instance = nullptr;
@@ -15,11 +14,14 @@ uint32_t VkRenderPassFactory::GetId()
 
 void VkRenderPassFactory::Init()
 {
+    PLOGD << "VkRenderPassFactory init";
     refCounter = 0;
 }
 
 void VkRenderPassFactory::DeInit()
 {
+    PLOGD << "VkRenderPassFactory Deinit";
+
     for (uint32_t i = 0; i < renderpassList.size(); i++)
     {
         if (renderpassList[i]->clearValue != nullptr)

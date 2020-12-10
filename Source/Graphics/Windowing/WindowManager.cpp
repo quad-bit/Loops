@@ -1,4 +1,5 @@
 #include "WindowManager.h"
+#include <CorePrecompiled.h>
 
 WindowManager* WindowManager::windowManagerInstance = nullptr;
 
@@ -17,11 +18,15 @@ WindowManager * WindowManager::GetInstance()
 
 void WindowManager::Init()
 {
+    PLOGD << "Window manager Init";
+
     InitOSWindow();
 }
 
 void WindowManager::DeInit()
 {
+    PLOGD << "Graphics manager DeInit";
+
     DeInitOSWindow();
 }
 

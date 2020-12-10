@@ -51,6 +51,7 @@ public:
     {
         delete[] vertexBuffersIds;
         delete[] pGpuMemVB;
+
     }
 };
 

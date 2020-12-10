@@ -11,7 +11,7 @@ VkImageViewType  UnWrapImageViewDegree(Dimensions degree);
 
 VkImageType  UnWrapImageDegree(Dimensions degree);
 
-VkFormat UnWrapFormat(ImageFormat format);
+VkFormat UnWrapFormat(Format format);
 
 VkImageLayout UnWrapImageLayout(ImageLayout layout);
 

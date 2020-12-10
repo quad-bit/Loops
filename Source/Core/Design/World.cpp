@@ -9,7 +9,7 @@ EntityHandle* World::CreateEntity()
     EntityHandle * handle = EntityManager::GetSingleton()->CreateEntityHandle(obj, this);
 
     ComponentMask mask;
-    entityMasks.insert({ *obj, mask });
+    entityMasks.insert({ obj, mask });
 
     Transform * transform = new Transform(obj);
     handle->AddComponent<Transform>(transform);
@@ -20,7 +20,7 @@ EntityHandle* World::CreateEntity()
 
 void World::UpdateEntityMask(Entity * entity, ComponentMask oldMask)
 {
-    ComponentMask newMask = entityMasks[*entity];
+    ComponentMask newMask = entityMasks[entity];
     // TODO : Complete the system integration
 
     for (auto &system : systemList) {
@@ -59,6 +59,9 @@ void World::Render()
 
 void World::DeInit()
 {
+    PLOGD << "World Deinit";
+    
+
     for (auto system : systemList)
     {
         system->DeInit();
@@ -77,6 +80,8 @@ void World::DeInit()
 
 void World::Init()
 {
+    PLOGD << "World init";
+
     EntityManager::GetSingleton()->Init();
 
     for (auto system : systemList)

@@ -65,10 +65,12 @@ public:
 
 #include "RenderingWrapper.h"
 #include "DrawCommandBuffer.h"
+#include <CorePrecompiled.h>
 
 template<typename T>
 inline void CommandBufferManager<T>::Init(T * apiInterface)
 {
+    PLOGD << "Command Buffer Manager Init";
     drawCommandBufferList = new DrawCommandBuffer<T>[MAX_COMMANDBUFFERS];
     //DispatchCommandBufferList; = new DispatchCommandBuffer<T>[MAX_COMMANDBUFFERS];
     //transferCommandBuffer = new TransferCommandBuffer<T>;
@@ -78,6 +80,7 @@ inline void CommandBufferManager<T>::Init(T * apiInterface)
 template<typename T>
 inline void CommandBufferManager<T>::DeInit()
 {
+    PLOGD << "Command Buffer Manager DeInit";
     delete[] drawCommandBufferList;
 }
 

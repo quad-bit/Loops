@@ -4,8 +4,7 @@
 #include "VulkanMemoryManager.h"
 #include "VkRenderingUnwrapper.h"
 #include <RenderingWrapper.h>
-#include <Assertion.h>
-#include <algorithm>
+#include <CorePrecompiled.h>
 
 VkAttachmentFactory *VkAttachmentFactory::instance = nullptr;
 uint32_t VkAttachmentFactory::imageId = 0;
@@ -30,11 +29,13 @@ AttachmentInfo * VkAttachmentFactory::UnwrapImageInfo(ImageInfo * imageInfo)
 
 void VkAttachmentFactory::Init()
 {
-
+    PLOGD << "VkAttachmentFactory init";
 }
 
 void VkAttachmentFactory::DeInit()
 {
+    PLOGD << "VkAttachmentFactory Deinit";
+
     for (uint32_t i = 0; i < attachmentList.size(); i++)
     {
         delete attachmentList[i];
@@ -61,7 +62,7 @@ VkAttachmentFactory::~VkAttachmentFactory()
 }
 
 
-uint32_t VkAttachmentFactory::FindBestDepthFormat(ImageFormat * imageFormat, uint32_t count)
+uint32_t VkAttachmentFactory::FindBestDepthFormat(Format * imageFormat, uint32_t count)
 {
     VkFormat * formatList = new VkFormat[count];
     VkFormatProperties props = {};

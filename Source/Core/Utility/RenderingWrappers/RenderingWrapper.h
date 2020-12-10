@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <Settings.h>
 
-enum class ImageFormat
+enum class Format
 {
     UNDEFINED,
     B8G8R8A8_UNORM,
@@ -10,7 +10,9 @@ enum class ImageFormat
     D24_UNORM_S8_UINT, 
     D16_UNORM_S8_UINT, 
     D32_SFLOAT, 
-    D16_UNORM
+    D16_UNORM,
+    R32G32B32A32_SFLOAT,
+    R32G32B32_SFLOAT
 };
 
 enum class ColorSpace
@@ -194,12 +196,32 @@ enum class MemoryType
     PROTECTED_BIT = 0x00000020
 };
 
+enum class PipelineStates
+{
+    ShaderStage,
+    VertexInputState,
+    InputAssemblyState,
+    TessellationState,
+    ViewportState,
+    RasterizationState,
+    MultisampleState,
+    DepthStencilState,
+    ColorBlendState,
+    DynamicState
+};
+
+enum class VertexIputRate
+{
+    PerVertex,
+    PerInstance
+};
+
 #if (RENDERING_API == VULKAN)
 
     struct ImageInfo
     {
         uint32_t width, height, mips, layers;
-        ImageFormat format;
+        Format format;
         Dimensions degree;
         ColorSpace colorSpace;
         Usage usage;
@@ -215,7 +237,7 @@ enum class MemoryType
             id = counter++;
         }
         uint32_t id;
-        ImageFormat format;
+        Format format;
         Samples sampleCount;
         LoadOperation loadOp;
         StoreOperation storeOp;
@@ -315,6 +337,21 @@ enum class MemoryType
         void * data;
         size_t dataSize;
         void * pGpuMem;
+    };
+
+    struct VertexInputBindingInfo
+    {
+        uint32_t             binding;
+        uint32_t             stride;
+        VertexIputRate       inputRate;
+    };
+
+    struct VertexInputAttributeInfo 
+    {
+        uint32_t    location;
+        uint32_t    binding;
+        Format      format;
+        uint32_t    offset;
     };
 
 #elif (RENDERING_API == DX12)

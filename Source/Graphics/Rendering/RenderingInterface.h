@@ -1,6 +1,7 @@
 #pragma once
 #include <Settings.h>
 #include "RenderingWrapper.h"
+#include <CorePrecompiled.h>
 
 template <typename T>
 class ForwardRendering;
@@ -114,6 +115,8 @@ inline void RenderingInterface<T>::EndRenderLoop()
 template<typename T>
 inline void RenderingInterface<T>::Init(T * apiInterface)
 {
+    PLOGD << "Rendering interface Init";
+
     forwardRenderer = new ForwardRendering<T>();
     forwardRenderer->Init(apiInterface);
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);
@@ -202,6 +205,8 @@ inline void RenderingInterface<T>::DislogeRenderer()
 template<typename T>
 inline void RenderingInterface<T>::DeInit()
 {
+    PLOGD << "Rendering interface Init";
+
     MeshFactory::GetInstance()->DeInit();
     delete MeshFactory::GetInstance();
 
