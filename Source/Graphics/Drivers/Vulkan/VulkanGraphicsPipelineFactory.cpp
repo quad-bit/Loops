@@ -84,7 +84,7 @@ void VulkanGraphicsPipelineFactory::CreatePipelineShaderStage()
 
 void VulkanGraphicsPipelineFactory::CreateDynamicState()
 {
-    pipelineDynamicStateCreateInfoObj.dynamicStateCount = dynamicStateList.size();
+    pipelineDynamicStateCreateInfoObj.dynamicStateCount = (uint32_t)dynamicStateList.size();
     pipelineDynamicStateCreateInfoObj.pDynamicStates = dynamicStateList.data();
     pipelineDynamicStateCreateInfoObj.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 }

@@ -108,7 +108,7 @@ Mesh * MeshFactory::CreateMesh(const BitArray & attribMaskReq, MESH_TYPE * meshT
         }
         
         VertexInputAttributeInfo * attribInfo = wrapper->metaData.attribInfoList.data();
-        uint32_t attribCount = wrapper->metaData.attribInfoList.size();
+        uint32_t attribCount = (uint32_t)wrapper->metaData.attribInfoList.size();
 
         apiInterface->InitiateGraphicsPipelineCreation(mesh->meshId, attribInfo, attribCount, bindingInfo, numVertexBufferPerMesh);
         delete [] bindingInfo;

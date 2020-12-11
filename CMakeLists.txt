@@ -5,14 +5,17 @@ message ("using c++ 17")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-message ("Configuring Core ..\n")
+message ("\nConfiguring Core ..\n")
 add_subdirectory(Source/Core Projects/Core)
 
 message ("\nConfiguring Vulkan Driver ..\n")
 add_subdirectory(Source/Graphics/Drivers/Vulkan Projects/Vulkan)
 
-message ("Graphics ..")
+message ("\nGraphics ..\n")
 add_subdirectory(Source/Graphics Projects/Graphics)
 
-message ("App ..")
+message ("\nConfiguring EngineInterface ..\n")
+add_subdirectory(Source/EngineInterface Projects/EngineInterface)
+
+message ("\nApp ..")
 add_subdirectory(Source/Application Projects/Application)

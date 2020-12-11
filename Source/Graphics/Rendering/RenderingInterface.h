@@ -119,6 +119,7 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
 
     forwardRenderer = new ForwardRendering<T>();
     forwardRenderer->Init(apiInterface);
+    
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);
     MeshFactory::GetInstance()->Init(apiInterface);
 

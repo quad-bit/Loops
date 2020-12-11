@@ -371,18 +371,34 @@ void VulkanInterface::Init()
 {
     PLOGD << "Vulkan interface Init";
 
-    //VulkanManager::GetInstance()->Init();
     VulkanManager::GetInstance()->Init(RendererSettings::queueReq , RendererSettings::queueRequirementCount );
     VulkanManager::GetInstance()->CreateSurface(WindowManager::GetInstance()->glfwWindow);
+    VulkanManager::GetInstance()->InitializeFactories();
+    /*VulkanManager::GetInstance()->CreateSurface(WindowManager::GetInstance()->glfwWindow);
     PresentationEngine::GetInstance()->Init(VulkanManager::GetInstance()->GetSurface(), VulkanManager::GetInstance()->GetSurfaceFormat());
     VkAttachmentFactory::GetInstance()->Init();
     VkRenderPassFactory::GetInstance()->Init();
     VkFrameBufferFactory::GetInstance()->Init();
+    
+    VkCommandBufferFactory::GetInstance()->Init();
+    VkSynchroniserFactory::GetInstance()->Init();
+    VulkanGraphicsPipelineFactory::GetInstance()->Init();*/
+
+
 }
 
 void VulkanInterface::DeInit()
 {
-    PLOGD << "Vulkan interface DeInit";
+    /*PLOGD << "Vulkan interface DeInit";
+
+    VulkanGraphicsPipelineFactory::GetInstance()->DeInit();
+    delete VulkanGraphicsPipelineFactory::GetInstance();
+
+    VkSynchroniserFactory::GetInstance()->DeInit();
+    delete VkSynchroniserFactory::GetInstance();
+
+    VkCommandBufferFactory::GetInstance()->DeInit();
+    delete VkCommandBufferFactory::GetInstance();
 
     VkFrameBufferFactory::GetInstance()->DeInit();
     delete VkFrameBufferFactory::GetInstance();
@@ -395,7 +411,7 @@ void VulkanInterface::DeInit()
 
     PresentationEngine::GetInstance()->DeInit();
     delete PresentationEngine::GetInstance();
-
+*/
     VulkanManager::GetInstance()->DeInit();
     delete VulkanManager::GetInstance();
 }

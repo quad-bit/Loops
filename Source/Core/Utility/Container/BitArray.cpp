@@ -50,5 +50,8 @@ void BitArray::ClearBit(unsigned int bit)
 bool BitArray::operator[](unsigned int bit) const
 {
 	assert(totalBits > bit);
-	return m_bits[BIT_TO_CHAR(bit)] & BIT_IN_CHAR(bit);
+    if ((m_bits[BIT_TO_CHAR(bit)] & BIT_IN_CHAR(bit)))
+        return true;
+    else
+        return false;
 }

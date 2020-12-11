@@ -117,8 +117,9 @@ inline T & Vector<T>::operator[](int index)
 				return *it;
 		}
 	}
-
-	//return *(list.Begin());
+    
+    ASSERT_MSG(0, "invalid vector type");
+    //return T();
 }
 
 template<typename T>

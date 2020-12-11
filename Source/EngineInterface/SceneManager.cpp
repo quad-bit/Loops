@@ -2,7 +2,7 @@
 #include "EntityHandle.h"
 #include "Scriptable.h"
 #include "ECS_Setting.h"
-#include "PlayerHandlerScript.h"
+//#include "PlayerHandlerScript.h"
 #include <EventBus.h>
 #include <InputEvents.h>
 #include <Transform.h>
@@ -16,20 +16,18 @@ SceneManager::SceneManager()
 
     SceneGraphManager::GetInstance()->Init(sceneRootTransform);
 
-    scriptableParent = worldObj->CreateEntity();
-    playerHandlerScript = new PlayerHandlerScript();
-    scriptableParent->AddComponent<Scriptable>(playerHandlerScript);
+    
 
     EventBus::GetInstance()->Subscribe<SceneManager, KeyInputEvent>(this, &SceneManager::HandleSceneControls);
 }
 
 SceneManager::~SceneManager()
 {
-    scriptableParent->RemoveComponent<Scriptable>(playerHandlerScript);
+    /*scriptableParent->RemoveComponent<Scriptable>(playerHandlerScript);
     delete playerHandlerScript;
     playerHandlerScript = NULL;
     worldObj->DestroyEntity(scriptableParent);
-
+*/
     SceneGraphManager::GetInstance()->DeInit();
     delete SceneGraphManager::GetInstance();
 

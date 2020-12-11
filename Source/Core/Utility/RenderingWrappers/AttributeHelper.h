@@ -122,7 +122,7 @@ inline void WrapperPC::FillData(Mesh * mesh)
 
     vertexData = posColList.data();
     vertexDataSize = (uint32_t)posColList.size() * sizeof(PC);
-    vertexCount = numVertices;
+    vertexCount = (uint32_t)numVertices;
 
     size_t numIndicies = obj.indices.size();
 
@@ -137,5 +137,5 @@ inline void WrapperPC::FillData(Mesh * mesh)
 
     indexData = indicies.data();
     indexDataSize = (uint32_t)indicies.size() * sizeof( uint32_t );
-    indexCount = numIndicies;
+    indexCount = (uint32_t)numIndicies;
 }

@@ -45,6 +45,7 @@ public:
         
     void Init();
     void Init(QueueWrapper * queueRequirement, const uint32_t & count);
+    void InitializeFactories();
     void DeInit();
     void Update();
     void CreateSurface(GLFWwindow * glfwWindow);
