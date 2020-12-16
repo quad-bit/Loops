@@ -22,11 +22,22 @@ PlayerHandlerScript::PlayerHandlerScript()
     Transform * torsoTrf = torso->GetTransform();
     torsoTrf->SetParent(playerTrf);
     
+
     BitArray req(10);
     req.SetBit((unsigned int)ATTRIBUTES::POSITION);
     req.SetBit((unsigned int)ATTRIBUTES::COLOR);
+
+    PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST };
+    MeshInfo meshInfo{};
+    meshInfo.attribMaskReq = req;
+    meshInfo.bufferPerAttribRequired = false;
+    meshInfo.isIndexed = true;
+    meshInfo.isPrimitiveRestartEnabled = false;
+    meshInfo.primitive = prim;
     MESH_TYPE meshType = MESH_TYPE::CUBE;
-    Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(req, &meshType, true, false);
+    
+    //Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(req, &meshType, true, false);
+    Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
     torso->AddComponent<Mesh>(torsoMesh);
 
     // HEAD

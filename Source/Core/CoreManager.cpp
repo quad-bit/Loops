@@ -5,6 +5,7 @@
 #include <plog/Initializers/RollingFileInitializer.h>
 #include <plog/Formatters/TxtFormatter.h>
 #include <plog/Appenders/ColorConsoleAppender.h>
+#include <HashManager.h>
 
 CoreManager* CoreManager::instance = nullptr;
 
@@ -14,6 +15,8 @@ void CoreManager::Init()
     static plog::ColorConsoleAppender<plog::TxtFormatter> consoleAppender;
     plog::init(plog::verbose, &consoleAppender);
     PLOGD << "Core manager Init";
+    
+    HashManager::GetInstance()->Init();
     /*
     // Step3: write log messages using a special macro. There are several log macros, use the macro you liked the most.
     PLOGV << "asdfasdfas";
@@ -33,7 +36,10 @@ void CoreManager::Init()
 
 void CoreManager::DeInit()
 {
-    PLOGD << "Core manager Init";
+    PLOGD << "Core manager DeInit";
+
+    HashManager::GetInstance()->DeInit();
+    delete HashManager::GetInstance();
 }
 
 void CoreManager::Update()

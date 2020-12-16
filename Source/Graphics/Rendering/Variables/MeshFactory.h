@@ -4,7 +4,8 @@
 
 enum class MESH_TYPE;
 class Mesh;
-struct WrapperBase;
+struct AttribStructBase;
+struct MeshInfo;
 
 #if (RENDERING_API == VULKAN)
 class VulkanInterface;
@@ -27,7 +28,7 @@ private:
     MeshFactory const & operator= (MeshFactory const &) {}
 
     static MeshFactory* instance;
-    std::map<Mesh *, WrapperBase *> meshToVertWrapperMap;
+    std::map<Mesh *, AttribStructBase *> meshToVertWrapperMap;
 
     uint32_t idCounter = 0;
     uint32_t GetId() { return idCounter++; }
@@ -50,5 +51,6 @@ public:
     ~MeshFactory();
 
     Mesh * CreateMesh(const BitArray & attribMaskReq, MESH_TYPE * meshType, bool isIndexed, bool individualBuffersRequired);
+    Mesh * CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType);
     void DestroyMesh(const uint32_t & meshId);
 };

@@ -19,6 +19,7 @@ enum class PipelineStage;
 enum class CommandBufferUsage;
 enum class MemoryType;
 enum class BufferType;
+enum class PrimtiveType;
 
 struct CommandBufferInheritanceInfo;
 struct SubmitInfo;
@@ -112,6 +113,8 @@ public:
     void DestroyBuffer(uint32_t * ids, const uint32_t & count);
 
     void InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount);
-    void CreateGraphicsPipeline();
-    void DestroyGraphicsPipeline();
+    void SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled);
+    //void CreateGraphicsPipeline();
+    //void DestroyGraphicsPipeline();
+
 };

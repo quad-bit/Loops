@@ -19,6 +19,9 @@ template <typename T>
 class DrawCommandBuffer;
 
 template <typename T>
+class GraphicsPipelineManager;
+
+template <typename T>
 class RenderingInterface
 {
 private:
@@ -52,7 +55,7 @@ public:
 #include "ForwardInterface.h"
 #include "CommandBufferManager.h"
 #include "MeshFactory.h"
-
+#include "GraphicsPipelineManager.h"
 //#include <Settings.h>
 
 template<typename T>
@@ -122,6 +125,7 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);
     MeshFactory::GetInstance()->Init(apiInterface);
+    GraphicsPipelineManager<T>::GetInstance()->Init(apiInterface);
 
     this->apiInterface = apiInterface;
 
@@ -207,6 +211,9 @@ template<typename T>
 inline void RenderingInterface<T>::DeInit()
 {
     PLOGD << "Rendering interface Init";
+
+    GraphicsPipelineManager<T>::GetInstance()->DeInit();
+    delete GraphicsPipelineManager<T>::GetInstance();
 
     MeshFactory::GetInstance()->DeInit();
     delete MeshFactory::GetInstance();

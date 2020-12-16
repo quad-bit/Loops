@@ -16,8 +16,6 @@ SceneManager::SceneManager()
 
     SceneGraphManager::GetInstance()->Init(sceneRootTransform);
 
-    
-
     EventBus::GetInstance()->Subscribe<SceneManager, KeyInputEvent>(this, &SceneManager::HandleSceneControls);
 }
 

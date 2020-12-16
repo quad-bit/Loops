@@ -49,7 +49,7 @@ VulkanGraphicsPipelineFactory::~VulkanGraphicsPipelineFactory()
 void VulkanGraphicsPipelineFactory::InitiatePipelineCreation(uint32_t id, VertexInputAttributeInfo * inputAttributeInfo, const uint32_t &  inputAttribCount,
     VertexInputBindingInfo * inputBindingInfo, const uint32_t & inputBindingCount)
 {
-    VkVertexInputBindingDescription * inputBindingDesc = new VkVertexInputBindingDescription[inputAttribCount];
+    VkVertexInputBindingDescription * inputBindingDesc = new VkVertexInputBindingDescription[inputBindingCount];
     for(uint32_t i = 0; i < inputBindingCount; i++)
         inputBindingDesc[i] = UnwrapVertexInputBindingInfo(&inputBindingInfo[i]);
 
@@ -67,9 +67,38 @@ void VulkanGraphicsPipelineFactory::InitiatePipelineCreation(uint32_t id, Vertex
     pipelineVertexInputStateCreateInfo->flags = 0;
 
     VulkanGraphicsPipeline * obj = new VulkanGraphicsPipeline(id);
-    obj->SetPipelineVertexInputState(pipelineVertexInputStateCreateInfo);
+
+    PipelineStateLevel level = PipelineStateLevel::Local;
+    obj->SetPipelineVertexInputState(pipelineVertexInputStateCreateInfo, &level);
 
     pipelineList.push_back(obj);
+}
+
+void VulkanGraphicsPipelineFactory::SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled)
+{
+    VkPipelineInputAssemblyStateCreateInfo * info = new VkPipelineInputAssemblyStateCreateInfo;
+    info->primitiveRestartEnable = isPrimitiveRestartEnabled;
+    info->sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    info->topology = UnwrapPrimitiveInfo(primitive);
+    info->flags = 0;
+    info->pNext = nullptr;
+
+    std::vector<VulkanGraphicsPipeline *>::iterator it;
+    it = std::find_if(pipelineList.begin(), pipelineList.end(), [&](VulkanGraphicsPipeline * e) { return e->GetObjectId() == meshId; });
+
+    ASSERT_MSG(it != pipelineList.end(), "Object id not found");
+    
+    PipelineStateLevel level = PipelineStateLevel::Local;
+    (*it)->SetPipelineInputAssemblyState(info, &level);
+}
+
+void VulkanGraphicsPipelineFactory::SetInputAssemblyInfo(PrimtiveType * primitive, bool isPrimitiveRestartEnabled)
+{
+    pipelineInputAssemblyStateCreateInfo.primitiveRestartEnable = isPrimitiveRestartEnabled;
+    pipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    pipelineInputAssemblyStateCreateInfo.topology = UnwrapPrimitiveInfo(primitive);
+    pipelineInputAssemblyStateCreateInfo.flags = 0;
+    pipelineInputAssemblyStateCreateInfo.pNext = nullptr;
 }
 
 void VulkanGraphicsPipelineFactory::InitPipelineCache()
@@ -114,6 +143,50 @@ VkVertexInputBindingDescription VulkanGraphicsPipelineFactory::UnwrapVertexInput
         ASSERT_MSG(0, "Vertex input rate incorrect");
     
     return obj;
+}
+
+VkPrimitiveTopology VulkanGraphicsPipelineFactory::UnwrapPrimitiveInfo(PrimtiveType * primitive)
+{
+    switch (*primitive)
+    {
+        case PrimtiveType::TOPOLOGY_POINT_LIST :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+
+        case PrimtiveType::TOPOLOGY_LINE_LIST :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+
+        case PrimtiveType::TOPOLOGY_LINE_STRIP :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+
+        case PrimtiveType::TOPOLOGY_TRIANGLE_LIST :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+        case PrimtiveType::TOPOLOGY_TRIANGLE_STRIP :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+        case PrimtiveType::TOPOLOGY_TRIANGLE_FAN :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+
+        case PrimtiveType::TOPOLOGY_LINE_LIST_WITH_ADJACENCY :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY;
+
+        case PrimtiveType::TOPOLOGY_LINE_STRIP_WITH_ADJACENCY :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY;
+
+        case PrimtiveType::TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY;
+
+        case PrimtiveType::TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
+
+        case PrimtiveType::TOPOLOGY_PATCH_LIST :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+
+        case PrimtiveType::TOPOLOGY_MAX_ENUM :
+            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+    }
+
+    ASSERT_MSG(0, "invalid primitive");
 }
 
 void VulkanGraphicsPipelineFactory::CreatePipelineVertexInputState()

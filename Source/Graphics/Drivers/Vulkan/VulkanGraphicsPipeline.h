@@ -3,6 +3,13 @@
 #include <RenderingWrapper.h>
 #include <vulkan\vulkan.h>
 
+enum class PipelineStateLevel
+{
+    Global = 0,
+    Local = 1,
+    None
+};
+
 class VulkanGraphicsPipeline
 {
 private:
@@ -21,19 +28,27 @@ private:
     VkPipelineDynamicStateCreateInfo *                    pipelineDynamicStateCreateInfo;
     VkGraphicsPipelineCreateInfo *                        vulkanGraphicsPipelineCreateInfo;
 
+    std::vector<PipelineStateLevel> stateLevelList;
+
 public:
-    void SetPipelineShaderStage(VkPipelineShaderStageCreateInfo * info);
-    void SetPipelineVertexInputState(VkPipelineVertexInputStateCreateInfo * info);
-    void SetPipelineInputAssemblyState(VkPipelineInputAssemblyStateCreateInfo * info);
-    void SetPipelineTessellationState(VkPipelineTessellationStateCreateInfo * info);
-    void SetPipelineViewportState(VkPipelineViewportStateCreateInfo * info);
-    void SetPipelineRasterizationState(VkPipelineRasterizationStateCreateInfo * info);
-    void SetPipelineMultiSampleState(VkPipelineMultisampleStateCreateInfo * info);
-    void SetPipelineDepthStencilState(VkPipelineDepthStencilStateCreateInfo * info);
-    void SetPipelineColorBlendState(VkPipelineColorBlendStateCreateInfo * info);
-    void SetDynamicState(VkPipelineDynamicStateCreateInfo * info);
+    void SetPipelineShaderStage(VkPipelineShaderStageCreateInfo * info, PipelineStateLevel * level);
+    void SetPipelineVertexInputState(VkPipelineVertexInputStateCreateInfo * info, PipelineStateLevel * level);
+    void SetPipelineInputAssemblyState(VkPipelineInputAssemblyStateCreateInfo * info, PipelineStateLevel * level);
+    void SetPipelineTessellationState(VkPipelineTessellationStateCreateInfo * info, PipelineStateLevel * level);
+    void SetPipelineViewportState(VkPipelineViewportStateCreateInfo * info, PipelineStateLevel * level);
+    void SetPipelineRasterizationState(VkPipelineRasterizationStateCreateInfo * info, PipelineStateLevel * level);
+    void SetPipelineMultiSampleState(VkPipelineMultisampleStateCreateInfo * info, PipelineStateLevel * level);
+    void SetPipelineDepthStencilState(VkPipelineDepthStencilStateCreateInfo * info, PipelineStateLevel * level);
+    void SetPipelineColorBlendState(VkPipelineColorBlendStateCreateInfo * info, PipelineStateLevel * level);
+    void SetDynamicState(VkPipelineDynamicStateCreateInfo * info, PipelineStateLevel * level);
+    
     void CreatePipeline();
   
+    const uint32_t & GetObjectId()
+    {
+        return objectId;
+    }
+
     VulkanGraphicsPipeline(const uint32_t & id);
     ~VulkanGraphicsPipeline();
 };

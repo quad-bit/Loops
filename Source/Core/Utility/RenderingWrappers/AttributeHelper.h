@@ -24,12 +24,8 @@ enum class ATTRIBUTES
 
 struct VertexMetaData
 {
-    uint32_t vertexDataStride, indexDataStride;
-    //std::map<ATTRIBUTES, uint32_t> offets;
-    //std::map<ATTRIBUTES, uint32_t> locations;
-    //std::map<ATTRIBUTES, Format> attributeFormats;
-
-    std::vector<VertexInputAttributeInfo> attribInfoList;
+    uint32_t vertexDataStride, indexDataStride, attribCount;
+    VertexInputAttributeInfo * attribInfoList;
 };
 
 struct PC
@@ -38,7 +34,7 @@ struct PC
     glm::uvec4 color;
 };
 
-struct WrapperBase
+struct AttribStructBase
 {
     void * vertexData;
     uint32_t vertexDataSize;
@@ -49,15 +45,15 @@ struct WrapperBase
     uint32_t indexDataSize;
     uint32_t indexCount;
 
-    WrapperBase() {};
+    AttribStructBase() {};
 };
 
 
-struct WrapperPC : public WrapperBase
+struct AttribPC : public AttribStructBase
 {
     std::vector<PC> posColList;
     std::vector<uint32_t> indicies;
-    WrapperPC()
+    AttribPC()
     {
         metaData.vertexDataStride = sizeof(PC);
         /*
@@ -69,13 +65,16 @@ struct WrapperPC : public WrapperBase
         metaData.attributeFormats.insert(std::pair<ATTRIBUTES, Format>(ATTRIBUTES::COLOR, Format::R32G32B32A32_SFLOAT));
         */
 
+        metaData.attribCount = 2;
+        metaData.attribInfoList = new VertexInputAttributeInfo[metaData.attribCount];
+
         // position
         VertexInputAttributeInfo info = {};
         info.binding = 0; // As a single vertex buffer is used per mesh
         info.format = Format::R32G32B32_SFLOAT; //vec3 position
         info.location = 0;
         info.offset = (uint32_t)offsetof(PC, PC::position);
-        metaData.attribInfoList.push_back(info);
+        metaData.attribInfoList[0] = info;
 
         //color
         info = {};
@@ -83,16 +82,17 @@ struct WrapperPC : public WrapperBase
         info.format = Format::R32G32B32A32_SFLOAT; //uvec4 color
         info.location = 1;
         info.offset = (uint32_t)offsetof(PC, PC::color);
-        metaData.attribInfoList.push_back(info);
+        //metaData.attribInfoList.push_back(info);
+        metaData.attribInfoList[1] = info;
 
         metaData.indexDataStride = sizeof(uint32_t);
     }
 
-    ~WrapperPC()
+    ~AttribPC()
     {
         //metaData.locations.clear();
         //metaData.offets.clear();
-        metaData.attribInfoList.clear();
+        //metaData.attribInfoList.clear();
     }
 
     template<typename T>
@@ -102,7 +102,7 @@ struct WrapperPC : public WrapperBase
 #include <Mesh.h>
 
 template<typename T>
-inline void WrapperPC::FillData(Mesh * mesh)
+inline void AttribPC::FillData(Mesh * mesh)
 {
     T obj;
 

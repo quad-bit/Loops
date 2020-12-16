@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <Settings.h>
+#include <BitArray.h>
 
 enum class Format
 {
@@ -207,13 +208,39 @@ enum class PipelineStates
     MultisampleState,
     DepthStencilState,
     ColorBlendState,
-    DynamicState
+    DynamicState,
+    NumStates
 };
 
 enum class VertexIputRate
 {
     PerVertex,
     PerInstance
+};
+
+enum class PrimtiveType
+{
+    TOPOLOGY_POINT_LIST = 0,
+    TOPOLOGY_LINE_LIST = 1,
+    TOPOLOGY_LINE_STRIP = 2,
+    TOPOLOGY_TRIANGLE_LIST = 3,
+    TOPOLOGY_TRIANGLE_STRIP = 4,
+    TOPOLOGY_TRIANGLE_FAN = 5,
+    TOPOLOGY_LINE_LIST_WITH_ADJACENCY = 6,
+    TOPOLOGY_LINE_STRIP_WITH_ADJACENCY = 7,
+    TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY = 8,
+    TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY = 9,
+    TOPOLOGY_PATCH_LIST = 10,
+    TOPOLOGY_MAX_ENUM = 0x7FFFFFFF
+};
+
+struct MeshInfo
+{
+    BitArray attribMaskReq;
+    bool isIndexed;
+    bool bufferPerAttribRequired;
+    PrimtiveType * primitive = nullptr;
+    bool isPrimitiveRestartEnabled;
 };
 
 #if (RENDERING_API == VULKAN)
@@ -352,6 +379,22 @@ enum class VertexIputRate
         uint32_t    binding;
         Format      format;
         uint32_t    offset;
+    };
+
+    struct VertexInputState
+    {
+        PipelineStates state = PipelineStates::VertexInputState;
+        VertexInputBindingInfo * bindingInfo;
+        VertexInputAttributeInfo * attribInfo;
+        uint32_t bindingCount;
+        uint32_t attribCount;
+    };
+
+    struct InputAssemblyState
+    {
+        PipelineStates state = PipelineStates::InputAssemblyState;
+        PrimtiveType * primitiveType;
+        bool isPrimtiveRestartEnabled;
     };
 
 #elif (RENDERING_API == DX12)

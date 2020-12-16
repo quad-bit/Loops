@@ -12,6 +12,7 @@ BitArray::BitArray(unsigned int size)
 		m_bits.push_back(0);
 }
 
+
 BitArray::~BitArray()
 {
 }

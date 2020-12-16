@@ -14,6 +14,8 @@ private:
     unsigned int totalBits, totalBytes;
 
 public:
+
+    BitArray() {}
     BitArray(unsigned int size);
     ~BitArray();
 

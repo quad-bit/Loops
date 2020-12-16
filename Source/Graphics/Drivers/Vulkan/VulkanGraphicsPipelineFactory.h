@@ -45,6 +45,7 @@ private:
 
     VkVertexInputAttributeDescription UnwrapVertexInputAttributeInfo(VertexInputAttributeInfo * info);
     VkVertexInputBindingDescription UnwrapVertexInputBindingInfo(VertexInputBindingInfo * info);
+    VkPrimitiveTopology UnwrapPrimitiveInfo(PrimtiveType * primitive);
 
 public:
     void Init();
@@ -57,4 +58,8 @@ public:
 
     void InitiatePipelineCreation(uint32_t id, VertexInputAttributeInfo * inputAttributeInfo, const uint32_t &  inputAttribCount,
         VertexInputBindingInfo * inputBindingInfo, const uint32_t & inputBindingCount);
+
+    void SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled);
+    void SetInputAssemblyInfo(PrimtiveType * primitive, bool isPrimitiveRestartEnabled);
+
 };
