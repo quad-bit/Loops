@@ -20,6 +20,8 @@ enum class CommandBufferUsage;
 enum class MemoryType;
 enum class BufferType;
 enum class PrimtiveType;
+enum class ShaderType;
+
 
 struct CommandBufferInheritanceInfo;
 struct SubmitInfo;
@@ -117,4 +119,5 @@ public:
     //void CreateGraphicsPipeline();
     //void DestroyGraphicsPipeline();
 
+    void GetShaderIds(char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount );
 };

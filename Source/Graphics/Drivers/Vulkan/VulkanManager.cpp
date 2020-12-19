@@ -12,6 +12,7 @@
 #include "VkFrameBufferFactory.h"
 #include "VkRenderPassFactory.h"
 #include "VkAttachmentFactory.h"
+#include "VkShaderFactory.h"
 
 using namespace std;
 
@@ -263,21 +264,15 @@ void VulkanManager::InitializeFactories()
     VkCommandBufferFactory::GetInstance()->Init();
     VkSynchroniserFactory::GetInstance()->Init();
     VulkanGraphicsPipelineFactory::GetInstance()->Init();
+    VkShaderFactory::GetInstance()->Init();
 }
 
 void VulkanManager::DeInit()
 {
     PLOGD << "VulkanManager Deinit";
 
-    /*VulkanGraphicsPipelineFactory::GetInstance()->DeInit();
-    delete VulkanGraphicsPipelineFactory::GetInstance();
-
-    VkSynchroniserFactory::GetInstance()->DeInit();
-    delete VkSynchroniserFactory::GetInstance();
-
-    VkCommandBufferFactory::GetInstance()->DeInit();
-    delete VkCommandBufferFactory::GetInstance();
-*/
+    VkShaderFactory::GetInstance()->DeInit();
+    delete VkShaderFactory::GetInstance();
 
     VulkanGraphicsPipelineFactory::GetInstance()->DeInit();
     delete VulkanGraphicsPipelineFactory::GetInstance();

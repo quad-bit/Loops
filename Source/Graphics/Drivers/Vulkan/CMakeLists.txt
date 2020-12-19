@@ -17,7 +17,7 @@ SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
 Set ( SourceList "")
 
 FOREACH(subdir ${SUBDIRS})
-#    message(${subdir})
+    #message(${subdir})
 
     file(GLOB fileListInDir
         "${subdir}/*.h"
@@ -45,6 +45,24 @@ IF(NOT ${size} EQUAL 0)
     source_group("" FILES ${filesInParentDir})
     LIST(APPEND SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
 ENDIF()
+
+#adding data files
+Set (VulkanDataPath "${CMAKE_SOURCE_DIR}/Assets/Graphics/Vulkan")
+SUBDIRLIST(DATASUBDIRS ${VulkanDataPath})
+
+Set ( DataList "")
+FOREACH(subdir ${DATASUBDIRS})
+    #message (${subdir})
+    file(GLOB DataList
+        "${VulkanDataPath}/${subdir}/*.frag"
+        "${VulkanDataPath}/${subdir}/*.vert"
+        "${VulkanDataPath}/${subdir}/*.spv"
+    )
+    LIST(APPEND SourceList ${DataList})
+
+    source_group(${subdir} FILES ${DataList})
+
+ENDFOREACH()
 
 ##  file list creation ends
 
@@ -89,6 +107,10 @@ ENDIF()
 #create library
 add_library(Vulkan
 ${SourceList})
+
+
+
+add_compile_definitions(VULKAN_ASSETS_PATH="${VulkanDataPath}")
 
 # forces anyone who uses this lib to include the below mentioned source dir into their project props
 target_include_directories(Vulkan PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

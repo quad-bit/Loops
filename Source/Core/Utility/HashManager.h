@@ -4,6 +4,10 @@
 #include <map>
 #include <vector>
 
+class Shader;
+struct ShaderStateWrapper;
+enum class PipelineStates;
+
 struct HashObjectWrapper
 {
     uint32_t objectId;
@@ -33,10 +37,10 @@ public:
     static HashManager* GetInstance();
     ~HashManager();
 
-    
     int FindVertexInputStateHash(VertexInputState * inputInfo, uint32_t stateId);
     int FindInputAssemblyStateHash(InputAssemblyState * inputInfo, uint32_t stateId);
-
+    int FindShaderStateHash(Shader * inputInfo, const uint32_t & shaderCount, 
+        uint32_t stateId, PipelineStates * state);
 };
 
 

@@ -19,7 +19,8 @@ enum class ATTRIBUTES
     UV1 = 5,
     UV2 = 6,
     UV3 = 7,
-    UV4 = 8
+    UV4 = 8,
+    NUM_ATTRIBUTES = 9
 };
 
 struct VertexMetaData

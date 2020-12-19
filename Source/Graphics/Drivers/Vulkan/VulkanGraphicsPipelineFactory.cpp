@@ -187,6 +187,7 @@ VkPrimitiveTopology VulkanGraphicsPipelineFactory::UnwrapPrimitiveInfo(PrimtiveT
     }
 
     ASSERT_MSG(0, "invalid primitive");
+    return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
 }
 
 void VulkanGraphicsPipelineFactory::CreatePipelineVertexInputState()

@@ -3,8 +3,8 @@
 #include <vector>
 #include <assert.h>
 #include "Stack.h"
-//#include "Queue.h"
 #include <queue>
+#include <deque>
 
 template <class T>
 class Graph;
@@ -49,31 +49,38 @@ class Graph
 {
 private:
     std::vector<GraphNode<T>*> vertices;
-    int maxVertices;
+    int maxVertices, numOfExistingVerts;
+    int matrixExtendingLimit = 20;// when the matrix gets exhausted relocate it with additional matrixExtendingLimit size
     char **adjMatrix;
+    char ** localMat;
     char *visitedVertices;
 
 public:
     Graph(int numVerts) : maxVertices(numVerts), adjMatrix(NULL)
     {
         assert(numVerts > 0);
-
+        numOfExistingVerts = 0;
         vertices.reserve(maxVertices);
-
-        adjMatrix = new char*[maxVertices];
-        assert(adjMatrix != NULL);
 
         visitedVertices = new char[maxVertices];
         assert(visitedVertices != NULL);
 
         memset(visitedVertices, 0, maxVertices);
 
+        adjMatrix = new char*[maxVertices];
+        assert(adjMatrix != NULL);
+
+        localMat = new char*[maxVertices];
+        assert(localMat != NULL);
+
         for (int i = 0; i < maxVertices; i++)
         {
             adjMatrix[i] = new char[maxVertices];
+            localMat[i] = new char[maxVertices];
 
             assert(adjMatrix[i] != NULL);
             memset(adjMatrix[i], 0, maxVertices);
+            memset(localMat[i], 0, maxVertices);
         }
     }
 
@@ -88,11 +95,21 @@ public:
                     delete[] adjMatrix[i];
                     adjMatrix[i] = NULL;
                 }
+
+                if (localMat[i] != NULL)
+                {
+                    delete[] localMat[i];
+                    localMat[i] = NULL;
+                }
             }
 
             delete[] adjMatrix;
             adjMatrix = NULL;
+
+            delete[] localMat;
+            localMat = NULL;
         }
+
 
         if (visitedVertices != NULL)
         {
@@ -111,17 +128,21 @@ public:
     int GetNextUnvisitedVertex(int index);
     bool DepthFirstSearch(int startIndex, int endIndex);
     bool BreadthFirstSearch(int startIndex, int endIndex);
+    void FindAllPaths(int startIndex, int endIndex);
+    void ExtendMatrix();
+    void CopyMat(char ** src, char ** dest);
 };
 
 template<class T>
 inline bool Graph<T>::Push(T * node)
 {
     if ((int)vertices.size() >= maxVertices)
-        return false;
+        ExtendMatrix();
 
     GraphNode<T> * graphNode = new GraphNode<T>(node);
 
     vertices.push_back(graphNode);
+    numOfExistingVerts++;
     return true;
 }
 
@@ -129,9 +150,11 @@ template<class T>
 inline bool Graph<T>::Push(GraphNode<T>* graphNode)
 {
     if ((int)vertices.size() >= maxVertices)
-        return false;
+        ExtendMatrix();
 
     vertices.push_back(graphNode);
+    numOfExistingVerts++;
+
     return true;
 }
 
@@ -254,4 +277,96 @@ inline bool Graph<T>::BreadthFirstSearch(int startIndex, int endIndex)
 
     memset(visitedVertices, 0, maxVertices);
     return false;
+}
+
+template<class T>
+inline void Graph<T>::FindAllPaths(int startIndex, int endIndex)
+{
+    assert(visitedVertices != NULL);
+    assert(adjMatrix != NULL);
+    assert(localMat != NULL);
+
+    CopyMat(adjMatrix, localMat);
+
+    visitedVertices[startIndex] = 1;
+
+    std::deque<int> searchStack, visitedStack;
+    int vert = 0;
+    searchStack.push_back(startIndex);
+
+    while (!searchStack.empty())
+    {
+        int top = searchStack.back();
+        vert = GetNextUnvisitedVertex(top);
+
+        if (vert == -1)
+        {
+            visitedStack.push_back(top);
+            searchStack.pop_back();
+        }
+        else
+        {
+            if (visitedStack.size() != 0)
+            {
+                int indexToBeBroken = visitedStack[visitedStack.size() - 1];
+                adjMatrix[top][indexToBeBroken] = 0;
+                for (std::uint32_t i = 0; i < visitedStack.size(); i++)
+                {
+                    visitedVertices[visitedStack[i]] = 0;
+                }
+
+                visitedStack.clear();
+            }
+
+            visitedVertices[vert] = 1;
+
+            searchStack.push_back(vert);
+        }
+
+        if (vert == endIndex)
+        {
+            //path found
+            std::cout << "\n";
+            for (std::size_t i = 0; i < searchStack.size(); i++)
+            {
+                std::cout << *vertices[searchStack[i]]->GetNode(); // REMOVE>>!!!
+            }
+
+            bool pathFound = true;
+        }
+    }
+
+    memset(visitedVertices, 0, maxVertices);
+    CopyMat(localMat, adjMatrix);
+}
+
+template<class T>
+inline void Graph<T>::ExtendMatrix()
+{
+    assert(0);
+}
+
+template<class T>
+inline void Graph<T>::CopyMat(char ** src, char ** dest)
+{
+    for (int i = 0; i < maxVertices; i++)
+    {
+        memcpy(dest[i], src[i], maxVertices);
+    }
+
+    /*for (std::uint32_t i = 0; i < maxVertices; i++)
+    {
+    for (std::uint32_t j = 0; j < maxVertices; j++)
+    {
+    std::cout << (int)src[i][j] ;
+    }
+
+    std::cout << "         " ;
+
+    for (std::uint32_t j = 0; j < maxVertices; j++)
+    {
+    std::cout << (int)dest[i][j];
+    }
+    std::cout << std::endl;
+    }   */
 }

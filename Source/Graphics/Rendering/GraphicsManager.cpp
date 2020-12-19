@@ -46,6 +46,7 @@ void GraphicsManager::Init(uint32_t winWidth, uint32_t winHeight, std::string wi
     
     renderingInterfaceObj->Init(apiInterface);
     renderingInterfaceObj->SetupRenderer();
+
 }
 
 void GraphicsManager::DeInit()

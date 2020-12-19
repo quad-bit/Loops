@@ -14,6 +14,7 @@
 #include <VkBufferFactory.h>
 #include <RenderingWrapper.h>
 #include <VulkanGraphicsPipelineFactory.h>
+#include <VkShaderFactory.h>
 #include <CorePrecompiled.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
@@ -631,6 +632,11 @@ void VulkanInterface::InitiateGraphicsPipelineCreation(const uint32_t & meshId, 
 void VulkanInterface::SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled)
 {
     VulkanGraphicsPipelineFactory::GetInstance()->SetInputAssemblyInfo(meshId, primitive, isPrimitiveRestartEnabled);
+}
+
+void VulkanInterface::GetShaderIds(char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount)
+{
+    VkShaderFactory::GetInstance()->GetShaderIds(shaderName, type, id, shaderCount);
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)

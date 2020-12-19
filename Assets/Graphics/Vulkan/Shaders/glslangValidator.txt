@@ -1,0 +1,8 @@
+C:\VulkanSDK\1.1.77.0\glslang\Build\StandAlone\Release>
+C:\VulkanSDK\1.1.77.0\glslang\Build\StandAlone\Release>glslangValidator.exe -V E:\Work\Vulkan\Vulkan_0\Vulkan_0\SimpleShader.vert -o E:\Work\Vulkan\Vulkan_0\Vulkan_0\SimpleVertexShader.spv
+E:\Work\Vulkan\Vulkan_0\Vulkan_0\SimpleShader.vert
+
+C:\VulkanSDK\1.1.77.0\glslang\Build\StandAlone\Release>glslangValidator.exe -V E:\Work\Vulkan\Vulkan_0\Vulkan_0\SimpleShader.frag -o E:\Work\Vulkan\Vulkan_0\Vulkan_0\SimpleFragShader.spv
+E:\Work\Vulkan\Vulkan_0\Vulkan_0\SimpleShader.frag
+
+C:\VulkanSDK\1.1.77.0\glslang\Build\StandAlone\Release>

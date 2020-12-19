@@ -11,9 +11,9 @@ class BitArray
 
 private:
     std::vector<unsigned char> m_bits;
-    unsigned int totalBits, totalBytes;
 
 public:
+    unsigned int totalBits, totalBytes;
 
     BitArray() {}
     BitArray(unsigned int size);
@@ -25,4 +25,9 @@ public:
     void SetBit(unsigned int bit);
     void ClearBit(unsigned int bit);
     bool operator [] (unsigned int bit) const;
+    bool operator == (const BitArray & obj) const;
+    bool operator == (const BitArray * obj) const;
+    bool At(unsigned int bit) const;
+
+    friend bool operator<(const BitArray &l, const BitArray &r);// { return l.id < r.id; }
 };

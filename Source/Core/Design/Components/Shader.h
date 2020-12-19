@@ -7,6 +7,11 @@ public:
     const char * shaderName;
     const char * shaderText;
     ShaderType shaderType;
+
+    uint32_t shaderId;
+
+
+
 };
 
 //unity ref
