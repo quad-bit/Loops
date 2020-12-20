@@ -199,9 +199,9 @@ enum class MemoryType
 
 enum class PipelineStates
 {
-    ShaderStage,
     VertexInputState,
     InputAssemblyState,
+    ShaderStage,
     TessellationState,
     ViewportState,
     RasterizationState,

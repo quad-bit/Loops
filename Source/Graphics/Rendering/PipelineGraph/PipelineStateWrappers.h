@@ -14,6 +14,8 @@ public:
     {
         return id;
     }
+
+    virtual void Execute() {}
 };
 
 template<typename T>

@@ -13,13 +13,13 @@ template<class T>
 class GraphNode
 {
 private:
-    T * node;
     std::uint32_t nodeId;
     static std::uint32_t idCounter;
 
     std::uint32_t GetId() { return idCounter++; }
 
 public:
+    T * node;
     GraphNode(T * obj) :node(obj)
     {
         nodeId = GetId();
@@ -131,6 +131,7 @@ public:
     void FindAllPaths(int startIndex, int endIndex);
     void ExtendMatrix();
     void CopyMat(char ** src, char ** dest);
+    void PrintAdjMatrix();
 };
 
 template<class T>
@@ -369,4 +370,17 @@ inline void Graph<T>::CopyMat(char ** src, char ** dest)
     }
     std::cout << std::endl;
     }   */
+}
+
+template<class T>
+inline void Graph<T>::PrintAdjMatrix()
+{
+    for (std::uint32_t i = 0; i < (std::uint32_t)maxVertices; i++)
+    {
+        for (std::uint32_t j = 0; j < (std::uint32_t)maxVertices; j++)
+        {
+            std::cout << (int)adjMatrix[i][j] ;
+        }
+        std::cout << std::endl;
+    }
 }

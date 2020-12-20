@@ -40,15 +40,15 @@ PlayerHandlerScript::PlayerHandlerScript()
     Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
     torso->AddComponent<Mesh>(torsoMesh);
 
-    ShaderType * types = new ShaderType[2];
-    types[0] = ShaderType::VERTEX;
-    types[1] = ShaderType::FRAGMENT;
+    //ShaderType * types = new ShaderType[2];
+    //types[0] = ShaderType::VERTEX;
+    //types[1] = ShaderType::FRAGMENT;
 
     Shader * shaders = new Shader[2];
-    shaders[0].shaderType = types[0];
+    shaders[0].shaderType = ShaderType::VERTEX;
     shaders[0].shaderName = "PC.vert";
 
-    shaders[1].shaderType = types[1];
+    shaders[1].shaderType = ShaderType::FRAGMENT;
     shaders[1].shaderName = "Color.frag";
 
     ShaderFactory::GetInstance()->CreateShader(torsoMesh->meshId, shaders, 2);
