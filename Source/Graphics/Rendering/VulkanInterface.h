@@ -31,6 +31,10 @@ struct BufferInfo;
 struct VertexInputAttributeInfo;
 struct VertexInputBindingInfo;
 
+struct ShaderStateWrapper;
+struct InputAssemblyWrapper;
+struct VertexInputWrapper;
+
 class VkDrawCommandBuffer;
 
 class VulkanInterface
@@ -114,10 +118,13 @@ public:
     uint32_t * CreateBuffer(BufferInfo * info, const uint32_t & count);
     void DestroyBuffer(uint32_t * ids, const uint32_t & count);
 
-    void InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount);
-    void SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled);
+    //void InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount);
+    //void SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled);
     //void CreateGraphicsPipeline();
     //void DestroyGraphicsPipeline();
 
     void GetShaderIds(char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount );
+    void CreateVertexInputState(const VertexInputWrapper * vertexInputWrapper);
+    void CreateInputAssemblyState(const InputAssemblyWrapper * InputAssemblyWrapper);
+    void CreateShaderState(const ShaderStateWrapper * shaderStateWrapper);
 };

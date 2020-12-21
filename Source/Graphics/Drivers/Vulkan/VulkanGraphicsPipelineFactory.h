@@ -1,9 +1,19 @@
 #pragma once
 #include <vulkan\vulkan.h>
 #include <vector>
+#include <map>
 #include <RenderingWrapper.h>
+#include <PipelineStateWrappers.h>
 
 class VulkanGraphicsPipeline;
+class Shader;
+
+struct VkShaderStageWrapper
+{
+    uint32_t id;
+    VkPipelineShaderStageCreateInfo * shaderStageCreateInfo;
+    uint32_t shaderCount;
+};
 
 class VulkanGraphicsPipelineFactory
 {
@@ -42,9 +52,17 @@ private:
     void CreateDynamicState();
 
     std::vector<VulkanGraphicsPipeline *> pipelineList;
+    std::map<uint32_t, VkPipelineVertexInputStateCreateInfo *> idToVertexInputMap;
+    std::map<uint32_t, VkPipelineInputAssemblyStateCreateInfo *> idToInputAssemblyMap;
+    std::vector<VkShaderStageWrapper *> shaderStageWrapperList;
 
+    //deprecated
     VkVertexInputAttributeDescription UnwrapVertexInputAttributeInfo(VertexInputAttributeInfo * info);
+    //deprecated
     VkVertexInputBindingDescription UnwrapVertexInputBindingInfo(VertexInputBindingInfo * info);
+    
+    VkVertexInputAttributeDescription * UnwrapVertexInputAttributeInfo(VertexInputAttributeInfo * info, const uint32_t & count);
+    VkVertexInputBindingDescription * UnwrapVertexInputBindingInfo(VertexInputBindingInfo * info, const uint32_t & count);
     VkPrimitiveTopology UnwrapPrimitiveInfo(PrimtiveType * primitive);
 
 public:
@@ -56,10 +74,7 @@ public:
 
     std::vector<VkDynamicState> dynamicStateList;
 
-    void InitiatePipelineCreation(uint32_t id, VertexInputAttributeInfo * inputAttributeInfo, const uint32_t &  inputAttribCount,
-        VertexInputBindingInfo * inputBindingInfo, const uint32_t & inputBindingCount);
-
-    void SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled);
-    void SetInputAssemblyInfo(PrimtiveType * primitive, bool isPrimitiveRestartEnabled);
-
+    void CreateVertexInputState(const VertexInputWrapper * vertexInputWrapper);
+    void CreateInputAssemblyState(const InputAssemblyWrapper * InputAssemblyWrapper);
+    void CreateShaderState(const ShaderStateWrapper * shaderStateWrapper);
 };

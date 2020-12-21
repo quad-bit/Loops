@@ -397,6 +397,7 @@ struct MeshInfo
         bool isPrimtiveRestartEnabled;
     };
 
+
 #elif (RENDERING_API == DX12)
 
 #endif

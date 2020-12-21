@@ -73,6 +73,7 @@ inline void GraphicsPipelineManager<T>::CreateVertexAssemblyDefault()
     vertexInputAssemblyWrapperList.push_back(wrapper);
 
     CreateGraphNode(wrapper);
+    apiInterface->CreateInputAssemblyState(wrapper);
 }
 
 template<typename T>
@@ -263,6 +264,7 @@ inline void GraphicsPipelineManager<T>::CreateVertexInputState(const uint32_t & 
 
     uint32_t id = HashManager::GetInstance()->FindVertexInputStateHash(inputStateInfo, wrapper->GetId());
     
+    // vertex input will be the first state hence the vector can be resized
     std::vector<GraphNode<StateWrapperBase>*> nodeList;
     nodeList.resize((size_t)PipelineStates::NumStates);
     GraphNode<StateWrapperBase> * node;
@@ -275,14 +277,12 @@ inline void GraphicsPipelineManager<T>::CreateVertexInputState(const uint32_t & 
         // create a new pipeline node encapsulate in graph node, add it to graph
         // TODO : Create graph node, push to graph, make the connections
         node = CreateGraphNode(wrapper);
-        
-        // vertex input will be the first state hence the vector can be resized
-    /*    meshToGraphNodeMap.insert(std::pair < uint32_t, std::vector<GraphNode<StateWrapperBase>*>>({
-            meshId, nodeList }));
-*/
-        // TODO : make the connections, as this is vertex input state the connection won't be made here
+    
+        // TODO : as this is vertex input state the connection won't be made here, Done.
+
         // TODO : Create vulkan vertexinput object
 
+        apiInterface->CreateVertexInputState(wrapper);
     }
     else
     {
@@ -326,7 +326,9 @@ inline void GraphicsPipelineManager<T>::CreateVertexAssemblyState(const uint32_t
         // create a new pipeline node encapsulate in graph node, add it to graph
         // TODO : Create pipeline node, done.
         node = CreateGraphNode(wrapper);
-        // TODO : Create vulkan inputAssembly object
+
+        // TODO : Create vulkan inputAssembly object, done.
+        apiInterface->CreateInputAssemblyState(wrapper);
     }
     else
     {
@@ -389,6 +391,7 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
         node = CreateGraphNode(wrapper);
 
         // TODO : Create vulkan pipeline shader stage object 
+        apiInterface->CreateShaderState(wrapper);
     }
     else
     {
@@ -412,5 +415,5 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
     InsertToMeshList(meshId, PipelineStates::ShaderStage, node);
     CreateGraphEdges(meshId, PipelineStates::InputAssemblyState, PipelineStates::ShaderStage);
 
-    pipelineGraph->PrintAdjMatrix();
+    //pipelineGraph->PrintAdjMatrix();
 }

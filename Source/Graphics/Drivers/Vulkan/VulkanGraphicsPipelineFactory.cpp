@@ -3,8 +3,114 @@
 #include "RenderingWrapper.h"
 #include "VkRenderingUnwrapper.h"
 #include <CorePrecompiled.h>
+#include "VkShaderFactory.h"
 
 VulkanGraphicsPipelineFactory* VulkanGraphicsPipelineFactory::instance = nullptr;
+
+VkPrimitiveTopology VulkanGraphicsPipelineFactory::UnwrapPrimitiveInfo(PrimtiveType * primitive)
+{
+    switch (*primitive)
+    {
+    case PrimtiveType::TOPOLOGY_POINT_LIST:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
+
+    case PrimtiveType::TOPOLOGY_LINE_LIST:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+
+    case PrimtiveType::TOPOLOGY_LINE_STRIP:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
+
+    case PrimtiveType::TOPOLOGY_TRIANGLE_LIST:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+
+    case PrimtiveType::TOPOLOGY_TRIANGLE_STRIP:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+
+    case PrimtiveType::TOPOLOGY_TRIANGLE_FAN:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
+
+    case PrimtiveType::TOPOLOGY_LINE_LIST_WITH_ADJACENCY:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY;
+
+    case PrimtiveType::TOPOLOGY_LINE_STRIP_WITH_ADJACENCY:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY;
+
+    case PrimtiveType::TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY;
+
+    case PrimtiveType::TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
+
+    case PrimtiveType::TOPOLOGY_PATCH_LIST:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
+
+    case PrimtiveType::TOPOLOGY_MAX_ENUM:
+        return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+    }
+
+    ASSERT_MSG(0, "invalid primitive");
+    return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
+}
+//deprecated
+VkVertexInputAttributeDescription VulkanGraphicsPipelineFactory::UnwrapVertexInputAttributeInfo(VertexInputAttributeInfo * info)
+{
+    VkVertexInputAttributeDescription obj = {};
+    obj.binding = info->binding;
+    obj.location = info->location;
+    obj.offset = info->offset;
+    obj.format = UnWrapFormat(info->format);
+
+    return obj;
+}
+
+VkVertexInputAttributeDescription * VulkanGraphicsPipelineFactory::UnwrapVertexInputAttributeInfo(VertexInputAttributeInfo * info, const uint32_t & count)
+{
+    VkVertexInputAttributeDescription * inputAttributeDesc = new VkVertexInputAttributeDescription[count];
+    for (uint32_t i = 0; i < count; i++)
+    {
+        inputAttributeDesc[i].binding = info->binding;
+        inputAttributeDesc[i].location = info->location;
+        inputAttributeDesc[i].offset = info->offset;
+        inputAttributeDesc[i].format = UnWrapFormat(info->format);
+    }
+    return inputAttributeDesc;
+}
+
+//deprecated
+VkVertexInputBindingDescription VulkanGraphicsPipelineFactory::UnwrapVertexInputBindingInfo(VertexInputBindingInfo * info)
+{
+    VkVertexInputBindingDescription obj = {};
+    obj.binding = info->binding;
+    obj.stride = info->stride;
+
+    if (info->inputRate == VertexIputRate::PerVertex)
+        obj.inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
+    else if (info->inputRate == VertexIputRate::PerInstance)
+        obj.inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
+    else
+        ASSERT_MSG(0, "Vertex input rate incorrect");
+
+    return obj;
+}
+
+VkVertexInputBindingDescription * VulkanGraphicsPipelineFactory::UnwrapVertexInputBindingInfo(VertexInputBindingInfo * info, const uint32_t & count)
+{
+    VkVertexInputBindingDescription * inputBindingDesc = new VkVertexInputBindingDescription[count];
+    for (uint32_t i = 0; i < count; i++)
+    {
+        inputBindingDesc[i].binding = info->binding;
+        inputBindingDesc[i].stride = info->stride;
+
+        if (info->inputRate == VertexIputRate::PerVertex)
+            inputBindingDesc[i].inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
+        else if (info->inputRate == VertexIputRate::PerInstance)
+            inputBindingDesc[i].inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
+        else
+            ASSERT_MSG(0, "Vertex input rate incorrect");
+    }
+
+    return inputBindingDesc;
+}
 
 void VulkanGraphicsPipelineFactory::Init()
 {
@@ -19,6 +125,34 @@ void VulkanGraphicsPipelineFactory::Init()
 void VulkanGraphicsPipelineFactory::DeInit()
 {
     PLOGD << "VulkanGraphicsPipelineFactory Deinit";
+    //vertexinput
+    {
+        std::map<uint32_t, VkPipelineVertexInputStateCreateInfo *>::iterator it;
+        for (it = idToVertexInputMap.begin(); it != idToVertexInputMap.end(); it++)
+        {
+            delete it->second;
+        }
+        idToVertexInputMap.clear();
+    }
+    //input assembly
+    {
+        std::map<uint32_t, VkPipelineInputAssemblyStateCreateInfo*>::iterator it;
+        for (it = idToInputAssemblyMap.begin(); it != idToInputAssemblyMap.end(); it++)
+        {
+            delete it->second;
+        }
+        idToInputAssemblyMap.clear();
+    }
+    //shader stage
+    {
+        std::vector<VkShaderStageWrapper *>::iterator it;
+        for (it = shaderStageWrapperList.begin(); it != shaderStageWrapperList.end(); it++)
+        {
+            delete[](*it)->shaderStageCreateInfo;
+            delete (*it);
+        }
+        shaderStageWrapperList.clear();
+    }
 
     size_t numObjects = pipelineList.size();
     for (uint32_t i = 0; i < numObjects; i++)
@@ -46,59 +180,61 @@ VulkanGraphicsPipelineFactory::~VulkanGraphicsPipelineFactory()
 
 }
 
-void VulkanGraphicsPipelineFactory::InitiatePipelineCreation(uint32_t id, VertexInputAttributeInfo * inputAttributeInfo, const uint32_t &  inputAttribCount,
-    VertexInputBindingInfo * inputBindingInfo, const uint32_t & inputBindingCount)
+void VulkanGraphicsPipelineFactory::CreateVertexInputState(const VertexInputWrapper * vertexInputWrapper)
 {
-    VkVertexInputBindingDescription * inputBindingDesc = new VkVertexInputBindingDescription[inputBindingCount];
-    for(uint32_t i = 0; i < inputBindingCount; i++)
-        inputBindingDesc[i] = UnwrapVertexInputBindingInfo(&inputBindingInfo[i]);
-
-    VkVertexInputAttributeDescription * inputAttributeDesc = new VkVertexInputAttributeDescription[inputAttribCount];
-    for (uint32_t i = 0; i < inputAttribCount; i++)
-        inputAttributeDesc[i] = UnwrapVertexInputAttributeInfo(&inputAttributeInfo[i]);
+    VertexInputState * inputState = vertexInputWrapper->inputState;
 
     VkPipelineVertexInputStateCreateInfo * pipelineVertexInputStateCreateInfo = new VkPipelineVertexInputStateCreateInfo;
     pipelineVertexInputStateCreateInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    pipelineVertexInputStateCreateInfo->pVertexAttributeDescriptions = inputAttributeDesc;
-    pipelineVertexInputStateCreateInfo->pVertexBindingDescriptions = inputBindingDesc;
-    pipelineVertexInputStateCreateInfo->vertexAttributeDescriptionCount = inputAttribCount;
-    pipelineVertexInputStateCreateInfo->vertexBindingDescriptionCount = inputBindingCount;
+    pipelineVertexInputStateCreateInfo->pVertexAttributeDescriptions = UnwrapVertexInputAttributeInfo ( inputState->attribInfo, vertexInputWrapper->inputState->attribCount);
+    pipelineVertexInputStateCreateInfo->pVertexBindingDescriptions = UnwrapVertexInputBindingInfo(inputState->bindingInfo, inputState->bindingCount);
+    pipelineVertexInputStateCreateInfo->vertexAttributeDescriptionCount = inputState->attribCount;
+    pipelineVertexInputStateCreateInfo->vertexBindingDescriptionCount = inputState->bindingCount;
     pipelineVertexInputStateCreateInfo->pNext = nullptr;
     pipelineVertexInputStateCreateInfo->flags = 0;
 
-    VulkanGraphicsPipeline * obj = new VulkanGraphicsPipeline(id);
-
-    PipelineStateLevel level = PipelineStateLevel::Local;
-    obj->SetPipelineVertexInputState(pipelineVertexInputStateCreateInfo, &level);
-
-    pipelineList.push_back(obj);
+    idToVertexInputMap.insert( std::pair<uint32_t, VkPipelineVertexInputStateCreateInfo *>(
+    {const_cast<VertexInputWrapper *> (vertexInputWrapper)->GetId(), 
+        pipelineVertexInputStateCreateInfo }) );
 }
 
-void VulkanGraphicsPipelineFactory::SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled)
+void VulkanGraphicsPipelineFactory::CreateInputAssemblyState(const InputAssemblyWrapper * inputAssemblyWrapper)
 {
-    VkPipelineInputAssemblyStateCreateInfo * info = new VkPipelineInputAssemblyStateCreateInfo;
-    info->primitiveRestartEnable = isPrimitiveRestartEnabled;
-    info->sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    info->topology = UnwrapPrimitiveInfo(primitive);
-    info->flags = 0;
-    info->pNext = nullptr;
+    VkPipelineInputAssemblyStateCreateInfo * pipelineInputAssemblyStateCreateInfo = new VkPipelineInputAssemblyStateCreateInfo;
+    InputAssemblyState * inputAssembly = inputAssemblyWrapper->assemblyState;
+    pipelineInputAssemblyStateCreateInfo->primitiveRestartEnable = inputAssembly->isPrimtiveRestartEnabled;
+    pipelineInputAssemblyStateCreateInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+    pipelineInputAssemblyStateCreateInfo->topology = UnwrapPrimitiveInfo(inputAssembly->primitiveType);
+    pipelineInputAssemblyStateCreateInfo->flags = 0;
+    pipelineInputAssemblyStateCreateInfo->pNext = nullptr;
 
-    std::vector<VulkanGraphicsPipeline *>::iterator it;
-    it = std::find_if(pipelineList.begin(), pipelineList.end(), [&](VulkanGraphicsPipeline * e) { return e->GetObjectId() == meshId; });
-
-    ASSERT_MSG(it != pipelineList.end(), "Object id not found");
-    
-    PipelineStateLevel level = PipelineStateLevel::Local;
-    (*it)->SetPipelineInputAssemblyState(info, &level);
+    idToInputAssemblyMap.insert(std::pair<uint32_t, VkPipelineInputAssemblyStateCreateInfo *>(
+    { const_cast<InputAssemblyWrapper *> (inputAssemblyWrapper)->GetId(),
+            pipelineInputAssemblyStateCreateInfo })
+    );
 }
 
-void VulkanGraphicsPipelineFactory::SetInputAssemblyInfo(PrimtiveType * primitive, bool isPrimitiveRestartEnabled)
+void VulkanGraphicsPipelineFactory::CreateShaderState(const ShaderStateWrapper * shaderStateWrapper)
 {
-    pipelineInputAssemblyStateCreateInfo.primitiveRestartEnable = isPrimitiveRestartEnabled;
-    pipelineInputAssemblyStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    pipelineInputAssemblyStateCreateInfo.topology = UnwrapPrimitiveInfo(primitive);
-    pipelineInputAssemblyStateCreateInfo.flags = 0;
-    pipelineInputAssemblyStateCreateInfo.pNext = nullptr;
+    VkShaderStageWrapper * vkStateWrapper = new VkShaderStageWrapper;
+    vkStateWrapper->shaderCount = shaderStateWrapper->shaderCount;
+
+    vkStateWrapper->shaderStageCreateInfo = new VkPipelineShaderStageCreateInfo[vkStateWrapper->shaderCount];
+
+    for (uint32_t i = 0; i < vkStateWrapper->shaderCount; i++)
+    {
+        VkPipelineShaderStageCreateInfo * vkInfo = vkStateWrapper->shaderStageCreateInfo;
+        uint32_t shaderId = shaderStateWrapper->shader[i].shaderId;
+        vkInfo->sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        vkInfo->pName = "main";
+        vkInfo->pNext = nullptr;
+        vkInfo->pSpecializationInfo = nullptr;
+        vkInfo->flags = 0;
+        vkInfo->module = *VkShaderFactory::GetInstance()->GetShaderModule(shaderId) ;
+        vkInfo->stage = VkShaderFactory::GetInstance()->GetShaderStageFlag(shaderId);
+    }
+
+    shaderStageWrapperList.push_back(vkStateWrapper);
 }
 
 void VulkanGraphicsPipelineFactory::InitPipelineCache()
@@ -118,77 +254,7 @@ void VulkanGraphicsPipelineFactory::CreateDynamicState()
     pipelineDynamicStateCreateInfoObj.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 }
 
-VkVertexInputAttributeDescription VulkanGraphicsPipelineFactory::UnwrapVertexInputAttributeInfo(VertexInputAttributeInfo * info)
-{
-    VkVertexInputAttributeDescription obj = {};
-    obj.binding = info->binding;
-    obj.location = info->location;
-    obj.offset = info->offset;
-    obj.format = UnWrapFormat(info->format);
 
-    return obj;
-}
-
-VkVertexInputBindingDescription VulkanGraphicsPipelineFactory::UnwrapVertexInputBindingInfo(VertexInputBindingInfo * info)
-{
-    VkVertexInputBindingDescription obj = {};
-    obj.binding = info->binding;
-    obj.stride = info->stride;
-
-    if (info->inputRate == VertexIputRate::PerVertex)
-        obj.inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
-    else if (info->inputRate == VertexIputRate::PerInstance)
-        obj.inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
-    else
-        ASSERT_MSG(0, "Vertex input rate incorrect");
-    
-    return obj;
-}
-
-VkPrimitiveTopology VulkanGraphicsPipelineFactory::UnwrapPrimitiveInfo(PrimtiveType * primitive)
-{
-    switch (*primitive)
-    {
-        case PrimtiveType::TOPOLOGY_POINT_LIST :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_POINT_LIST;
-
-        case PrimtiveType::TOPOLOGY_LINE_LIST :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-
-        case PrimtiveType::TOPOLOGY_LINE_STRIP :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP;
-
-        case PrimtiveType::TOPOLOGY_TRIANGLE_LIST :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-
-        case PrimtiveType::TOPOLOGY_TRIANGLE_STRIP :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
-
-        case PrimtiveType::TOPOLOGY_TRIANGLE_FAN :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_FAN;
-
-        case PrimtiveType::TOPOLOGY_LINE_LIST_WITH_ADJACENCY :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_LIST_WITH_ADJACENCY;
-
-        case PrimtiveType::TOPOLOGY_LINE_STRIP_WITH_ADJACENCY :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_LINE_STRIP_WITH_ADJACENCY;
-
-        case PrimtiveType::TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY;
-
-        case PrimtiveType::TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP_WITH_ADJACENCY;
-
-        case PrimtiveType::TOPOLOGY_PATCH_LIST :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
-
-        case PrimtiveType::TOPOLOGY_MAX_ENUM :
-            return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
-    }
-
-    ASSERT_MSG(0, "invalid primitive");
-    return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
-}
 
 void VulkanGraphicsPipelineFactory::CreatePipelineVertexInputState()
 {

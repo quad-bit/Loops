@@ -10,6 +10,7 @@ struct ShaderModuleWrapper
     std::string shaderName;
     ShaderType * shaderType;
     VkShaderModule * module;
+    VkShaderStageFlagBits stageFlag;
     uint32_t shaderId;
 };
 
@@ -42,5 +43,7 @@ public:
     ~VkShaderFactory();
 
     void GetShaderIds( char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount);
-
+    VkShaderModule * GetShaderModule(const uint32_t & id);
+    VkShaderStageFlagBits GetShaderStageFlag(const uint32_t & id);
+    
 };

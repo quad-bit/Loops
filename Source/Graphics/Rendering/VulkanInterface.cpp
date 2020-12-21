@@ -623,20 +623,35 @@ void VulkanInterface::DestroyBuffer(uint32_t * ids, const uint32_t & count)
         VkBufferFactory::GetInstance()->DestroyBuffer(ids[i]);
     }
 }
-
-void VulkanInterface::InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount )
-{
-    VulkanGraphicsPipelineFactory::GetInstance()->InitiatePipelineCreation(meshId, attribInfo, attribCount, bindingInfo, bindingCount);
-}
-
-void VulkanInterface::SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled)
-{
-    VulkanGraphicsPipelineFactory::GetInstance()->SetInputAssemblyInfo(meshId, primitive, isPrimitiveRestartEnabled);
-}
+//
+//void VulkanInterface::InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount )
+//{
+//    VulkanGraphicsPipelineFactory::GetInstance()->InitiatePipelineCreation(meshId, attribInfo, attribCount, bindingInfo, bindingCount);
+//}
+//
+//void VulkanInterface::SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled)
+//{
+//    VulkanGraphicsPipelineFactory::GetInstance()->SetInputAssemblyInfo(meshId, primitive, isPrimitiveRestartEnabled);
+//}
 
 void VulkanInterface::GetShaderIds(char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount)
 {
     VkShaderFactory::GetInstance()->GetShaderIds(shaderName, type, id, shaderCount);
+}
+
+void VulkanInterface::CreateVertexInputState(const VertexInputWrapper * vertexInputWrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateVertexInputState(vertexInputWrapper);
+}
+
+void VulkanInterface::CreateInputAssemblyState(const InputAssemblyWrapper * inputAssemblyWrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateInputAssemblyState(inputAssemblyWrapper);
+}
+
+void VulkanInterface::CreateShaderState(const ShaderStateWrapper * shaderStateWrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateShaderState(shaderStateWrapper);
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)

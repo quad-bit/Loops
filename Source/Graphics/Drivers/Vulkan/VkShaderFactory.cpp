@@ -81,10 +81,12 @@ void VkShaderFactory::Init()
         if (var.find("Frag") != std::string::npos)
         {
             wrapper->shaderType = new ShaderType{ ShaderType::FRAGMENT };
+            wrapper->stageFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
         }
         else if (var.find("Vert") != std::string::npos)
         {
             wrapper->shaderType = new ShaderType{ ShaderType::VERTEX };
+            wrapper->stageFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
         }
         
         wrapper->shaderName = var;
@@ -141,4 +143,30 @@ void VkShaderFactory::GetShaderIds( char ** shaderName, ShaderType * type, uint3
         ASSERT_MSG(it != shaderModuleList.end(), "Shader not found");
         id[i] = (*it)->shaderId;
     }
+}
+
+VkShaderModule * VkShaderFactory::GetShaderModule(const uint32_t & id)
+{
+    std::vector<ShaderModuleWrapper *>::iterator it;
+    for (it = shaderModuleList.begin(); it != shaderModuleList.end(); it++)
+    {
+        if ((*it)->shaderId == id)
+            return (*it)->module;
+    }
+    
+    ASSERT_MSG(0, "shader not found");
+    return nullptr;
+}
+
+VkShaderStageFlagBits VkShaderFactory::GetShaderStageFlag(const uint32_t & id)
+{
+    std::vector<ShaderModuleWrapper *>::iterator it;
+    for (it = shaderModuleList.begin(); it != shaderModuleList.end(); it++)
+    {
+        if ((*it)->shaderId == id)
+            return (*it)->stageFlag;
+    }
+
+    ASSERT_MSG(0, "shader not found");
+    return VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
 }

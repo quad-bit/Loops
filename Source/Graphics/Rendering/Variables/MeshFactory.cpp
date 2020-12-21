@@ -119,7 +119,7 @@ Mesh * MeshFactory::CreateMesh(const BitArray & attribMaskReq, MESH_TYPE * meshT
         VertexInputAttributeInfo * attribInfo = wrapper->metaData.attribInfoList;
         uint32_t attribCount = (uint32_t)wrapper->metaData.attribCount;
 
-        apiInterface->InitiateGraphicsPipelineCreation(mesh->meshId, attribInfo, attribCount, bindingInfo, numVertexBufferPerMesh);
+        //apiInterface->InitiateGraphicsPipelineCreation(mesh->meshId, attribInfo, attribCount, bindingInfo, numVertexBufferPerMesh);
         delete [] bindingInfo;
     }
     
