@@ -48,11 +48,11 @@ std::string VkShaderFactory::GetSpvName(const std::string & shaderName)
 
     if (shaderName.find(".frag") != std::string::npos)
     {
-        return fileNameWithoutExt +"Frag.spv";
+        return fileNameWithoutExt +".frag.spv";
     }
     else if (shaderName.find(".vert") != std::string::npos)
     {
-        return fileNameWithoutExt +"Vert.spv";
+        return fileNameWithoutExt +".vert.spv";
     }
     
     ASSERT_MSG(0, "Invalid shader name");
@@ -62,28 +62,27 @@ std::string VkShaderFactory::GetSpvName(const std::string & shaderName)
 void VkShaderFactory::Init()
 {
     std::vector<std::string> fileList;
-    GetFilesInFolder(VULKAN_ASSETS_PATH + std::string{ "/shaders" }, fileList);
+    GetFilesInFolder(VULKAN_ASSETS_PATH + std::string{ "/Spvs" }, fileList);
     
     for each (std::string var in fileList)
     {
-        //std::cout << var << std::endl;
+        // if its not spv return
         if (var.find(".spv") == std::string::npos)
             continue;
 
         // load the text
         size_t fileLength = 0;
         const char* shaderText = ReadSpvFile((uint32_t&)fileLength, var.c_str());
-        //const char* shaderText = ReadFile(fileLength, var.c_str());
         
         ShaderModuleWrapper * wrapper = new ShaderModuleWrapper;
 
         // if path contains frag then it fragment shader
-        if (var.find("Frag") != std::string::npos)
+        if (var.find("frag") != std::string::npos)
         {
             wrapper->shaderType = new ShaderType{ ShaderType::FRAGMENT };
             wrapper->stageFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
         }
-        else if (var.find("Vert") != std::string::npos)
+        else if (var.find("vert") != std::string::npos)
         {
             wrapper->shaderType = new ShaderType{ ShaderType::VERTEX };
             wrapper->stageFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
@@ -135,7 +134,7 @@ void VkShaderFactory::GetShaderIds( char ** shaderName, ShaderType * type, uint3
 
     for (uint32_t i = 0; i < shaderCount; i++)
     {
-        string spvName = GetSpvName(shaderName[i]);
+        std::string spvName = GetSpvName(shaderName[i]);
         it = std::find_if(shaderModuleList.begin(), shaderModuleList.end(), [&](ShaderModuleWrapper * wrapper) { 
             return ( wrapper->shaderName.find (spvName) != std::string::npos &&
                  *wrapper->shaderType == type[i]); });

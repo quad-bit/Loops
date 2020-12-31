@@ -48,8 +48,9 @@ ELSE()
   message (" glm include directory set to : ${glm_INCLUDE_DIR}")
 ENDIF()
 
-SET( plog_DIR "$ENV{GLM_PATH}" )
-SET ( plog_INCLUDE_DIR "${glm_INCLUDE_DIR}/../Logging/")
+#SET( plog_DIR "$ENV{GLM_PATH}" )
+#SET ( plog_INCLUDE_DIR "${glm_INCLUDE_DIR}/../Logging/")
+SET( plog_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/Logging" )
 message (" plog include directory set to : ${plog_INCLUDE_DIR}")
 
 

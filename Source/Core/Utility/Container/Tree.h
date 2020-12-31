@@ -92,6 +92,7 @@ inline TreeNode<T>::~TreeNode()
     }
 
     this->prev = NULL;
+    this->next = NULL;
 }
 
 template<class T>
@@ -113,7 +114,7 @@ inline void TreeNode<T>::AddChild(TreeNode<T>* node)
 template<class T>
 inline void TreeNode<T>::DetachChild(TreeNode<T>* child)
 {
-    if (child->nodeParent->idCounter == treeRoot->idCounter)
+    if (child->nodeParent->nodeId == treeRoot->nodeId)
     {
         ASSERT_MSG(0, "Only node deletion possible, if nodeParent is root");
         return;
@@ -121,7 +122,7 @@ inline void TreeNode<T>::DetachChild(TreeNode<T>* child)
 
     // detach child from nodeParent
     // is this the first child
-    if (child->prev == NULL)
+    if ( this->child->nodeId == childe->nodeId)//  child->prev == NULL)
     {
         if (child->next != NULL)
         {
@@ -187,7 +188,9 @@ inline void TreeNode<T>::DeleteChild(TreeNode<T>* child)
 template<class T>
 inline void TreeNode<T>::SetParent(TreeNode<T>* nodeParent)
 {
-    if (this->nodeParent == NULL )//|| this->nodeParent->nodeId == this->treeRoot->nodeId)
+    // initially when the node gets created its parent is NULL
+    // when its pushed to the tree it gets added to the root node
+    if (this->nodeParent == NULL )
     {
         this->nodeParent = nodeParent;
         nodeParent->AddChild(this);
@@ -196,11 +199,11 @@ inline void TreeNode<T>::SetParent(TreeNode<T>* nodeParent)
     {
         // detach child from nodeParent
         // is this the first child
-        if (this->prev == NULL) // (this->nodeParent->child->nodeId == this->nodeId)
+        if (this->prev == NULL) // ||(this->nodeParent->child->nodeId == this->nodeId)
         {
-            if (this->nodeParent->child->next != NULL)
+            if (this->next != NULL)
             {
-                TreeNode<T> * newChild = this->nodeParent->child->next;
+                TreeNode<T> * newChild = this->next;
                 this->nodeParent->child = newChild;
                 newChild->prev = NULL;
             }
@@ -274,7 +277,7 @@ inline void Tree<T>::AddToTree(TreeNode<T>* node)
         //node->SetParent(root);
         root->AddChild(node);
     }
-    
+
     node->treeRoot = root;
 }
 

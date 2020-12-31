@@ -59,5 +59,5 @@ public:
     const VkPhysicalDeviceFeatures&                 GetPhysicalDeviceFeatures() const { return physicalDeviceFeatures; }
 
     VkPhysicalDeviceFeatures&                       GetEnabledPhysicalDeviceFeatures() { return enabledPhysicalDeviceFeatures; }
-
+    const VkPhysicalDeviceProperties&               GetPhysicalDeviceProps() { return physicalDeviceProps; }
 };

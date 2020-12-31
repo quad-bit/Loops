@@ -157,6 +157,10 @@ Mesh * MeshFactory::CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType)
             mesh->pGpuMemVB = new void*[numVertexBufferPerMesh];
             mesh->pGpuMemVB[0] = info.pGpuMem;
         }
+        else
+        {
+            ASSERT_MSG(0, "individual buffers yet to be implemented.");
+        }
 
         BufferType bufferType = BufferType::INDEX_BUFFER_BIT;
         MemoryType memType = MemoryType::HOST_VISIBLE_BIT;

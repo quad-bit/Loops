@@ -46,6 +46,8 @@ public:
     void CreateVertexAssemblyState(const uint32_t & meshId, InputAssemblyState * assembly);
     void AssignDefaultState(const uint32_t & meshId, const PipelineStates & state);
     void CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
+    void CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
+
 };
 
 template<typename T>
@@ -416,4 +418,24 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
     CreateGraphEdges(meshId, PipelineStates::InputAssemblyState, PipelineStates::ShaderStage);
 
     //pipelineGraph->PrintAdjMatrix();
+}
+
+template<typename T>
+inline void GraphicsPipelineManager<T>::CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount)
+{
+    ShaderResourceStateWrapper * wrapper = new ShaderResourceStateWrapper;
+    wrapper->shader = shaders;
+    wrapper->shaderCount = shaderCount;
+    
+    std::vector<std::string> shaderNames;
+    for (uint32_t i = 0; i < shaderCount; i++)
+        shaderNames.push_back(shaders[i].shaderName);
+
+    // get the setwrapper list for the shader combination
+    wrapper->resourcesSetList = apiInterface->GetSetsForShaders(shaderNames);
+
+    // check if the hash exist for the above object
+    //uint32_t id = HashManager::GetInstance()->FindShaderStateHash(shaders, shaderCount, wrapper->GetId(), &wrapper->state);
+
+
 }

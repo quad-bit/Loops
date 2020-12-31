@@ -49,7 +49,7 @@ void ShaderFactory::CreateShader(const uint32_t & meshId, Shader * shaders, cons
     }
 
     GraphicsPipelineManager<ApiInterface>::GetInstance()->CreatShaderPipelineState(meshId, shaders, shaderCount);
-  
+    GraphicsPipelineManager<ApiInterface>::GetInstance()->CreatResourceLayoutState(meshId, shaders, shaderCount);
 
     delete[] ids;
     delete[] types;

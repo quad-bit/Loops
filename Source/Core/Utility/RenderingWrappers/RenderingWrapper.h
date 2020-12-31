@@ -202,6 +202,7 @@ enum class PipelineStates
     VertexInputState,
     InputAssemblyState,
     ShaderStage,
+    ShaderResourcesLayout,
     TessellationState,
     ViewportState,
     RasterizationState,
@@ -395,6 +396,55 @@ struct MeshInfo
         PipelineStates state = PipelineStates::InputAssemblyState;
         PrimtiveType * primitiveType;
         bool isPrimtiveRestartEnabled;
+    };
+
+    enum class DescriptorType
+    {
+        SAMPLER = 0,
+        COMBINED_IMAGE_SAMPLER = 1,
+        SAMPLED_IMAGE = 2,
+        STORAGE_IMAGE = 3,
+        UNIFORM_TEXEL_BUFFER = 4,
+        STORAGE_TEXEL_BUFFER = 5,
+        UNIFORM_BUFFER = 6,
+        STORAGE_BUFFER = 7,
+        UNIFORM_BUFFER_DYNAMIC = 8,
+        STORAGE_BUFFER_DYNAMIC = 9,
+        INPUT_ATTACHMENT = 10,
+        NUM_TYPES = 11
+    };
+
+    struct DescriptorSetLayoutBinding 
+    {
+        uint32_t              binding;
+        DescriptorType        descriptorType;
+        uint32_t              descriptorCount;
+        std::vector< ShaderType> stageFlags;
+        //const VkSampler*      pImmutableSamplers;
+    };
+
+    struct UniformStructMember
+    {
+        char name[32];
+        uint32_t size;
+        uint32_t offset;
+        char defaultValue[64];
+    };
+
+    struct BindingWrapper
+    {
+        uint32_t id; // not getting used
+        DescriptorSetLayoutBinding bindingObj;
+        std::vector<UniformStructMember> memberList;
+    };
+
+    struct SetWrapper
+    {
+        uint32_t id;// this is unique
+        uint32_t setValue; // this is not unique as another layout can be created for the same set number
+        std::vector<BindingWrapper> bindingWrapperList;
+        std::vector<std::string> shaderNames;
+        std::vector<ShaderType> shaderFlags;
     };
 
 

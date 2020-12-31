@@ -20,7 +20,6 @@ inline void HashCombine(std::size_t& seed, const T& v, Rest... rest)
     HashCombine(seed, rest...);
 }
 
-
 bool operator==(const VertexInputAttributeInfo & lhs, const VertexInputAttributeInfo & rhs)
 {
     if (lhs.binding == rhs.binding && lhs.format == rhs.format &&
@@ -34,6 +33,14 @@ bool operator==(const VertexInputBindingInfo & lhs, const VertexInputBindingInfo
 {
     if (lhs.binding == rhs.binding && lhs.inputRate == rhs.inputRate &&
         lhs.stride == rhs.stride)
+        return true;
+    else
+        return false;
+}
+
+bool operator==(const SetWrapper & lhs, const SetWrapper & rhs)
+{
+    if (lhs.setValue == rhs.setValue && lhs.bindingWrapperList.size() == rhs.bindingWrapperList.size())
         return true;
     else
         return false;
@@ -68,6 +75,43 @@ namespace std
 
             std::size_t seed = 0UL;
             HashCombine(seed, h1, h2, h3);
+
+            return seed; // or use boost::hash_combine
+        }
+    };
+
+    template<> struct hash<SetWrapper>
+    {
+        std::size_t operator()(SetWrapper const& s) const noexcept
+        {
+            std::size_t seed = 0UL;
+            std::size_t h1 = std::hash<std::uint32_t>{}(s.setValue);
+
+            std::size_t bindingHash = 0UL;
+
+            for (uint32_t i = 0; i < s.bindingWrapperList.size(); i++)
+            {
+                BindingWrapper bindingWrapper = s.bindingWrapperList[i];
+                std::size_t h1 = std::hash<std::uint32_t>{}(bindingWrapper.bindingObj.binding);
+                std::size_t h2 = std::hash<std::uint32_t>{}(bindingWrapper.bindingObj.descriptorCount);
+                std::size_t h3 = std::hash<std::uint32_t>{}((std::uint32_t)bindingWrapper.bindingObj.descriptorType);
+                
+                std::size_t memberHash = 0UL;
+                for each(auto member in bindingWrapper.memberList)
+                {
+                    std::size_t h1 = std::hash<std::uint32_t>{}(member.offset);
+                    std::size_t h2 = std::hash<std::uint32_t>{}(member.size);
+
+                    std::size_t hash = 0UL;
+                    HashCombine(hash, h1, h2);
+
+                    memberHash += hash;
+                }
+
+                HashCombine(bindingHash, memberHash, h1, h2, h3);
+            }
+
+            HashCombine(seed, bindingHash, h1);
 
             return seed; // or use boost::hash_combine
         }

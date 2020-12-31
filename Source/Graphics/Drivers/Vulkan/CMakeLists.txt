@@ -108,12 +108,14 @@ ENDIF()
 add_library(Vulkan
 ${SourceList})
 
-
-
 add_compile_definitions(VULKAN_ASSETS_PATH="${VulkanDataPath}")
 
 # forces anyone who uses this lib to include the below mentioned source dir into their project props
 target_include_directories(Vulkan PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+SET( Json_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/RapidJson" )
+message ("json include directory set to : ${Json_INCLUDE_DIR}")
+target_include_directories(Vulkan PUBLIC ${Json_INCLUDE_DIR})
 
 #include directories
 message ("include directories ${Vulkan_INCLUDE_DIR} ${glm_INCLUDE_DIR}")

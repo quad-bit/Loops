@@ -69,4 +69,19 @@ struct ShaderStateWrapper : public StateWrapperBase
     }
 };
 
+struct ShaderResourceStateWrapper : public StateWrapperBase
+{
+    Shader * shader;
+    uint32_t shaderCount;
+    std::vector<SetWrapper*> resourcesSetList;
+    uint32_t pipelineId;
+
+    static uint32_t idCounter;
+
+    ShaderResourceStateWrapper()
+    {
+        AssignId<ShaderResourceStateWrapper>(&this->id);
+        state = PipelineStates::ShaderResourcesLayout;
+    }
+};
 

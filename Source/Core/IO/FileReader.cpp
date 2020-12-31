@@ -15,6 +15,29 @@ void GetFilesInFolder(const fs::v1::path & folderPath, std::vector<std::string> 
 
 }
 
+const char * ReadTxtFile(uint32_t& length, const char* filename)
+{
+    FILE* inFile;
+    fopen_s(&inFile, filename, "r");
+
+    if (!inFile)
+    {
+        assert(0 && "File not found");
+    }
+    //checkf(inFile, "Trying to load text file: %s, file not found", filepath);
+
+    fseek(inFile, 0, SEEK_END);
+    long size = ftell(inFile);
+    rewind(inFile);
+
+    char* outString = (char *)calloc(1, size + 1); // Enough memory for file + \0
+
+    fread(outString, size, 1, inFile); // Read in the entire file
+    fclose(inFile); // Close the file
+    length = size;
+    return outString;
+}
+
 const char* ReadSpvFile(uint32_t& length, const char* filename)
 {
     FILE* fp ;// = fopen(filename, "rb");

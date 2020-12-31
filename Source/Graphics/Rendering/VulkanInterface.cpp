@@ -16,6 +16,7 @@
 #include <VulkanGraphicsPipelineFactory.h>
 #include <VkShaderFactory.h>
 #include <CorePrecompiled.h>
+#include <VkShaderResourceManager.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
 {
@@ -652,6 +653,11 @@ void VulkanInterface::CreateInputAssemblyState(const InputAssemblyWrapper * inpu
 void VulkanInterface::CreateShaderState(const ShaderStateWrapper * shaderStateWrapper)
 {
     VulkanGraphicsPipelineFactory::GetInstance()->CreateShaderState(shaderStateWrapper);
+}
+
+std::vector<SetWrapper*> VulkanInterface::GetSetsForShaders(const std::vector<std::string>& shaderNames)
+{
+    return VkShaderResourceManager::GetInstance()->GetSetsForShaders(shaderNames);
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)

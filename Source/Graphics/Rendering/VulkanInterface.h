@@ -34,6 +34,7 @@ struct VertexInputBindingInfo;
 struct ShaderStateWrapper;
 struct InputAssemblyWrapper;
 struct VertexInputWrapper;
+struct SetWrapper;
 
 class VkDrawCommandBuffer;
 
@@ -127,4 +128,6 @@ public:
     void CreateVertexInputState(const VertexInputWrapper * vertexInputWrapper);
     void CreateInputAssemblyState(const InputAssemblyWrapper * InputAssemblyWrapper);
     void CreateShaderState(const ShaderStateWrapper * shaderStateWrapper);
+    std::vector<SetWrapper *> GetSetsForShaders(const std::vector<std::string> & shaderNames);
+
 };

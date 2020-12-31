@@ -27,4 +27,7 @@ VkImageUsageFlagBits UnwrapUsage(Usage usage);
 
 VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo info);
 
+VkShaderStageFlags UnwrapShaderStage(ShaderType type);
+VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count);
+
 #endif RenderingUnwrapper_H

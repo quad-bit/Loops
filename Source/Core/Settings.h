@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string>
 
-using namespace std;
+//using namespace std;
 
 #define WINDOWS_OS 0
 #define LINUX_OS  1
@@ -42,7 +42,7 @@ class Settings
 {
 public:
     static uint32_t windowWidth, windowHeight;
-    static string windowName;
+    static std::string windowName;
     static uint32_t swapBufferCount;
     static float depthClearValue, stencilClearValue;
     static float clearColorValue[4];

@@ -5,24 +5,23 @@
 
 HashManager* HashManager::instance = nullptr;
 
-
-uint32_t HashManager::CheckForHash(const std::size_t & hash, const uint32_t & stateId, const PipelineStates & state)
+uint32_t HashManager::CheckForPipeLineObjectHash(const std::size_t & hash, const uint32_t & stateId, const PipelineStates & state)
 {
-    std::vector<HashObjectWrapper>::iterator it;
-    it = std::find_if(hashList.begin(), hashList.end(), [&](HashObjectWrapper e) { return e.hash == hash; });
+    std::vector<PipelineObjectHashWrapper>::iterator it;
+    it = std::find_if(pipelineHashList.begin(), pipelineHashList.end(), [&](PipelineObjectHashWrapper e) { return e.hash == hash; });
 
-    if (it != hashList.end())
+    if (it != pipelineHashList.end())
     {
         return it->objectId;
     }
     else
     {
-        HashObjectWrapper obj;
+        PipelineObjectHashWrapper obj;
         obj.hash = hash;
         obj.objectId = stateId;
         obj.state = state;
 
-        hashList.push_back(obj);
+        pipelineHashList.push_back(obj);
         return -1;
     }
 }
@@ -34,8 +33,10 @@ void HashManager::Init()
 
 void HashManager::DeInit()
 {
-    hashList.clear();
-    hashList.resize(0);
+    pipelineHashList.clear();
+    pipelineHashList.resize(0);
+
+    descriptorSetLayoutWrapperHashList.clear();
 }
 
 void HashManager::Update()
@@ -76,7 +77,7 @@ int HashManager::FindVertexInputStateHash(VertexInputState * inputInfo, uint32_t
     hashPipelineState = std::hash<uint32_t>{}((uint32_t)inputInfo->state);
     HashCombine(hash, hashPipelineState);
 
-    return CheckForHash(hash, stateId, inputInfo->state);
+    return CheckForPipeLineObjectHash(hash, stateId, inputInfo->state);
 }
 
 int HashManager::FindInputAssemblyStateHash(InputAssemblyState * inputInfo, uint32_t stateId)
@@ -90,7 +91,7 @@ int HashManager::FindInputAssemblyStateHash(InputAssemblyState * inputInfo, uint
 
     HashCombine(hash, hashPrimitive, hashRestart, hashState);
 
-    return CheckForHash(hash, stateId, inputInfo->state);
+    return CheckForPipeLineObjectHash(hash, stateId, inputInfo->state);
 }
 
 int HashManager::FindShaderStateHash(Shader * shaders, const uint32_t & shaderCount, uint32_t stateId, PipelineStates * state)
@@ -120,5 +121,28 @@ int HashManager::FindShaderStateHash(Shader * shaders, const uint32_t & shaderCo
 
     HashCombine(hash, shaderCountHash, vertexShaderHash, fragmentShaderHash);
 
-    return CheckForHash(hash, stateId, *state);
+    return CheckForPipeLineObjectHash(hash, stateId, *state);
+}
+
+int HashManager::FindDescriptorSetHash(SetWrapper * bindingObj, uint32_t id)
+{
+    size_t hash = std::hash<SetWrapper>{}(*bindingObj);
+
+    std::vector<DescriptorSetLayoutWrapper>::iterator it;
+    it = std::find_if(descriptorSetLayoutWrapperHashList.begin(), descriptorSetLayoutWrapperHashList.end(), [&](DescriptorSetLayoutWrapper e) { return e.hash == hash; });
+
+    if (it != descriptorSetLayoutWrapperHashList.end())
+    {
+        return it->objectId;
+    }
+    else
+    {
+        DescriptorSetLayoutWrapper wrapper = {};
+        wrapper.hash = hash;
+        wrapper.objectId = id;
+        descriptorSetLayoutWrapperHashList.push_back(wrapper);
+        return -1;
+    }
+
+    return 0;
 }

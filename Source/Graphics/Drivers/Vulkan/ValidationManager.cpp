@@ -87,7 +87,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT		flags,
 #if defined( _WIN32 )
     if (flags & VK_DEBUG_REPORT_ERROR_BIT_EXT) 
     {
-        string message = stream.str().c_str();
+        std::string message = stream.str().c_str();
         std::wstring stemp = std::wstring(message.begin(), message.end());
         MessageBox(NULL, stemp.c_str(), L"Vulkan Error!", 0);
     }

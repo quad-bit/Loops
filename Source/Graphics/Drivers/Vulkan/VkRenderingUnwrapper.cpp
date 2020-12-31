@@ -275,3 +275,63 @@ VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo beginInfo)
 
     return vkBeginInfo;
 }
+
+VkShaderStageFlags UnwrapShaderStage(ShaderType type)
+{
+    VkShaderStageFlags shaderFlag;
+
+    switch (type)
+    {
+    case    ShaderType::VERTEX:
+        shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+        break;
+    
+    case    ShaderType::TESSELLATION:
+        ASSERT_MSG(0, "Yet to be implemented");
+        break;
+
+    case    ShaderType::GEOMETRY:
+        shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
+        break;
+
+    case    ShaderType::FRAGMENT:
+        shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
+        break;
+
+    case    ShaderType::COMPUTE:
+        shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
+        break;
+    }
+
+    return shaderFlag;
+}
+
+VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count)
+{
+    VkShaderStageFlags shaderFlag;
+    for(uint32_t i = 0; i < count; i++)
+    switch (type[i])
+    {
+    case    ShaderType::VERTEX:
+        shaderFlag |= VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+        break;
+
+    case    ShaderType::TESSELLATION:
+        ASSERT_MSG(0, "Yet to be implemented");
+        break;
+
+    case    ShaderType::GEOMETRY:
+        shaderFlag |= VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
+        break;
+
+    case    ShaderType::FRAGMENT:
+        shaderFlag |= VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
+        break;
+
+    case    ShaderType::COMPUTE:
+        shaderFlag |= VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
+        break;
+    }
+
+    return shaderFlag;
+}
