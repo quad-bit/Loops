@@ -309,7 +309,32 @@ VkShaderStageFlags UnwrapShaderStage(ShaderType type)
 VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count)
 {
     VkShaderStageFlags shaderFlag;
-    for(uint32_t i = 0; i < count; i++)
+    //shaderflag needs to be filled with something to be OR-ED with subsequent stages
+    switch (type[0])
+    {
+    case    ShaderType::VERTEX:
+        shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
+        break;
+
+    case    ShaderType::TESSELLATION:
+        ASSERT_MSG(0, "Yet to be implemented");
+        break;
+
+    case    ShaderType::GEOMETRY:
+        shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_GEOMETRY_BIT;
+        break;
+
+    case    ShaderType::FRAGMENT:
+        shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_FRAGMENT_BIT;
+        break;
+
+    case    ShaderType::COMPUTE:
+        shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
+        break;
+    }
+
+
+    for(uint32_t i = 1; i < count; i++)
     switch (type[i])
     {
     case    ShaderType::VERTEX:

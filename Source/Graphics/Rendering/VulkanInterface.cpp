@@ -660,6 +660,11 @@ std::vector<SetWrapper*> VulkanInterface::GetSetsForShaders(const std::vector<st
     return VkShaderResourceManager::GetInstance()->GetSetsForShaders(shaderNames);
 }
 
+uint32_t VulkanInterface::CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets)
+{
+    return VkShaderResourceManager::GetInstance()->CreatePipelineLayout(setWrapperList, numSets);
+}
+
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)
 {
     uint32_t poolId = 0;

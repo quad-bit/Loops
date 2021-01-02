@@ -244,6 +244,13 @@ struct MeshInfo
     bool isPrimitiveRestartEnabled;
 };
 
+enum class ShaderResourceClassification
+{
+    PER_SCENE,
+    PER_MATERIAL,
+    PER_MATERIAL_INSTANCE
+};
+
 #if (RENDERING_API == VULKAN)
 
     struct ImageInfo
@@ -445,6 +452,7 @@ struct MeshInfo
         std::vector<BindingWrapper> bindingWrapperList;
         std::vector<std::string> shaderNames;
         std::vector<ShaderType> shaderFlags;
+        uint32_t descriptorSetLayoutId;
     };
 
 

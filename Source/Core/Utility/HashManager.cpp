@@ -124,6 +124,37 @@ int HashManager::FindShaderStateHash(Shader * shaders, const uint32_t & shaderCo
     return CheckForPipeLineObjectHash(hash, stateId, *state);
 }
 
+int HashManager::FindResourceLayoutHash(SetWrapper ** wrapperList, const uint32_t & setCount, uint32_t id)
+{
+    std::size_t accumulatedHash = 0UL;
+    for (uint32_t i = 0; i < setCount; i++)
+    {
+        SetWrapper obj = *wrapperList[i];
+        size_t hash = std::hash<SetWrapper>{}(obj);
+        accumulatedHash += hash;
+    }
+    
+    std::vector<SetLayoutCombinationWrapper>::iterator it;
+    it = std::find_if(setCombinationWrapperHashList.begin(), setCombinationWrapperHashList.end(), [&](SetLayoutCombinationWrapper e) { return e.hash == accumulatedHash; });
+
+    if (it != setCombinationWrapperHashList.end())
+    {
+        return it->layoutId;
+    }
+    else
+    {
+        SetLayoutCombinationWrapper wrapper = {};
+        wrapper.hash = accumulatedHash;
+        wrapper.layoutId = id;
+ 
+        for (uint32_t i = 0; i < setCount; i++)
+            wrapper.setList.push_back(wrapperList[i]);
+
+        setCombinationWrapperHashList.push_back(wrapper);
+        return -1;
+    }
+}
+
 int HashManager::FindDescriptorSetHash(SetWrapper * bindingObj, uint32_t id)
 {
     size_t hash = std::hash<SetWrapper>{}(*bindingObj);

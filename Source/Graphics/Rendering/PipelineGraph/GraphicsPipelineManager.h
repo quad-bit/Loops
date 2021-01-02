@@ -19,6 +19,7 @@ private:
     std::vector<VertexInputWrapper *> vertexInputStateWrapperList;
     std::vector<InputAssemblyWrapper *> vertexInputAssemblyWrapperList;
     std::vector<ShaderStateWrapper *> shaderStateWrapperList;
+    std::vector<ShaderResourceStateWrapper *> shaderResourceStateWrapperList;
 
     std::map<uint32_t, std::vector<GraphNode<StateWrapperBase>*>> meshToGraphNodeMap;
     void InsertToMeshList(const uint32_t & meshId, PipelineStates state, GraphNode<StateWrapperBase>* node);
@@ -435,7 +436,42 @@ inline void GraphicsPipelineManager<T>::CreatResourceLayoutState(const uint32_t 
     wrapper->resourcesSetList = apiInterface->GetSetsForShaders(shaderNames);
 
     // check if the hash exist for the above object
-    //uint32_t id = HashManager::GetInstance()->FindShaderStateHash(shaders, shaderCount, wrapper->GetId(), &wrapper->state);
+    int id = HashManager::GetInstance()->FindResourceLayoutHash(wrapper->resourcesSetList.data(), 
+        (uint32_t)wrapper->resourcesSetList.size(), wrapper->GetId());
+    GraphNode<StateWrapperBase> * node;
 
+    // if not add the wrapper to the list
+    if (id == -1)
+    {
+        // add wrapper to list
+        wrapper->meshIdList.push_back(meshId);
+        shaderResourceStateWrapperList.push_back(wrapper);
+        // create a new pipeline node encapsulate in graph node, add it to graph
+        // TODO : Create pipeline node, done .
+        node = CreateGraphNode(wrapper);
 
+        // TODO : Create vulkan pipeline pipeline state object, done 
+        wrapper->pipelineId = apiInterface->CreatePipelineLayout(wrapper->resourcesSetList.data(),
+            wrapper->resourcesSetList.size());
+    }
+    else
+    {
+        // if it exists push the mesh id to the list of the object
+        // reduce meshid counter by 1
+        DecrementIdCounter<ShaderResourceStateWrapper>();
+
+        // delete input info
+        delete wrapper;
+
+        // add the mesh id to the existing wrapper obj in the list
+        std::vector<ShaderResourceStateWrapper*>::iterator it;
+        it = std::find_if(shaderResourceStateWrapperList.begin(), shaderResourceStateWrapperList.end(), [&](ShaderResourceStateWrapper* e) { return e->GetId() == id; });
+        ASSERT_MSG(it != shaderResourceStateWrapperList.end(), "wrapper not found");
+        (*it)->meshIdList.push_back(meshId);
+
+        node = GetNode((*it)->state, (*it));
+    }
+
+    InsertToMeshList(meshId, PipelineStates::ShaderResourcesLayout, node);
+    CreateGraphEdges(meshId, PipelineStates::ShaderStage, PipelineStates::ShaderResourcesLayout);
 }

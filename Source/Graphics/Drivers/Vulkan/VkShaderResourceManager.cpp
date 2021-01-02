@@ -6,6 +6,7 @@
 #include <Assertion.h>
 #include <HashManager.h>
 #include <VkRenderingUnwrapper.h>
+#include "VkShaderResourceAllocator.h"
 
 using namespace rapidjson;
 
@@ -35,7 +36,17 @@ uint32_t VkShaderResourceManager::GetBindingID()
 
 uint32_t VkShaderResourceManager::GetSetLayoutID()
 {
-    return setLayoutIdCounter++;
+    return setWrapperIdCounter++;
+}
+
+uint32_t VkShaderResourceManager::GetPipelineLayoutID()
+{
+    return pipelineLayoutIdCounter++;
+}
+
+uint32_t VkShaderResourceManager::GetVkDescriptorSetLayoutWrapperID()
+{
+    return setLayoutWrapperIdCounter++;
 }
 
 void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWrapper> & bindingList, std::string shaderName, uint32_t set)
@@ -75,6 +86,22 @@ void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWr
         setWrapperList.push_back(setWrapper);
         
         AccumulateSetLayoutPerShader(shaderName, setWrapper);
+
+        // create vulkan descriptor set layout per set wrapper
+        {
+            /*VkDescriptorSetLayoutWrapper descriptorSetLayoutWrapperObj = {};
+            descriptorSetLayoutWrapperObj.id = GetVkDescriptorSetLayoutWrapperID();
+            descriptorSetLayoutWrapperObj.layout = UnwrapSetwrapper(setWrapper);
+
+            setWrapper->descriptorSetLayoutId = descriptorSetLayoutWrapperObj.id;
+            setLayoutWrapperList.push_back(descriptorSetLayoutWrapperObj);
+            */
+
+            VkDescriptorSetLayout * setLayout = UnwrapSetwrapper(setWrapper);
+            uint32_t id = GetVkDescriptorSetLayoutWrapperID();
+            idToSetLayoutMap.insert(std::pair<uint32_t, VkDescriptorSetLayout *>(id, setLayout));
+            setWrapper->descriptorSetLayoutId = id;
+        }
     }
 }
 
@@ -98,16 +125,16 @@ void VkShaderResourceManager::AccumulateSetLayoutPerShader(std::string reflName,
     }
 }
 
-//deprecated
-VkDescriptorSetLayout * VkShaderResourceManager::UnwrapSetwrapper(const SetWrapper & setWrapper)
+
+VkDescriptorSetLayout * VkShaderResourceManager::UnwrapSetwrapper(SetWrapper * setWrapper)
 {
     std::vector<VkDescriptorSetLayoutBinding> bindingList;
-    uint32_t numBindings = (uint32_t)setWrapper.bindingWrapperList.size();
+    uint32_t numBindings = (uint32_t)setWrapper->bindingWrapperList.size();
     bindingList.resize(numBindings);
 
     for (uint32_t i = 0; i < numBindings; i++)
     {
-       DescriptorSetLayoutBinding obj = setWrapper.bindingWrapperList[i].bindingObj;
+       DescriptorSetLayoutBinding obj = setWrapper->bindingWrapperList[i].bindingObj;
        bindingList[i].binding = obj.binding;
        bindingList[i].descriptorCount = obj.descriptorCount;
        bindingList[i].descriptorType = UnwrapDescriptorType(obj.descriptorType);
@@ -137,34 +164,34 @@ VkDescriptorType VkShaderResourceManager::UnwrapDescriptorType(const DescriptorT
             vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
             break;
         case DescriptorType::COMBINED_IMAGE_SAMPLER:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             break;
         case DescriptorType::SAMPLED_IMAGE:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
             break;
         case DescriptorType::STORAGE_IMAGE:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
             break;
         case DescriptorType::UNIFORM_TEXEL_BUFFER:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
             break;
         case DescriptorType::STORAGE_TEXEL_BUFFER:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
             break;
         case DescriptorType::UNIFORM_BUFFER:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             break;
         case DescriptorType::STORAGE_BUFFER:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
             break;
         case DescriptorType::UNIFORM_BUFFER_DYNAMIC:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
             break;
         case DescriptorType::STORAGE_BUFFER_DYNAMIC:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC;
             break;
         case DescriptorType::INPUT_ATTACHMENT:
-            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER;
+            vkType = VkDescriptorType::VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
             break;
     }
 
@@ -190,8 +217,11 @@ std::string VkShaderResourceManager::GetShaderNameFromRefl(const std::string & r
     return shaderName;
 }
 
+
 void VkShaderResourceManager::Init()
 {
+    resourceAllocator = new VkShaderResourceAllocator();
+
     std::vector<std::string> fileList;
     GetFilesInFolder(VULKAN_ASSETS_PATH + std::string{ "/Reflections" }, fileList);
 
@@ -302,6 +332,13 @@ void VkShaderResourceManager::Init()
                     wrapper.memberList.push_back(mem);
                 }
 
+                ShaderType shaderType;
+                if (var.find("frag") != std::string::npos)
+                    shaderType = ShaderType::FRAGMENT;
+                else if (var.find("vert") != std::string::npos)
+                    shaderType = ShaderType::VERTEX;
+                wrapper.bindingObj.stageFlags.push_back(shaderType);
+
                 bindingList.push_back(wrapper);
                 
                 if (dsIdx == reflFileDescSets.Size() - 1 && setCreatedMap.find(currentSet) == setCreatedMap.end())
@@ -312,14 +349,15 @@ void VkShaderResourceManager::Init()
 
                 continue;
 
+                // DONT DELETE
+                /*
                 ShaderType shaderType;
                 if (var.find("frag") != std::string::npos)
                     shaderType = ShaderType::FRAGMENT;
                 else if(var.find("vert") != std::string::npos)
                     shaderType = ShaderType::VERTEX;
 
-                // DONT DELETE
-                /*
+                
                 res.uniformDef[dsIdx].uniformSize = GetGPUAlignedSize(currentInputFromReflData["size"].GetInt());
                 res.uniformDef[dsIdx].set = currentInputFromReflData["set"].GetInt();
                 res.uniformDef[dsIdx].binding = currentInputFromReflData["binding"].GetInt();
@@ -348,6 +386,8 @@ void VkShaderResourceManager::Init()
 
 void VkShaderResourceManager::DeInit()
 {
+    delete resourceAllocator;
+
     for (uint32_t i = 0; i < setWrapperList.size(); i++)
     {
         delete setWrapperList[i];
@@ -355,6 +395,21 @@ void VkShaderResourceManager::DeInit()
 
     setWrapperList.clear();
     perShaderResourceList.clear();
+
+    for (uint32_t i = 0; i < (uint32_t)pipelineLayoutWrapperList.size(); i++)
+    {
+        
+        vkDestroyPipelineLayout(*CoreObjects::logicalDeviceObj, *pipelineLayoutWrapperList[i].pipelineLayout, CoreObjects::pAllocator);
+        delete pipelineLayoutWrapperList[i].pipelineLayout;
+    }
+
+    for (auto const& obj : idToSetLayoutMap)
+    {
+        vkDestroyDescriptorSetLayout(*CoreObjects::logicalDeviceObj, *obj.second, CoreObjects::pAllocator);
+        delete obj.second;
+    }
+
+    idToSetLayoutMap.clear();
 }
 
 void VkShaderResourceManager::Update()
@@ -405,4 +460,67 @@ std::vector<SetWrapper*> VkShaderResourceManager::GetSetsForShaders(const std::v
     }
 
     return setList;
+}
+
+uint32_t VkShaderResourceManager::CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets)
+{
+    std::vector<VkDescriptorSetLayoutCreateInfo> createInfoList;
+    createInfoList.resize(numSets);
+
+    PipelineLayoutWrapper pipelineLayoutWrapperObj = {};
+    pipelineLayoutWrapperObj.id = GetPipelineLayoutID();
+    pipelineLayoutWrapperObj.setLayoutList.resize(numSets);
+
+    for (uint32_t k = 0; k < (uint32_t)numSets; k++)
+    {
+        SetWrapper * setWrapper = setWrapperList[k];
+        
+        if (idToSetLayoutMap.find(setWrapper->descriptorSetLayoutId) == idToSetLayoutMap.end())
+        {
+            ASSERT_MSG(0, "Id mismatch");
+        }
+        else
+        {
+            pipelineLayoutWrapperObj.setLayoutList[k] = (*idToSetLayoutMap[setWrapper->descriptorSetLayoutId]);
+        }
+
+        /*
+        std::vector<VkDescriptorSetLayoutBinding> bindingList;
+        uint32_t numBindings = (uint32_t)setWrapper->bindingWrapperList.size();
+        bindingList.resize(numBindings);
+
+        for (uint32_t i = 0; i < numBindings; i++)
+        {
+            DescriptorSetLayoutBinding obj = setWrapper->bindingWrapperList[i].bindingObj;
+            bindingList[i].binding = obj.binding;
+            bindingList[i].descriptorCount = obj.descriptorCount;
+            bindingList[i].descriptorType = UnwrapDescriptorType(obj.descriptorType);
+            bindingList[i].stageFlags = UnwrapShaderStage(obj.stageFlags.data(), (uint32_t)obj.stageFlags.size());
+            bindingList[i].pImmutableSamplers = nullptr;
+        }
+
+        createInfoList[k].bindingCount = numBindings;
+        createInfoList[k].pBindings = bindingList.data();
+        createInfoList[k].sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        createInfoList[k].pNext = nullptr;
+
+        ErrorCheck(vkCreateDescriptorSetLayout(*CoreObjects::logicalDeviceObj, &createInfoList[k], CoreObjects::pAllocator, &pipelineLayoutWrapperObj.setLayoutList[k]));*/
+    }
+    
+    VkPipelineLayoutCreateInfo pipelineCreateInfo = {};
+    pipelineCreateInfo.flags = 0;
+    pipelineCreateInfo.pPushConstantRanges= nullptr;
+    pipelineCreateInfo.pSetLayouts = pipelineLayoutWrapperObj.setLayoutList.data();
+    pipelineCreateInfo.pNext = nullptr;
+    pipelineCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    pipelineCreateInfo.pushConstantRangeCount = 0;
+    pipelineCreateInfo.setLayoutCount = (uint32_t)pipelineLayoutWrapperObj.setLayoutList.size();
+
+    VkPipelineLayout * pipelineLayout = new VkPipelineLayout;
+    ErrorCheck(vkCreatePipelineLayout(*CoreObjects::logicalDeviceObj, &pipelineCreateInfo, CoreObjects::pAllocator, pipelineLayout));
+
+    pipelineLayoutWrapperObj.pipelineLayout = pipelineLayout;
+    pipelineLayoutWrapperList.push_back(pipelineLayoutWrapperObj);
+
+    return pipelineLayoutWrapperObj.id;
 }

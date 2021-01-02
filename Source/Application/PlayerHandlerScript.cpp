@@ -23,41 +23,66 @@ PlayerHandlerScript::PlayerHandlerScript()
     torso->GetEntity()->entityName = "torso";
     Transform * torsoTrf = torso->GetTransform();
     torsoTrf->SetParent(playerTrf);
-    
-    BitArray req(10);
-    req.SetBit((unsigned int)ATTRIBUTES::POSITION);
-    req.SetBit((unsigned int)ATTRIBUTES::COLOR);
+    {
+        BitArray req(10);
+        req.SetBit((unsigned int)ATTRIBUTES::POSITION);
+        req.SetBit((unsigned int)ATTRIBUTES::COLOR);
 
-    PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST };
-    MeshInfo meshInfo{};
-    meshInfo.attribMaskReq = req;
-    meshInfo.bufferPerAttribRequired = false;
-    meshInfo.isIndexed = true;
-    meshInfo.isPrimitiveRestartEnabled = false;
-    meshInfo.primitive = prim;
-    MESH_TYPE meshType = MESH_TYPE::CUBE;
-    
-    Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
-    torso->AddComponent<Mesh>(torsoMesh);
+        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST };
+        MeshInfo meshInfo{};
+        meshInfo.attribMaskReq = req;
+        meshInfo.bufferPerAttribRequired = false;
+        meshInfo.isIndexed = true;
+        meshInfo.isPrimitiveRestartEnabled = false;
+        meshInfo.primitive = prim;
+        MESH_TYPE meshType = MESH_TYPE::CUBE;
 
-    //ShaderType * types = new ShaderType[2];
-    //types[0] = ShaderType::VERTEX;
-    //types[1] = ShaderType::FRAGMENT;
+        Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
+        torso->AddComponent<Mesh>(torsoMesh);
 
-    Shader * shaders = new Shader[2];
-    shaders[0].shaderType = ShaderType::VERTEX;
-    shaders[0].shaderName = "PC.vert";
+        Shader * shaders = new Shader[2];
+        shaders[0].shaderType = ShaderType::VERTEX;
+        shaders[0].shaderName = "PC.vert";
 
-    shaders[1].shaderType = ShaderType::FRAGMENT;
-    shaders[1].shaderName = "Color.frag";
+        shaders[1].shaderType = ShaderType::FRAGMENT;
+        shaders[1].shaderName = "Color.frag";
 
-    ShaderFactory::GetInstance()->CreateShader(torsoMesh->meshId, shaders, 2);
+        ShaderFactory::GetInstance()->CreateShader(torsoMesh->meshId, shaders, 2);
+    }
 
     // HEAD
     head = worldObj->CreateEntity();
     head->GetEntity()->entityName = "head";
     Transform * headTrf = head->GetTransform();
     headTrf->SetParent(torsoTrf);
+
+    //TESTING
+    {
+        BitArray req(10);
+        req.SetBit((unsigned int)ATTRIBUTES::POSITION);
+        req.SetBit((unsigned int)ATTRIBUTES::COLOR);
+
+        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_STRIP }; // TODO : Correct the topo
+        MeshInfo meshInfo{};
+        meshInfo.attribMaskReq = req;
+        meshInfo.bufferPerAttribRequired = false;
+        meshInfo.isIndexed = true;
+        meshInfo.isPrimitiveRestartEnabled = false;
+        meshInfo.primitive = prim;
+        MESH_TYPE meshType = MESH_TYPE::CUBE;
+
+        Mesh * headMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
+        head->AddComponent<Mesh>(headMesh);
+
+        Shader * shaders = new Shader[2];
+        shaders[0].shaderType = ShaderType::VERTEX;
+        shaders[0].shaderName = "Test.vert";
+
+        shaders[1].shaderType = ShaderType::FRAGMENT;
+        shaders[1].shaderName = "Color.frag";
+
+        ShaderFactory::GetInstance()->CreateShader(headMesh->meshId, shaders, 2);
+    }
 
     //LEFT ARM
     leftArm = worldObj->CreateEntity();
@@ -97,18 +122,21 @@ void PlayerHandlerScript::DeInit()
 
 PlayerHandlerScript::~PlayerHandlerScript()
 {
-    //return;
-
     worldObj->DestroyEntity(playerHandle);
-    worldObj->DestroyEntity(head);
 
     ComponentHandle<Mesh> torsoMesh = torso->GetComponent<Mesh>();
     MeshFactory::GetInstance()->DestroyMesh(torsoMesh->meshId);
     torsoMesh.DestroyComponent();
-    torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
+    //torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
     //delete torsoMesh.GetComponent(); //TODO  fix this get component function
-
     worldObj->DestroyEntity(torso);
+
+    ComponentHandle<Mesh> headMesh = head->GetComponent<Mesh>();
+    MeshFactory::GetInstance()->DestroyMesh(headMesh->meshId);
+    headMesh.DestroyComponent();
+    //head->RemoveComponent<Mesh>(headMesh.GetComponent());
+    worldObj->DestroyEntity(head);
+
     worldObj->DestroyEntity(leftArm);
     worldObj->DestroyEntity(rightArm);
     worldObj->DestroyEntity(leftLeg);

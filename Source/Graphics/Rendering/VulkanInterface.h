@@ -129,5 +129,5 @@ public:
     void CreateInputAssemblyState(const InputAssemblyWrapper * InputAssemblyWrapper);
     void CreateShaderState(const ShaderStateWrapper * shaderStateWrapper);
     std::vector<SetWrapper *> GetSetsForShaders(const std::vector<std::string> & shaderNames);
-
+    uint32_t CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets);
 };
