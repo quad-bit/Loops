@@ -7,7 +7,7 @@
 #include <AttributeHelper.h>
 #include <MeshFactory.h>
 #include <BitArray.h>
-#include <ShaderFactory.h>
+#include <MaterialFactory.h>
 #include <Shader.h>
 
 PlayerHandlerScript::PlayerHandlerScript()
@@ -40,14 +40,16 @@ PlayerHandlerScript::PlayerHandlerScript()
         Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
         torso->AddComponent<Mesh>(torsoMesh);
 
-        Shader * shaders = new Shader[2];
-        shaders[0].shaderType = ShaderType::VERTEX;
+        ShaderDescription shaders[2];
+        shaders[0].type = ShaderType::VERTEX;
         shaders[0].shaderName = "PC.vert";
 
-        shaders[1].shaderType = ShaderType::FRAGMENT;
+        shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "Color.frag";
 
-        ShaderFactory::GetInstance()->CreateShader(torsoMesh->meshId, shaders, 2);
+        //ShaderFactory::GetInstance()->CreateShader(torsoMesh->meshId, shaders, 2);
+        Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->meshId);
+        torso->AddComponent<Material>(mat);
     }
 
     // HEAD
@@ -74,14 +76,16 @@ PlayerHandlerScript::PlayerHandlerScript()
         Mesh * headMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
         head->AddComponent<Mesh>(headMesh);
 
-        Shader * shaders = new Shader[2];
-        shaders[0].shaderType = ShaderType::VERTEX;
-        shaders[0].shaderName = "Test.vert";
+        ShaderDescription shaders[2];
+        shaders[0].type = ShaderType::VERTEX;
+        shaders[0].shaderName = "PC.vert";
 
-        shaders[1].shaderType = ShaderType::FRAGMENT;
+        shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "Color.frag";
 
-        ShaderFactory::GetInstance()->CreateShader(headMesh->meshId, shaders, 2);
+        //ShaderFactory::GetInstance()->CreateShader(headMesh->meshId, shaders, 2);
+        Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, headMesh->meshId);
+        head->AddComponent<Material>(mat);
     }
 
     //LEFT ARM
@@ -129,12 +133,17 @@ PlayerHandlerScript::~PlayerHandlerScript()
     torsoMesh.DestroyComponent();
     //torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
     //delete torsoMesh.GetComponent(); //TODO  fix this get component function
+    ComponentHandle<Material> torsoMat = torso->GetComponent<Material>();
+    torsoMat.DestroyComponent();
+
     worldObj->DestroyEntity(torso);
 
     ComponentHandle<Mesh> headMesh = head->GetComponent<Mesh>();
     MeshFactory::GetInstance()->DestroyMesh(headMesh->meshId);
     headMesh.DestroyComponent();
     //head->RemoveComponent<Mesh>(headMesh.GetComponent());
+    ComponentHandle<Material> headMat = head->GetComponent<Material>();
+    headMat.DestroyComponent();
     worldObj->DestroyEntity(head);
 
     worldObj->DestroyEntity(leftArm);

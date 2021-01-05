@@ -251,6 +251,12 @@ enum class ShaderResourceClassification
     PER_MATERIAL_INSTANCE
 };
 
+struct ShaderDescription
+{
+    ShaderType type;
+    std::string shaderName;
+};
+
 #if (RENDERING_API == VULKAN)
 
     struct ImageInfo
@@ -453,6 +459,7 @@ enum class ShaderResourceClassification
         std::vector<std::string> shaderNames;
         std::vector<ShaderType> shaderFlags;
         uint32_t descriptorSetLayoutId;
+        uint32_t descriptorSetId;
     };
 
 

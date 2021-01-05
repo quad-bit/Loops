@@ -1,18 +1,22 @@
 
 ##  file list creation Begin
+#
+# MACRO(SUBDIRLIST result curdir)
+#   FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
+#   SET(dirlist "")
+#   FOREACH(child ${children})
+#     IF(IS_DIRECTORY ${curdir}/${child})
+#       LIST(APPEND dirlist ${child})
+#     ENDIF()
+#   ENDFOREACH()
+#   SET(${result} ${dirlist})
+# ENDMACRO()
+#
+# SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
 
-MACRO(SUBDIRLIST result curdir)
-  FILE(GLOB children RELATIVE ${curdir} ${curdir}/*)
-  SET(dirlist "")
-  FOREACH(child ${children})
-    IF(IS_DIRECTORY ${curdir}/${child})
-      LIST(APPEND dirlist ${child})
-    ENDIF()
-  ENDFOREACH()
-  SET(${result} ${dirlist})
-ENDMACRO()
+include("${CMAKE_CURRENT_SOURCE_DIR}/../../../../Util.cmake")
 
-SUBDIRLIST(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
+HEADER_DIRECTORIES(SUBDIRS ${CMAKE_CURRENT_SOURCE_DIR})
 
 Set ( SourceList "")
 
@@ -112,6 +116,7 @@ add_compile_definitions(VULKAN_ASSETS_PATH="${VulkanDataPath}")
 
 # forces anyone who uses this lib to include the below mentioned source dir into their project props
 target_include_directories(Vulkan PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(Vulkan PUBLIC ${SUBDIRS})
 
 SET( Json_INCLUDE_DIR "${CMAKE_SOURCE_DIR}/ThirdParty/RapidJson" )
 message ("json include directory set to : ${Json_INCLUDE_DIR}")
@@ -125,6 +130,7 @@ ${glm_INCLUDE_DIR}
 ${glfw3_INCLUDE_DIR}
 ${CMAKE_CURRENT_SOURCE_DIR}
 )
+
 
 #library directories
 link_directories(${glfw3_LIBRARY_DIR} ${vulkan_LIBRARY_DIR})

@@ -8,6 +8,7 @@
 #include "EventBus.h"
 #include "Mesh.h"
 #include <CorePrecompiled.h>
+#include "Material.h"
 
 ECS_Manager* ECS_Manager::instance = nullptr;
 World * worldObj;
@@ -21,6 +22,7 @@ void ECS_Manager::Init()
     scriptableManager = worldObj->CreateManager<Scriptable>();
     transformManager = worldObj->CreateManager<Transform>();
     meshManager = worldObj->CreateManager<Mesh>();
+    materialManager = worldObj->CreateManager<Material>();
     
     scriptableSystemObj = new ScriptableSystem();
     worldObj->AddSystem(scriptableSystemObj);
@@ -39,9 +41,6 @@ void ECS_Manager::DeInit()
     delete EventBus::GetInstance();
 
     worldObj->DeInit();
-
-    //delete transformManager;
-    //delete scriptableManager;
 
     delete transformSystemObj;
     delete scriptableSystemObj;

@@ -28,6 +28,7 @@ private:
     uint32_t defaultPoolId = 0;
 
     std::vector<PoolWrapper> poolWrapperList;
+    std::vector<VkDescriptorSet *> descriptorSetList;
 
 public:
     void Init();
@@ -39,4 +40,5 @@ public:
     const uint32_t CreateDescritorPool();
     VkDescriptorPool * GetDescriptorPool(const uint32_t & id);
     VkDescriptorPool * GetDescriptorPool();
+    void StoreDescriptorSet(VkDescriptorSet * set);
 };

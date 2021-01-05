@@ -15,7 +15,15 @@ public:
     glm::vec2 mainTextureScale;
     glm::vec2 mainTextureOffset;
     Texture * textures; // normal, heightmap, gloss map.. etc   
-    Shader * shaderObj;
+    uint32_t numTextures;
+    Shader * shaders;
+    uint32_t numShaders;
+
+    Material(Shader * shaders, const uint32_t & numShaders)
+    {
+        this->shaders = shaders;
+        this->numShaders = numShaders;
+    }
 };
 
 // unity ref

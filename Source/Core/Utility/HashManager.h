@@ -30,6 +30,12 @@ struct SetLayoutCombinationWrapper
     std::size_t hash;
 };
 
+struct MaterialWrapper
+{
+    uint32_t materialId;
+    std::size_t hash;
+};
+
 class HashManager
 {
 private:
@@ -43,6 +49,7 @@ private:
     std::vector<PipelineObjectHashWrapper> pipelineHashList;
     std::vector<DescriptorSetLayoutWrapper> descriptorSetLayoutWrapperHashList;
     std::vector<SetLayoutCombinationWrapper> setCombinationWrapperHashList;
+    std::vector<MaterialWrapper> materialWrapperHashList;
 
     uint32_t CheckForPipeLineObjectHash(const std::size_t & hash, const uint32_t & stateId, const PipelineStates & state);
 
@@ -60,7 +67,7 @@ public:
 
     int FindDescriptorSetHash(SetWrapper * obj, uint32_t id);
     int FindResourceLayoutHash(SetWrapper ** obj, const uint32_t & setCount, uint32_t id);
-
+    int FindMaterialHash(const std::vector<std::string> * shaderNames, const uint32_t & matId);
 };
 
 

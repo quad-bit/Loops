@@ -57,6 +57,7 @@ public:
 #include "MeshFactory.h"
 #include "GraphicsPipelineManager.h"
 #include "ShaderFactory.h"
+#include "MaterialFactory.h"
 
 template<typename T>
 inline void RenderingInterface<T>::BeginRenderLoop()
@@ -126,6 +127,7 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);
     MeshFactory::GetInstance()->Init(apiInterface);
     GraphicsPipelineManager<T>::GetInstance()->Init(apiInterface);
+    MaterialFactory::GetInstance()->Init();
     ShaderFactory::GetInstance()->Init(apiInterface);
 
     this->apiInterface = apiInterface;
@@ -164,7 +166,7 @@ inline void RenderingInterface<T>::SetupRenderer()
         drawCommandBufferList[i] = CommandBufferManager<T>::GetInstance()->CreateDrawCommandBuffer(level, graphicCommandPoolId);
     }
 
-    maxFramesInFlight = Settings::swapBufferCount - 1;  
+    maxFramesInFlight = Settings::swapBufferCount - 1;
     renderSemaphores = new uint32_t[maxFramesInFlight];
     presentationSemaphores = new uint32_t[maxFramesInFlight];
     getSwapChainImageFences = new uint32_t[maxFramesInFlight];
@@ -215,6 +217,9 @@ inline void RenderingInterface<T>::DeInit()
 
     ShaderFactory::GetInstance()->DeInit();
     delete ShaderFactory::GetInstance();
+
+    MaterialFactory::GetInstance()->DeInit();
+    delete MaterialFactory::GetInstance();
 
     GraphicsPipelineManager<T>::GetInstance()->DeInit();
     delete GraphicsPipelineManager<T>::GetInstance();

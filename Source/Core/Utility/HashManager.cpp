@@ -96,6 +96,7 @@ int HashManager::FindInputAssemblyStateHash(InputAssemblyState * inputInfo, uint
 
 int HashManager::FindShaderStateHash(Shader * shaders, const uint32_t & shaderCount, uint32_t stateId, PipelineStates * state)
 {
+    // TODO : needs correction
     std::size_t hash = 0UL;
     size_t shaderCountHash;
     size_t vertexShaderHash = 0UL, fragmentShaderHash = 0UL;
@@ -106,7 +107,7 @@ int HashManager::FindShaderStateHash(Shader * shaders, const uint32_t & shaderCo
     for (uint32_t i = 0; i < shaderCount; i++)
     {
         size_t shaderTypeHash = std::hash<uint32_t>{}((uint32_t)shaders[i].shaderType);
-        size_t shaderNameHash = std::hash<const char*>{}(shaders[i].shaderName);
+        size_t shaderNameHash = std::hash<std::string>{}(shaders[i].shaderName);
         size_t shaderId = std::hash<uint32_t>{}(shaders[i].shaderId);
 
         if (shaders[i].shaderType == ShaderType::VERTEX)
@@ -153,6 +154,35 @@ int HashManager::FindResourceLayoutHash(SetWrapper ** wrapperList, const uint32_
         setCombinationWrapperHashList.push_back(wrapper);
         return -1;
     }
+}
+
+int HashManager::FindMaterialHash(const std::vector<std::string>* shaderNames, const uint32_t & matId)
+{
+    size_t hash = 0UL, shaderNameHash = 0UL;
+    uint32_t numShaders = (uint32_t)shaderNames->size();
+    for (uint32_t i = 0; i < numShaders; i++)
+    {
+        shaderNameHash += std::hash<std::string>{}(shaderNames->at(i));
+    }
+    HashCombine(hash, shaderNameHash);
+
+    std::vector<MaterialWrapper>::iterator it; 
+    it = std::find_if(materialWrapperHashList.begin(), materialWrapperHashList.end(), [&](MaterialWrapper e) { return e.hash == hash; });
+    
+    if (it != materialWrapperHashList.end())
+    {
+        return it->materialId;
+    }
+    else
+    {
+        MaterialWrapper wrapper = {};
+        wrapper.hash = hash;
+        wrapper.materialId = matId;
+        materialWrapperHashList.push_back(wrapper);
+        return -1;
+    }
+
+    return 0;
 }
 
 int HashManager::FindDescriptorSetHash(SetWrapper * bindingObj, uint32_t id)

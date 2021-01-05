@@ -49,6 +49,11 @@ uint32_t VkShaderResourceManager::GetVkDescriptorSetLayoutWrapperID()
     return setLayoutWrapperIdCounter++;
 }
 
+uint32_t VkShaderResourceManager::GetVkDescriptorSetID()
+{
+    return vkdescriptorSetIdCounter++;
+}
+
 void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWrapper> & bindingList, std::string shaderName, uint32_t set)
 {
     SetWrapper * setWrapper = new SetWrapper;
@@ -89,18 +94,20 @@ void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWr
 
         // create vulkan descriptor set layout per set wrapper
         {
-            /*VkDescriptorSetLayoutWrapper descriptorSetLayoutWrapperObj = {};
-            descriptorSetLayoutWrapperObj.id = GetVkDescriptorSetLayoutWrapperID();
-            descriptorSetLayoutWrapperObj.layout = UnwrapSetwrapper(setWrapper);
-
-            setWrapper->descriptorSetLayoutId = descriptorSetLayoutWrapperObj.id;
-            setLayoutWrapperList.push_back(descriptorSetLayoutWrapperObj);
-            */
-
             VkDescriptorSetLayout * setLayout = UnwrapSetwrapper(setWrapper);
             uint32_t id = GetVkDescriptorSetLayoutWrapperID();
             idToSetLayoutMap.insert(std::pair<uint32_t, VkDescriptorSetLayout *>(id, setLayout));
             setWrapper->descriptorSetLayoutId = id;
+        }
+
+        // Create per scene descriptor sets
+        {
+            /*uint32_t id = GetVkDescriptorSetID();
+            VkDescriptorSet * set = resourceAllocator->AllocateDescriptor(setWrapper);
+            setWrapper->descriptorSetId = id;
+
+            idToSetMap.insert(std::pair<uint32_t, VkDescriptorSet *>(id, set));
+            */
         }
     }
 }

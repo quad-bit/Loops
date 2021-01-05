@@ -1,4 +1,6 @@
 #include "VkShaderResourceAllocator.h"
+#include "VulkanUtility.h"
+#include "VkDescriptorPoolFactory.h" 
 
 void VkShaderResourceAllocator::CreateResourceSetting()
 {
@@ -25,4 +27,26 @@ VkShaderResourceAllocator::VkShaderResourceAllocator()
 
 VkShaderResourceAllocator::~VkShaderResourceAllocator()
 {
+}
+
+VkDescriptorSet * VkShaderResourceAllocator::AllocateDescriptor(SetWrapper * setWrapper, VkDescriptorSetLayout * layout)
+{
+    VkDescriptorSet * set = new VkDescriptorSet;
+
+    VkDescriptorSetAllocateInfo info = {};
+    info.descriptorPool = *VkDescriptorPoolFactory::GetInstance()->GetDescriptorPool();
+    info.descriptorSetCount = 1;
+    info.pNext = nullptr;
+    info.pSetLayouts = layout;
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+
+    ErrorCheck(vkAllocateDescriptorSets(*CoreObjects::logicalDeviceObj, &info, set));
+    VkDescriptorPoolFactory::GetInstance()->StoreDescriptorSet(set);
+    
+    return set;
+}
+
+VkDescriptorSet ** VkShaderResourceAllocator::AllocateDescriptor(SetWrapper ** setWrapper, VkDescriptorSetLayout ** layout)
+{
+    return nullptr;
 }

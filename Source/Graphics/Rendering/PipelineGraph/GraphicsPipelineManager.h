@@ -3,6 +3,7 @@
 #include "HashManager.h"
 #include "PipelineStateWrappers.h"
 #include <Graph.h>
+#include <vector>
 
 template <typename T>
 class GraphicsPipelineManager
@@ -47,8 +48,7 @@ public:
     void CreateVertexAssemblyState(const uint32_t & meshId, InputAssemblyState * assembly);
     void AssignDefaultState(const uint32_t & meshId, const PipelineStates & state);
     void CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
-    void CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
-
+    std::vector<SetWrapper*> CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
 };
 
 template<typename T>
@@ -422,7 +422,7 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
 }
 
 template<typename T>
-inline void GraphicsPipelineManager<T>::CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount)
+inline std::vector<SetWrapper*> GraphicsPipelineManager<T>::CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount)
 {
     ShaderResourceStateWrapper * wrapper = new ShaderResourceStateWrapper;
     wrapper->shader = shaders;
@@ -440,6 +440,8 @@ inline void GraphicsPipelineManager<T>::CreatResourceLayoutState(const uint32_t 
         (uint32_t)wrapper->resourcesSetList.size(), wrapper->GetId());
     GraphNode<StateWrapperBase> * node;
 
+    std::vector<SetWrapper*> setWrapperList;
+
     // if not add the wrapper to the list
     if (id == -1)
     {
@@ -453,6 +455,7 @@ inline void GraphicsPipelineManager<T>::CreatResourceLayoutState(const uint32_t 
         // TODO : Create vulkan pipeline pipeline state object, done 
         wrapper->pipelineId = apiInterface->CreatePipelineLayout(wrapper->resourcesSetList.data(),
             wrapper->resourcesSetList.size());
+        setWrapperList = wrapper->resourcesSetList;
     }
     else
     {
@@ -470,8 +473,12 @@ inline void GraphicsPipelineManager<T>::CreatResourceLayoutState(const uint32_t 
         (*it)->meshIdList.push_back(meshId);
 
         node = GetNode((*it)->state, (*it));
+        setWrapperList = (*it)->resourcesSetList;
+
     }
 
     InsertToMeshList(meshId, PipelineStates::ShaderResourcesLayout, node);
     CreateGraphEdges(meshId, PipelineStates::ShaderStage, PipelineStates::ShaderResourcesLayout);
+
+    return setWrapperList;
 }

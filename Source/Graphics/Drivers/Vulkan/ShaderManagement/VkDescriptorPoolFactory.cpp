@@ -25,11 +25,14 @@ void VkDescriptorPoolFactory::DeInit()
             delete obj.poolSize;
 
         vkDestroyDescriptorPool(*CoreObjects::logicalDeviceObj, *obj.pool, CoreObjects::pAllocator);
-        
         delete obj.pool;
     }
 
     poolWrapperList.clear();
+
+    for each(auto obj in descriptorSetList)
+        delete obj;
+    descriptorSetList.clear();
 }
 
 void VkDescriptorPoolFactory::Update()
@@ -107,4 +110,9 @@ VkDescriptorPool * VkDescriptorPoolFactory::GetDescriptorPool(const uint32_t & i
 VkDescriptorPool * VkDescriptorPoolFactory::GetDescriptorPool()
 {
     return poolWrapperList[0].pool;
+}
+
+void VkDescriptorPoolFactory::StoreDescriptorSet(VkDescriptorSet * set)
+{
+    descriptorSetList.push_back(set);
 }

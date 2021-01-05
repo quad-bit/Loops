@@ -38,7 +38,8 @@ public:
     static ShaderFactory* GetInstance();
     ~ShaderFactory();
 
-    void CreateShader(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
+    std::vector<SetWrapper*> CreateShader(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
+    void AddMeshToShader(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
 };
 
 

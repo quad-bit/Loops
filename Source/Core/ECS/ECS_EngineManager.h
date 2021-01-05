@@ -5,6 +5,7 @@ class System;
 class Transform;
 class Scriptable;
 class Mesh;
+class Material;
 
 template<typename T>
 class ComponentManager;
@@ -28,6 +29,7 @@ public:
     System* scriptableSystemObj;
 
     ComponentManager<Mesh>* meshManager;
+    ComponentManager<Material>* materialManager;
 
     void Init();
     void DeInit();

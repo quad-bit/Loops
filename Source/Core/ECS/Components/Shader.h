@@ -1,10 +1,11 @@
 #pragma once
 #include "RenderingWrapper.h"
+#include <string>
 
 class Shader
 {
 public:
-    const char * shaderName;
+    std::string shaderName;
     const char * shaderText;
     ShaderType shaderType;
 

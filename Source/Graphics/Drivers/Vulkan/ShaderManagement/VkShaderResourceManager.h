@@ -4,6 +4,7 @@
 #include <RenderingWrapper.h>
 #include <rapidjson\document.h> 
 #include <vector>
+#include <map>
 
 struct ShaderResources
 {
@@ -46,16 +47,18 @@ private:
     uint32_t setWrapperIdCounter = 0;
     uint32_t setLayoutWrapperIdCounter = 0;
     uint32_t pipelineLayoutIdCounter = 0;
+    uint32_t vkdescriptorSetIdCounter = 0;
     uint32_t GetBindingID();
     uint32_t GetSetLayoutID();
     uint32_t GetPipelineLayoutID();
     uint32_t GetVkDescriptorSetLayoutWrapperID();
+    uint32_t GetVkDescriptorSetID();
 
     void DecrementSetLayoutId() { setWrapperIdCounter--; }
 
     std::vector<SetWrapper*> setWrapperList;
-    //std::vector<VkDescriptorSetLayoutWrapper> setLayoutWrapperList;
     std::map< uint32_t, VkDescriptorSetLayout *> idToSetLayoutMap;
+    std::map< uint32_t, VkDescriptorSet *> idToSetMap;
     std::vector<ShaderResources> perShaderResourceList;
     std::vector<PipelineLayoutWrapper> pipelineLayoutWrapperList;
 
