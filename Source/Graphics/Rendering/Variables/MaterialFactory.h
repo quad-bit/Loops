@@ -20,6 +20,8 @@ private:
 
     std::map<uint32_t, Material*> idToMaterialMap;
 
+    void CreateSetResources(std::vector<SetWrapper *> setWrapperList);
+
 public:
     void Init();
     void DeInit();

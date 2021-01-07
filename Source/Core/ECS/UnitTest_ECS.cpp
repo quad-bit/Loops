@@ -1,7 +1,7 @@
 #include "UnitTest_ECS.h"
-#include "World.h"
-#include "TransformSystem.h"
-#include "Transform.h"
+//#include "World.h"
+//#include "TransformSystem.h"
+//#include "Transform.h"
 
 
 void UnitTest()

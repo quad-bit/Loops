@@ -50,11 +50,24 @@ public:
 
 #include "Entity.h"
 #include "ComponentHandle.h"
+#include "Camera.h"
+#include "ComponentAdditionEvent.h"
+#include "EventBus.h"
 
 template<typename ComponentType>
 inline void EntityHandle::AddComponent(ComponentType * componentType)
 {
     worldObj->AddComponent<ComponentType>(componentType, entityObj);
+}
+
+template<>
+inline void EntityHandle::AddComponent(Camera * componentType)
+{
+    worldObj->AddComponent<Camera>(componentType, entityObj);
+    
+    CameraAdditionEvent event;
+    event.cam = componentType;
+    EventBus::GetInstance()->Publish(&event);
 }
 
 template<typename ComponentType>

@@ -8,7 +8,6 @@ struct NodeAdditionEvent : public Event
     SceneNode * node;
 };
 
-
 struct NodeDeletionEvent : public Event
 {
     SceneNode * node;

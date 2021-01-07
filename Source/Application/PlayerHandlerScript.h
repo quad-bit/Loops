@@ -7,6 +7,7 @@ class EntityHandle;
 class PlayerHandlerScript : public Scriptable
 {
 private:
+    EntityHandle* camHandle;
     EntityHandle* playerHandle;
     EntityHandle* head;
     EntityHandle* torso;

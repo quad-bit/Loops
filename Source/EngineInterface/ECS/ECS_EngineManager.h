@@ -6,6 +6,7 @@ class Transform;
 class Scriptable;
 class Mesh;
 class Material;
+class Camera;
 
 template<typename T>
 class ComponentManager;
@@ -27,6 +28,9 @@ public:
     
     ComponentManager<Scriptable>* scriptableManager;
     System* scriptableSystemObj;
+
+    ComponentManager<Camera>* cameraManager;
+    System* cameraSystemObj;
 
     ComponentManager<Mesh>* meshManager;
     ComponentManager<Material>* materialManager;

@@ -9,6 +9,8 @@
 #include "Mesh.h"
 #include <CorePrecompiled.h>
 #include "Material.h"
+#include "Camera.h"
+#include "CameraSystem.h"
 
 ECS_Manager* ECS_Manager::instance = nullptr;
 World * worldObj;
@@ -23,12 +25,16 @@ void ECS_Manager::Init()
     transformManager = worldObj->CreateManager<Transform>();
     meshManager = worldObj->CreateManager<Mesh>();
     materialManager = worldObj->CreateManager<Material>();
-    
+    cameraManager = worldObj->CreateManager<Camera>();
+
     scriptableSystemObj = new ScriptableSystem();
     worldObj->AddSystem(scriptableSystemObj);
 
     transformSystemObj = new TransformSystem();
     worldObj->AddSystem(transformSystemObj);
+
+    cameraSystemObj = new CameraSystem();
+    worldObj->AddSystem(cameraSystemObj);
 
     worldObj->Init();
 }
@@ -42,6 +48,7 @@ void ECS_Manager::DeInit()
 
     worldObj->DeInit();
 
+    delete cameraSystemObj;
     delete transformSystemObj;
     delete scriptableSystemObj;
 

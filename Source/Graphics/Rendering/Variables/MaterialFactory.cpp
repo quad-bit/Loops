@@ -16,6 +16,12 @@ void MaterialFactory::DecrementMatCounter()
     matIdCounter--;
 }
 
+void MaterialFactory::CreateSetResources(std::vector<SetWrapper*> setWrapperList)
+{
+    // Iterate through all the wrappers check if the corresponding resources have been 
+    // created for each set
+}
+
 void MaterialFactory::Init()
 {
 
@@ -75,17 +81,18 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
             shaders[i].shaderName = shaderDescriptions[i].shaderName;
         }
         
-        ShaderFactory::GetInstance()->CreateShader(meshId, shaders, shaderCount);
-
+        std::vector<SetWrapper*> setWrapperList =  ShaderFactory::GetInstance()->CreateShader(meshId, shaders, shaderCount);
+        
         mat = new Material(shaders, shaderCount);
-        //if (idToMaterialMap.find(matId) == idToMaterialMap.end())
-        {
-            idToMaterialMap.insert(std::pair<uint32_t, Material*>(
+        idToMaterialMap.insert(std::pair<uint32_t, Material*>(
             { matId, mat }));
-        }
+        
         // get the setWrappers for the shader combination
+        mat->resourceLayoutList = setWrapperList;
 
         // using the set wrappers create shader resources
+        CreateSetResources(setWrapperList);
+        
 
     }
     else

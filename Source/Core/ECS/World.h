@@ -73,9 +73,9 @@ public:
         handle = *(manager->GetComponentHandle(e));
     }
 
-    /*
+    
     template<typename ComponentType, typename... Args>
-    void Unpack(Entity* e, ComponentHandle<ComponentType>* handle, ComponentHandle<Args>*... args)
+    void Unpack(Entity* e, ComponentHandle<ComponentType>** handle, ComponentHandle<Args>**... args)
     {
         typedef ComponentManager<ComponentType> componentTypeManagerType;
 
@@ -86,14 +86,14 @@ public:
     }
 
     template<typename ComponentType>
-    void Unpack(Entity* e, ComponentHandle<ComponentType>* handle)
+    void Unpack(Entity* e, ComponentHandle<ComponentType>** handle)
     {
         typedef ComponentManager<ComponentType> componentManagerType;
 
         componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-        handle = (manager->GetComponentHandle(e));
+        *handle = (manager->GetComponentHandle(e));
     }
-    */
+    
 
 
     void Update(float dt);

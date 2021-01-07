@@ -8,11 +8,16 @@
 #include <MeshFactory.h>
 #include <BitArray.h>
 #include <MaterialFactory.h>
-#include <Shader.h>
+#include <Camera.h>
 
 PlayerHandlerScript::PlayerHandlerScript()
 {
     scriptName = typeid(this).raw_name();
+
+    camHandle = worldObj->CreateEntity();
+    camHandle->GetEntity()->entityName = "MainCamera";
+    Camera * camera = new Camera(&camHandle->GetTransform()->globalPosition);
+    camHandle->AddComponent<Camera>(camera);
 
     playerHandle = worldObj->CreateEntity();
     playerHandle->GetEntity()->entityName = "player";
@@ -150,4 +155,5 @@ PlayerHandlerScript::~PlayerHandlerScript()
     worldObj->DestroyEntity(rightArm);
     worldObj->DestroyEntity(leftLeg);
     worldObj->DestroyEntity(rightLeg);
+    worldObj->DestroyEntity(camHandle);
 }
