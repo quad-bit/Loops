@@ -116,13 +116,13 @@ public:
 
     bool IsApplicationSafeForClosure();
 
-    uint32_t * CreateBuffer(BufferInfo * info, const uint32_t & count);
+    //Deprecated.
+    //uint32_t * CreateBuffer(BufferInfo * info, const uint32_t & count);
+    uint32_t * CreateBuffers(BufferInfo * info, const uint32_t & count);
+    uint32_t * AllocateBufferMemory(uint32_t * bufferId, const uint32_t & bufCount);
+    void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
     void DestroyBuffer(uint32_t * ids, const uint32_t & count);
-
-    //void InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount);
-    //void SetInputAssemblyInfo(const uint32_t & meshId, PrimtiveType * primitive, bool isPrimitiveRestartEnabled);
-    //void CreateGraphicsPipeline();
-    //void DestroyGraphicsPipeline();
+    void FreeMemory(uint32_t * ids, const uint32_t & count);
 
     void GetShaderIds(char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount );
     void CreateVertexInputState(const VertexInputWrapper * vertexInputWrapper);
@@ -130,4 +130,5 @@ public:
     void CreateShaderState(const ShaderStateWrapper * shaderStateWrapper);
     std::vector<SetWrapper *> GetSetsForShaders(const std::vector<std::string> & shaderNames);
     uint32_t CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets);
+    std::vector<SetWrapper*> * GetSetWrapperList();
 };

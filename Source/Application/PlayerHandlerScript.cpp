@@ -53,7 +53,7 @@ PlayerHandlerScript::PlayerHandlerScript()
         shaders[1].shaderName = "Color.frag";
 
         //ShaderFactory::GetInstance()->CreateShader(torsoMesh->meshId, shaders, 2);
-        Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->meshId);
+        Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
         torso->AddComponent<Material>(mat);
     }
 
@@ -89,7 +89,7 @@ PlayerHandlerScript::PlayerHandlerScript()
         shaders[1].shaderName = "Color.frag";
 
         //ShaderFactory::GetInstance()->CreateShader(headMesh->meshId, shaders, 2);
-        Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, headMesh->meshId);
+        Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, headMesh->componentId);
         head->AddComponent<Material>(mat);
     }
 
@@ -134,7 +134,7 @@ PlayerHandlerScript::~PlayerHandlerScript()
     worldObj->DestroyEntity(playerHandle);
 
     ComponentHandle<Mesh> torsoMesh = torso->GetComponent<Mesh>();
-    MeshFactory::GetInstance()->DestroyMesh(torsoMesh->meshId);
+    MeshFactory::GetInstance()->DestroyMesh(torsoMesh->componentId);
     torsoMesh.DestroyComponent();
     //torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
     //delete torsoMesh.GetComponent(); //TODO  fix this get component function
@@ -144,7 +144,7 @@ PlayerHandlerScript::~PlayerHandlerScript()
     worldObj->DestroyEntity(torso);
 
     ComponentHandle<Mesh> headMesh = head->GetComponent<Mesh>();
-    MeshFactory::GetInstance()->DestroyMesh(headMesh->meshId);
+    MeshFactory::GetInstance()->DestroyMesh(headMesh->componentId);
     headMesh.DestroyComponent();
     //head->RemoveComponent<Mesh>(headMesh.GetComponent());
     ComponentHandle<Material> headMat = head->GetComponent<Material>();

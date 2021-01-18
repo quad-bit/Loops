@@ -17,6 +17,7 @@
 #include <VkShaderFactory.h>
 #include <CorePrecompiled.h>
 #include <VkShaderResourceManager.h>
+#include <VulkanMemoryManager.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
 {
@@ -599,6 +600,7 @@ bool VulkanInterface::IsApplicationSafeForClosure()
     return true;
 }
 
+/*
 uint32_t * VulkanInterface::CreateBuffer(BufferInfo * info, const uint32_t & count)
 {
     VkBufferUsageFlags * bufferUsage = new VkBufferUsageFlags[count]; 
@@ -609,12 +611,58 @@ uint32_t * VulkanInterface::CreateBuffer(BufferInfo * info, const uint32_t & cou
     for (uint32_t i = 0; i < count; i++)
     {
         bufferUsage[i] = UnwrapBufferUsageFlags(info->bufType);
-        memProp[i] = UnwrapMemoryProperty(info->memType);
+        for (uint32_t k = 0; k < info->memTypeCount; k++)
+        {
+            if(k == 0)
+                memProp[i] = UnwrapMemoryProperty(info->memType);
+            else
+                memProp[i] |= UnwrapMemoryProperty(info->memType);
+        }
+
         ids[i] = *VkBufferFactory::GetInstance()->CreateBuffer(&bufferUsage[i], &memProp[i], info->data, info->dataSize, info->pGpuMem);
     }
     
     delete[] memProp;
     return ids;
+}
+*/
+
+uint32_t * VulkanInterface::CreateBuffers(BufferInfo * info, const uint32_t & count)
+{
+    VkBufferUsageFlags * bufferUsage = new VkBufferUsageFlags[count];
+    VkMemoryPropertyFlags * memProp = new VkMemoryPropertyFlags[count];
+    size_t * dataSizes = new size_t[count];
+    uint32_t * ids = new uint32_t[count];
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        dataSizes[i] = info[i].dataSize;
+        bufferUsage[i] = UnwrapBufferUsageFlags(info[i].bufType);
+        for (uint32_t k = 0; k < info[i].memTypeCount; k++)
+        {
+            if (k == 0)
+                memProp[i] = UnwrapMemoryProperty(info[i].memType);
+            else
+                memProp[i] |= UnwrapMemoryProperty(info[i].memType);
+        }
+    }
+
+    ids = VkBufferFactory::GetInstance()->CreateBuffers(count, bufferUsage, memProp, dataSizes);
+
+    delete[] bufferUsage;
+    delete[] memProp;
+    delete[] dataSizes;
+    return ids;
+}
+
+uint32_t * VulkanInterface::AllocateBufferMemory(uint32_t * bufferId, const uint32_t & bufCount)
+{
+    return VkBufferFactory::GetInstance()->AllocateBufferMemory(bufferId, bufCount);
+}
+
+void VulkanInterface::CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted)
+{
+    VkBufferFactory::GetInstance()->CopyBufferDataToMemory(bufId, dataSize, data, memoryOffset, keepMemoryMounted);
 }
 
 void VulkanInterface::DestroyBuffer(uint32_t * ids, const uint32_t & count)
@@ -624,6 +672,15 @@ void VulkanInterface::DestroyBuffer(uint32_t * ids, const uint32_t & count)
         VkBufferFactory::GetInstance()->DestroyBuffer(ids[i]);
     }
 }
+
+void VulkanInterface::FreeMemory(uint32_t * ids, const uint32_t & count)
+{
+    for (uint32_t i = 0; i < count; i++)
+    {
+        VulkanMemoryManager::GetSingleton()->FreeMemory(ids[i]);
+    }
+}
+
 //
 //void VulkanInterface::InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount )
 //{
@@ -663,6 +720,11 @@ std::vector<SetWrapper*> VulkanInterface::GetSetsForShaders(const std::vector<st
 uint32_t VulkanInterface::CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets)
 {
     return VkShaderResourceManager::GetInstance()->CreatePipelineLayout(setWrapperList, numSets);
+}
+
+std::vector<SetWrapper*>* VulkanInterface::GetSetWrapperList()
+{
+    return VkShaderResourceManager::GetInstance()->GetSetWrapperList();
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)

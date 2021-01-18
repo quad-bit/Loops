@@ -29,7 +29,7 @@ private:
     DrawCommandBuffer<T> ** drawCommandBufferList;
     uint32_t graphicCommandPoolId, computeCommandPoolId, guiCommandPoolId;
 
-    uint32_t maxFramesInFlight;
+    //uint32_t maxFramesInFlight;
 
     uint32_t * renderSemaphores, *presentationSemaphores;
     uint32_t * getSwapChainImageFences;
@@ -58,6 +58,7 @@ public:
 #include "GraphicsPipelineManager.h"
 #include "ShaderFactory.h"
 #include "MaterialFactory.h"
+#include "UniformFactory.h"
 
 template<typename T>
 inline void RenderingInterface<T>::BeginRenderLoop()
@@ -113,7 +114,7 @@ inline void RenderingInterface<T>::EndRenderLoop()
     //TODO : send the correct presentation queue id, DONE.
     apiInterface->PresentSwapchainImage(&RendererSettings::queueReq[1], &presentInfo, 0);
 
-    currentFrameIndex = (currentFrameIndex + 1) % maxFramesInFlight;
+    currentFrameIndex = (currentFrameIndex + 1) % Settings::maxFramesInFlight;
 }
 
 template<typename T>
@@ -129,6 +130,7 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     GraphicsPipelineManager<T>::GetInstance()->Init(apiInterface);
     MaterialFactory::GetInstance()->Init();
     ShaderFactory::GetInstance()->Init(apiInterface);
+    UniformFactory::GetInstance()->Init(apiInterface);
 
     this->apiInterface = apiInterface;
 
@@ -166,12 +168,13 @@ inline void RenderingInterface<T>::SetupRenderer()
         drawCommandBufferList[i] = CommandBufferManager<T>::GetInstance()->CreateDrawCommandBuffer(level, graphicCommandPoolId);
     }
 
-    maxFramesInFlight = Settings::swapBufferCount - 1;
-    renderSemaphores = new uint32_t[maxFramesInFlight];
-    presentationSemaphores = new uint32_t[maxFramesInFlight];
-    getSwapChainImageFences = new uint32_t[maxFramesInFlight];
+    Settings::maxFramesInFlight = Settings::swapBufferCount - 1;
 
-    for (uint32_t i = 0; i < maxFramesInFlight; i++)
+    renderSemaphores = new uint32_t[Settings::maxFramesInFlight];
+    presentationSemaphores = new uint32_t[Settings::maxFramesInFlight];
+    getSwapChainImageFences = new uint32_t[Settings::maxFramesInFlight];
+
+    for (uint32_t i = 0; i < Settings::maxFramesInFlight; i++)
     {
         renderSemaphores[i] = apiInterface->Create_Semaphore(false);
         presentationSemaphores[i] = apiInterface->Create_Semaphore(false);
@@ -184,7 +187,7 @@ inline void RenderingInterface<T>::DislogeRenderer()
 {
     apiInterface->IsApplicationSafeForClosure();
 
-    for (uint32_t i = 0; i < maxFramesInFlight; i++)
+    for (uint32_t i = 0; i < Settings::maxFramesInFlight; i++)
     {
         apiInterface->DestroyFence(getSwapChainImageFences[i]);
         apiInterface->DestroySemaphore(renderSemaphores[i]);
@@ -214,6 +217,9 @@ template<typename T>
 inline void RenderingInterface<T>::DeInit()
 {
     PLOGD << "Rendering interface Init";
+
+    UniformFactory::GetInstance()->DeInit();
+    delete UniformFactory::GetInstance();
 
     ShaderFactory::GetInstance()->DeInit();
     delete ShaderFactory::GetInstance();

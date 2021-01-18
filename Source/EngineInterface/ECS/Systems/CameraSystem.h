@@ -1,6 +1,7 @@
 #pragma once
 #include "System.h"
 #include <glm\glm.hpp>
+#include "ShaderResourceDescription.h"
 
 class Camera;
 enum class Camera_Movement;
@@ -23,6 +24,17 @@ private:
   
     // Calculates the front vector from the Camera's (updated) Eular Angles
     void UpdateCameraVectors(Camera * cam);
+
+    std::vector<Camera *> cameraList;
+    std::vector<ShaderResourceDescription *> resDescriptionList;
+    UniformResourceAllocationConfig allocConfig;
+    UniformResourceSharingConfig resourceSharingConfig;
+
+    uint32_t idCounter = 0;
+    uint32_t GetCamId();
+    size_t GetDataSizeMeantForSharing();
+    std::vector<size_t> CalculateOffsetsForDescInUniform(size_t dataSizePerDescriptor);
+    bool IsNewAllocationRequired();
 
 public:
     virtual void Init() override;

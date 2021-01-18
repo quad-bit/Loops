@@ -74,7 +74,7 @@ Mesh * MeshFactory::CreateMesh(const BitArray & attribMaskReq, MESH_TYPE * meshT
             ((AttribPC*)wrapper)->FillData<CubeIndexed>(mesh);
 
         mesh->vertexAttributeCount = 2;
-        mesh->meshId = GetId();
+        mesh->componentId = GetId();
         mesh->vertexCount = wrapper->vertexCount;
 
         if (individualBuffersRequired == false)
@@ -84,14 +84,15 @@ Mesh * MeshFactory::CreateMesh(const BitArray & attribMaskReq, MESH_TYPE * meshT
             BufferInfo info = {};
             info.bufType = &bufferType;
             info.memType = &memType;
+            info.memTypeCount = 1;
             info.data = wrapper->vertexData;
             info.dataSize = wrapper->vertexDataSize;
             //info.pGpuMem = new void*;
 
             mesh->vertexBufferCount = numVertexBufferPerMesh;
-            mesh->vertexBuffersIds = apiInterface->CreateBuffer(&info, numVertexBufferPerMesh);
-            mesh->pGpuMemVB = new void*[numVertexBufferPerMesh];
-            mesh->pGpuMemVB[0] = info.pGpuMem;
+            mesh->vertexBuffersIds = apiInterface->CreateBuffers(&info, numVertexBufferPerMesh);
+            //mesh->pGpuMemVB = new void*[numVertexBufferPerMesh];
+            //mesh->pGpuMemVB[0] = info.pGpuMem;
         }
 
         BufferType bufferType = BufferType::INDEX_BUFFER_BIT;
@@ -101,10 +102,11 @@ Mesh * MeshFactory::CreateMesh(const BitArray & attribMaskReq, MESH_TYPE * meshT
         info.memType = &memType;
         info.data = wrapper->indexData;
         info.dataSize = wrapper->indexDataSize;
+        info.memTypeCount = 1;
         //info.pGpuMem = new void*;
         mesh->vertexCount = wrapper->indexCount;
-        mesh->indexBufferId = *apiInterface->CreateBuffer(&info, 1);
-        mesh->pGpuMemIB = info.pGpuMem;
+        mesh->indexBufferId = *apiInterface->CreateBuffers(&info, 1);
+        //mesh->pGpuMemIB = info.pGpuMem;
 
         meshToVertWrapperMap.insert({mesh, wrapper});
         
@@ -138,9 +140,9 @@ Mesh * MeshFactory::CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType)
             ((AttribPC*)wrapper)->FillData<CubeIndexed>(mesh);
 
         mesh->vertexAttributeCount = 2;
-        mesh->meshId = GetId();
+        mesh->componentId = GetId();
         mesh->vertexCount = wrapper->vertexCount;
-
+        //vertex buffer
         if (meshInfo->bufferPerAttribRequired == false)
         {
             BufferType bufferType = BufferType::VERTEX_BUFFER_BIT;
@@ -148,31 +150,55 @@ Mesh * MeshFactory::CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType)
             BufferInfo info = {};
             info.bufType = &bufferType;
             info.memType = &memType;
-            info.data = wrapper->vertexData;
+            info.memTypeCount = 1;
+            //info.data = wrapper->vertexData;
             info.dataSize = wrapper->vertexDataSize;
             //info.pGpuMem = new void*;
-
             mesh->vertexBufferCount = numVertexBufferPerMesh;
-            mesh->vertexBuffersIds = apiInterface->CreateBuffer(&info, numVertexBufferPerMesh);
-            mesh->pGpuMemVB = new void*[numVertexBufferPerMesh];
-            mesh->pGpuMemVB[0] = info.pGpuMem;
+            mesh->vertexDataSizes = new size_t[mesh->vertexBufferCount];
+            mesh->vertexDataSizes[0] = (size_t)wrapper->vertexDataSize;
+
+            mesh->vertexBuffersIds = apiInterface->CreateBuffers(&info, numVertexBufferPerMesh);
+            //mesh->pGpuMemVB = new void*[numVertexBufferPerMesh];
+            //mesh->pGpuMemVB[0] = info.pGpuMem;
         }
         else
         {
             ASSERT_MSG(0, "individual buffers yet to be implemented.");
         }
 
-        BufferType bufferType = BufferType::INDEX_BUFFER_BIT;
-        MemoryType memType = MemoryType::HOST_VISIBLE_BIT;
-        BufferInfo info = {};
-        info.bufType = &bufferType;
-        info.memType = &memType;
-        info.data = wrapper->indexData;
-        info.dataSize = wrapper->indexDataSize;
-        //info.pGpuMem = new void*;
-        mesh->vertexCount = wrapper->indexCount;
-        mesh->indexBufferId = *apiInterface->CreateBuffer(&info, 1);
-        mesh->pGpuMemIB = info.pGpuMem;
+        //index buffer
+        {
+            BufferType bufferType = BufferType::INDEX_BUFFER_BIT;
+            MemoryType memType = MemoryType::HOST_VISIBLE_BIT;
+            BufferInfo info = {};
+            info.bufType = &bufferType;
+            info.memType = &memType;
+            info.memTypeCount = 1;
+            //info.data = wrapper->indexData;
+            info.dataSize = wrapper->indexDataSize;
+            //info.pGpuMem = new void*;
+            mesh->indexCount = wrapper->indexCount;
+            mesh->indexBufferId = *apiInterface->CreateBuffers(&info, 1);
+            //mesh->pGpuMemIB = info.pGpuMem;
+            mesh->indexDataSize = (size_t)wrapper->indexDataSize;
+
+        }
+
+        // memory allocations for buffers
+        {
+            uint32_t numMemory = mesh->vertexBufferCount + 1;// one index buffer 
+            std::vector<uint32_t> ids;
+            ids.resize(numMemory);
+            ids[0] = mesh->vertexBuffersIds[0];
+            ids[1] = mesh->indexBufferId;
+
+            mesh->memoryCount = numMemory;
+            mesh->memoryIds = apiInterface->AllocateBufferMemory(ids.data(),(uint32_t) ids.size());
+        }
+
+        apiInterface->CopyBufferDataToMemory(mesh->vertexBuffersIds[0], wrapper->vertexDataSize, wrapper->vertexData, 0);
+        apiInterface->CopyBufferDataToMemory(mesh->indexBufferId, wrapper->indexDataSize, wrapper->indexData, 0);
 
         meshToVertWrapperMap.insert({ mesh, wrapper });
 
@@ -194,7 +220,7 @@ Mesh * MeshFactory::CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType)
         inputState->bindingInfo = bindingInfo;
         inputState->state = PipelineStates::VertexInputState;
 
-        GraphicsPipelineManager<ApiInterface>::GetInstance()->CreateVertexInputState(mesh->meshId, inputState);
+        GraphicsPipelineManager<ApiInterface>::GetInstance()->CreateVertexInputState(mesh->componentId, inputState);
         
         if (meshInfo->primitive != nullptr)
         {
@@ -203,14 +229,13 @@ Mesh * MeshFactory::CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType)
             assembly->isPrimtiveRestartEnabled = meshInfo->isPrimitiveRestartEnabled;
             assembly->primitiveType = meshInfo->primitive;
 
-            GraphicsPipelineManager<ApiInterface>::GetInstance()->CreateVertexAssemblyState(mesh->meshId, assembly);
+            GraphicsPipelineManager<ApiInterface>::GetInstance()->CreateVertexAssemblyState(mesh->componentId, assembly);
         }
         else
         {
             // assign default primitive assembly state
-            GraphicsPipelineManager<ApiInterface>::GetInstance()->AssignDefaultState(mesh->meshId, PipelineStates::InputAssemblyState);
+            GraphicsPipelineManager<ApiInterface>::GetInstance()->AssignDefaultState(mesh->componentId, PipelineStates::InputAssemblyState);
         }
-
     }
 
     return mesh;
@@ -221,10 +246,15 @@ void MeshFactory::DestroyMesh(const uint32_t & meshId)
     std::map<Mesh *, AttribStructBase *>::iterator it;
     std::pair<Mesh *, AttribStructBase *> obj;
     it = std::find_if(meshToVertWrapperMap.begin(), meshToVertWrapperMap.end(), 
-        [&](std::pair<Mesh *, AttribStructBase *> obj) { return obj.first->meshId == meshId; });
+        [&](std::pair<Mesh *, AttribStructBase *> obj) { return obj.first->componentId == meshId; });
 
-    ASSERT_MSG(it != meshToVertWrapperMap.end(), "Image id not found");
+    ASSERT_MSG(it != meshToVertWrapperMap.end(), "Mesh not found");
 
     apiInterface->DestroyBuffer((it)->first->vertexBuffersIds, (it)->first->vertexBufferCount);
     apiInterface->DestroyBuffer(&(it)->first->indexBufferId, 1);
+    apiInterface->FreeMemory(it->first->memoryIds, it->first->memoryCount);
+
+    delete[] it->first->vertexBuffersIds;
+    delete[] it->first->memoryIds;
+    delete[] it->first->vertexDataSizes;
 }

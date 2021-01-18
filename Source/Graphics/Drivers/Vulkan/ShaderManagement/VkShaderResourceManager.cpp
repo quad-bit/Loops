@@ -323,7 +323,7 @@ void VkShaderResourceManager::Init()
                     wrapper.bindingObj.descriptorCount = arraySize;
 
                 wrapper.bindingObj.descriptorType = StringToDescType(currentInputFromReflData["type"].GetString());
-
+                wrapper.bindingName = currentInputFromReflData["name"].GetString();
                 //add all members to block definition
                 const Value& reflBlockMembers = currentInputFromReflData["members"];
                 for (SizeType m = 0; m < reflBlockMembers.Size(); m++)
@@ -530,4 +530,9 @@ uint32_t VkShaderResourceManager::CreatePipelineLayout(SetWrapper ** setWrapperL
     pipelineLayoutWrapperList.push_back(pipelineLayoutWrapperObj);
 
     return pipelineLayoutWrapperObj.id;
+}
+
+std::vector<SetWrapper*>* VkShaderResourceManager::GetSetWrapperList()
+{
+    return &setWrapperList;
 }

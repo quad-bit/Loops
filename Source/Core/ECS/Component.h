@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <vector>
+#include "ECS_Helper.h"
 
 using namespace std;
 
@@ -16,6 +17,8 @@ private:
     static int family;
 
 public:
+    uint32_t componentId;
+    COMPONENT_TYPE type;
 
     static inline int Family()
     {

@@ -33,6 +33,7 @@ Transform::Transform(Entity * entity)
 {
     owner = entity;
     entityName = &owner->entityName; 
+    type = COMPONENT_TYPE::TRANSFORM;
     Init();
 }
 

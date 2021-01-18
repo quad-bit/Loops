@@ -46,5 +46,6 @@ public:
     static uint32_t swapBufferCount;
     static float depthClearValue, stencilClearValue;
     static float clearColorValue[4];
+    static uint32_t maxFramesInFlight;
 };
 

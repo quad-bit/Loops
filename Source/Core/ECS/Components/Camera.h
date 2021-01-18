@@ -5,6 +5,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <Settings.h>
 #include "Assertion.h"
+#include <Component.h>
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum class Camera_Movement
@@ -28,8 +29,14 @@ enum class CameraType
     ORTHOGONAL
 };
 
+struct CameraUniform
+{
+    glm::mat4 viewMat;
+    glm::mat4 projectionMat;
+};
+
 // An abstract camera class that processes input and calculates the corresponding Eular Angles, Vectors and Matrices for use in OpenGL
-class Camera
+class Camera : public Component<Camera>
 {
 private:
     // Camera Attributes
@@ -68,20 +75,9 @@ public:
         this->aspect = (float)(Settings::windowWidth / Settings::windowHeight);
         this->projectionType = projectionType;
         //this->updateCameraVectors();
+
+        type = COMPONENT_TYPE::CAMERA;
     }
-
-    //// Constructor with scalar values
-    //Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch, CameraType projectionType) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), fov(FOV)
-    //{
-    //    this->position = glm::vec3(posX, posY, posZ);
-    //    this->worldUp = glm::vec3(upX, upY, upZ);
-    //    this->yaw = yaw;
-    //    this->pitch = pitch;
-    //    this->projectionType = projectionType;
-    //    this->aspect = (float)(Settings::windowWidth / Settings::windowHeight);
-
-    //    //this->updateCameraVectors();
-    //}
 
     // Returns the view matrix calculated using Eular Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix()

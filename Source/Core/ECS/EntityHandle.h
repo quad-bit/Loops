@@ -65,9 +65,9 @@ inline void EntityHandle::AddComponent(Camera * componentType)
 {
     worldObj->AddComponent<Camera>(componentType, entityObj);
     
-    CameraAdditionEvent event;
-    event.cam = componentType;
-    EventBus::GetInstance()->Publish(&event);
+    CameraAdditionEvent evt;
+    evt.cam = componentType;
+    EventBus::GetInstance()->Publish(&evt);
 }
 
 template<typename ComponentType>

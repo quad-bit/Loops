@@ -18,7 +18,6 @@ class Mesh : public Component<Mesh>
 {
 public:
 
-    uint32_t meshId;
     BoundingBox bounds;
     uint32_t submeshCount;
 
@@ -38,20 +37,33 @@ public:
     std::vector<uint32_t*> indicies;
 
     uint32_t vertexAttributeCount;
-    uint32_t vertexBufferCount;
     uint32_t vertexCount;
 
     uint32_t * vertexBuffersIds;
-    uint32_t indexBufferId;
+    uint32_t vertexBufferCount;
+    size_t * vertexDataSizes;
 
+    uint32_t * memoryIds;
+    uint32_t memoryCount;
+
+    uint32_t indexBufferId;
+    uint32_t indexCount;
+    size_t indexDataSize;
+    /*
     void ** pGpuMemVB;
     void * pGpuMemIB;
+    */
+
+    Mesh()
+    {
+        type = COMPONENT_TYPE::MESH;
+    }
 
     ~Mesh()
     {
         delete[] vertexBuffersIds;
-        delete[] pGpuMemVB;
-
+        delete[] memoryIds;
+        //delete[] pGpuMemVB;
     }
 };
 

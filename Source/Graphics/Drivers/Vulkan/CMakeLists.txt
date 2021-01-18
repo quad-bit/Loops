@@ -61,6 +61,7 @@ FOREACH(subdir ${DATASUBDIRS})
         "${VulkanDataPath}/${subdir}/*.frag"
         "${VulkanDataPath}/${subdir}/*.vert"
         "${VulkanDataPath}/${subdir}/*.spv"
+        "${VulkanDataPath}/${subdir}/*.refl"
     )
     LIST(APPEND SourceList ${DataList})
 

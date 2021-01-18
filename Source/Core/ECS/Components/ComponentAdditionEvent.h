@@ -3,14 +3,10 @@
 #include <Event.h>
 #include "Camera.h"
 
-struct CameraAdditionEvent : public Event
+class CameraAdditionEvent : public Event
 {
+public:
     Camera * cam;
 };
 
-//
-//struct NodeDeletionEvent : public Event
-//{
-//    SceneNode * node;
-//
-//};
+

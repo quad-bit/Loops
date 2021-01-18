@@ -81,5 +81,8 @@ public:
     std::vector<SetWrapper*> GetSetsForShaders(const std::vector<std::string> & shaderNames);
     uint32_t CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets);
 
-    //void CreatePipelineLayout(const std::vector<std::string> & shaderNames )
+    std::vector<SetWrapper*> * GetSetWrapperList();
+    //SetWrapper * GetSetWrapper(const uint32_t & set, const std::string & shaderName);
+    //BindingWrapper * GetBinding(const std::string& bindingName, DescriptorType type, const uint32_t & set,
+    //    const uint32_t & binding);
 };

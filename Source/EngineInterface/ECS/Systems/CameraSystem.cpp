@@ -6,35 +6,108 @@
 #include "Transform.h"
 #include "EventBus.h"
 #include "ComponentAdditionEvent.h"
+#include "ShaderResourceDescription.h"
+#include "UniformFactory.h"
+
+uint32_t CameraSystem::GetCamId()
+{
+    return idCounter++;
+}
+
+size_t CameraSystem::GetDataSizeMeantForSharing()
+{
+    return sizeof(CameraUniform) * allocConfig.numDescriptors * resourceSharingConfig.maxUniformPerResource;
+}
+
+std::vector<size_t> CameraSystem::CalculateOffsetsForDescInUniform(size_t dataSizePerDescriptor)
+{
+    std::vector<size_t> offsets;
+    offsets.resize(allocConfig.numDescriptors);
+
+    uint32_t index = resourceSharingConfig.allocatedUniformCount % resourceSharingConfig.maxUniformPerResource;
+
+    for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
+    {
+        offsets[i] = index * allocConfig.numDescriptors * dataSizePerDescriptor + dataSizePerDescriptor * i;
+    }
+    return offsets;
+}
+
+bool CameraSystem::IsNewAllocationRequired()
+{
+    if (resourceSharingConfig.allocatedUniformCount % resourceSharingConfig.maxUniformPerResource == 0)
+        return true;
+    else
+        return false;
+}
 
 void CameraSystem::Init()
 {
     EventBus::GetInstance()->Subscribe<CameraSystem, CameraAdditionEvent>(this, &CameraSystem::HandleCameraAddition);
+    
+    allocConfig.numDescriptors = Settings::maxFramesInFlight;
+    allocConfig.numMemories = 1;
+    allocConfig.numResources = 1;
+
+    resourceSharingConfig.maxUniformPerResource = 2;
+    resourceSharingConfig.allocatedUniformCount = 0;
 }
 
 void CameraSystem::DeInit()
 {
+    for (uint32_t i = 0; i < resDescriptionList.size(); i++)
+    {
+        delete resDescriptionList[i];
+    }
+    resDescriptionList.clear();
 }
 
 void CameraSystem::Update(float dt)
 {
     for (auto & entity : registeredEntities)
     {
-        //ComponentHandle<Camera> camHandle;
-        //worldObj->Unpack(entity, camHandle);
-
         ComponentHandle<Camera> * camHandle;
         worldObj->Unpack(entity, &camHandle);
 
         UpdateCameraVectors(camHandle->GetComponent());
+
+        // TODO : write the uniform data of Camera to gpu memory via void*
     }
 }
 
 void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
 {
     // recieved the camera addition to the scene 
-    float fov = inputEvent->cam->GetFOV();
-    // add notify resource manager to add a uniform buffer descriptor set 
+    cameraList.push_back(inputEvent->cam);
+    inputEvent->cam->componentId = GetCamId();
+
+    ShaderResourceDescription * desc = new ShaderResourceDescription;
+    desc->set = 0;
+    desc->binding = 0;
+    desc->numElements = 2;
+    desc->resourceName = "View";
+    desc->resourceType = DescriptorType::UNIFORM_BUFFER;
+    desc->resParentId = inputEvent->cam->componentId;
+    desc->parentType = inputEvent->cam->type;
+    desc->dataSizePerDescriptor = sizeof(CameraUniform);
+    desc->uniformId = inputEvent->cam->componentId; // as one cam = one uniform
+    desc->offsetsForEachDescriptor = CalculateOffsetsForDescInUniform(sizeof(CameraUniform));
+
+    // Check if it can be fit into an existing buffer
+    if (IsNewAllocationRequired())
+    {
+        size_t totalSize = GetDataSizeMeantForSharing();
+        // True : Allocate new buffer
+        UniformFactory::GetInstance()->AllocateResource(desc, totalSize, AllocationMethod::LAZY);
+    }
+    else
+    {
+        // False : Assign the buffer id to this shaderResourceDescription
+        desc->resourceId = resDescriptionList[resDescriptionList.size() - 1]->resourceId;
+    }
+
+    resDescriptionList.push_back(desc);
+    resourceSharingConfig.allocatedUniformCount += 1;
 }
 
 CameraSystem::CameraSystem()

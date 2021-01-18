@@ -3,6 +3,7 @@
 #include <Component.h>
 #include <glm/glm.hpp>
 #include <vector>
+
 struct SetWrapper;
 class Texture;
 class Shader;
@@ -21,10 +22,12 @@ public:
     uint32_t numShaders;
     std::vector<SetWrapper*> resourceLayoutList;
 
+
     Material(Shader * shaders, const uint32_t & numShaders)
     {
         this->shaders = shaders;
         this->numShaders = numShaders;
+        type = COMPONENT_TYPE::MATERIAL;
     }
 };
 

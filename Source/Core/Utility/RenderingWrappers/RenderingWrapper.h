@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <Settings.h>
 #include <BitArray.h>
+#include <string>
 
 enum class Format
 {
@@ -257,6 +258,7 @@ struct ShaderDescription
     std::string shaderName;
 };
 
+
 #if (RENDERING_API == VULKAN)
 
     struct ImageInfo
@@ -375,6 +377,7 @@ struct ShaderDescription
     {
         BufferType * bufType;
         MemoryType * memType;
+        uint32_t memTypeCount;
         void * data;
         size_t dataSize;
         void * pGpuMem;
@@ -449,6 +452,7 @@ struct ShaderDescription
         uint32_t id; // not getting used
         DescriptorSetLayoutBinding bindingObj;
         std::vector<UniformStructMember> memberList;
+        std::string bindingName;
     };
 
     struct SetWrapper
@@ -459,9 +463,18 @@ struct ShaderDescription
         std::vector<std::string> shaderNames;
         std::vector<ShaderType> shaderFlags;
         uint32_t descriptorSetLayoutId;
-        uint32_t descriptorSetId;
+        //uint32_t descriptorSetId;
     };
 
+    
+    /*struct UniformWrapper
+    {
+        std::vector<void*> rawMemPointers;
+        uint32_t descriptorSetId;
+        std::vector<uint32_t> bufferIds;
+        std::vector<uint32_t> memoryIds;
+    };
+*/
 
 #elif (RENDERING_API == DX12)
 
