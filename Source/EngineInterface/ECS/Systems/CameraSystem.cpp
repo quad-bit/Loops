@@ -8,6 +8,7 @@
 #include "ComponentAdditionEvent.h"
 #include "ShaderResourceDescription.h"
 #include "UniformFactory.h"
+//#include "Settings.h"
 
 uint32_t CameraSystem::GetCamId()
 {
@@ -81,7 +82,7 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     cameraList.push_back(inputEvent->cam);
     inputEvent->cam->componentId = GetCamId();
 
-    ShaderResourceDescription * desc = new ShaderResourceDescription;
+    ShaderBindingDescription * desc = new ShaderBindingDescription;
     desc->set = 0;
     desc->binding = 0;
     desc->numElements = 2;
@@ -92,13 +93,14 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     desc->dataSizePerDescriptor = sizeof(CameraUniform);
     desc->uniformId = inputEvent->cam->componentId; // as one cam = one uniform
     desc->offsetsForEachDescriptor = CalculateOffsetsForDescInUniform(sizeof(CameraUniform));
+    desc->allocationConfig = allocConfig;
 
     // Check if it can be fit into an existing buffer
     if (IsNewAllocationRequired())
     {
         size_t totalSize = GetDataSizeMeantForSharing();
         // True : Allocate new buffer
-        UniformFactory::GetInstance()->AllocateResource(desc, totalSize, AllocationMethod::LAZY);
+        UniformFactory::GetInstance()->AllocateResource(desc, &totalSize,  1, AllocationMethod::LAZY);
     }
     else
     {
@@ -108,6 +110,18 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
 
     resDescriptionList.push_back(desc);
     resourceSharingConfig.allocatedUniformCount += 1;
+
+    CameraUniform obj = {};
+    obj.projectionMat = inputEvent->cam->GetProjectionMat();
+    obj.viewMat = inputEvent->cam->GetViewMatrix();
+
+    //upload data to buffers
+    for(uint32_t i = 0; i < Settings::maxFramesInFlight; i++)
+    {
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, &obj, desc->offsetsForEachDescriptor[i], false);
+    }
+
+
 }
 
 CameraSystem::CameraSystem()

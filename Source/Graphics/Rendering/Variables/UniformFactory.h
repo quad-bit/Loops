@@ -14,21 +14,12 @@ class DxInterface;
 typedef DxInterface ApiInterface;
 #endif
 
-struct BufferWrapper
-{
-    uint32_t bufferId;
-    uint32_t memoryId;
-    size_t bufferSize;
-    size_t memorySize;
-    size_t memoryDivisionUnit;
-};
-
-struct UniformWrapper
-{
-    SetWrapper * setWrapper;
-    BindingWrapper bindingWrapper;
-    uint32_t numUniformsAllocated;
-};
+//struct UniformWrapper
+//{
+//    SetWrapper * setWrapper;
+//    BindingWrapper bindingWrapper;
+//    uint32_t numUniformsAllocated;
+//};
 
 class UniformFactory
 {
@@ -42,9 +33,9 @@ private:
     std::vector<SetWrapper*> * setWrapperList;
     ApiInterface * apiInterface;
 
-    std::map<uint32_t, UniformResourceAllocationConfig> setConfig;
-    std::vector<UniformWrapper> uniformWrapperList;
-    void HandlerUniformBuffer(ShaderResourceDescription * desc, SetWrapper * setWrapper, BindingWrapper bindingObj, size_t allocationSize);
+    std::map<uint32_t, GlobalResourceAllocationConfig> setConfig;
+    //std::vector<UniformWrapper> uniformWrapperList;
+    void HandlerUniformBuffer(ShaderBindingDescription * desc, SetWrapper * setWrapper, BindingWrapper bindingObj, size_t allocationSize);
 
     std::vector<uint32_t> bufferIds;
     std::vector<uint32_t> memoryIds;
@@ -56,5 +47,6 @@ public:
     static UniformFactory* GetInstance();
     ~UniformFactory();
 
-    void AllocateResource(ShaderResourceDescription * desc, size_t allocationSize, AllocationMethod allocation);
+    void AllocateResource(ShaderBindingDescription * desc, size_t * allocationSize, const uint32_t & numBindings, AllocationMethod allocation);
+    void UploadDataToBuffers(const uint32_t & bufId, const size_t & dataSize, void * data, const size_t & memoryOffset, bool keepMemoryMounted);
 };

@@ -7,6 +7,7 @@
 #include <HashManager.h>
 #include <VkRenderingUnwrapper.h>
 #include "VkShaderResourceAllocator.h"
+#include "VkDescriptorPoolFactory.h"
 
 using namespace rapidjson;
 
@@ -535,4 +536,34 @@ uint32_t VkShaderResourceManager::CreatePipelineLayout(SetWrapper ** setWrapperL
 std::vector<SetWrapper*>* VkShaderResourceManager::GetSetWrapperList()
 {
     return &setWrapperList;
+}
+
+uint32_t * VkShaderResourceManager::AllocateDescriptors(SetWrapper * setwrapper, const uint32_t & numDescriptors)
+{
+    uint32_t * ids = new uint32_t[numDescriptors];
+    VkDescriptorPool * pool = VkDescriptorPoolFactory::GetInstance()->GetDescriptorPool();
+    VkDescriptorSetLayout * layout = idToSetLayoutMap[setwrapper->descriptorSetLayoutId];
+
+    std::vector<VkDescriptorSetLayout> setLayouts;
+    std::vector<VkDescriptorSet> sets;
+    sets.resize(numDescriptors);
+
+    for (uint32_t i = 0; i < numDescriptors; i++)
+    {
+        ids[i] = GetVkDescriptorSetID();
+        setLayouts.push_back(*layout);
+    }
+
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.descriptorPool = *pool;
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorSetCount = numDescriptors;
+    allocInfo.pSetLayouts = setLayouts.data();
+
+    ErrorCheck( vkAllocateDescriptorSets(*CoreObjects::logicalDeviceObj, &allocInfo, sets.data()));
+    
+    for (uint32_t i = 0; i < numDescriptors; i++)
+        idToSetMap.insert(std::pair<uint32_t, VkDescriptorSet>(ids[i], sets[i]));
+
+    return ids;
 }

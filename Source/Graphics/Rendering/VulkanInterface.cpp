@@ -681,6 +681,11 @@ void VulkanInterface::FreeMemory(uint32_t * ids, const uint32_t & count)
     }
 }
 
+uint32_t * VulkanInterface::AllocateDescriptorsForASet(SetWrapper * set, const uint32_t & numDescriptors)
+{
+    return VkShaderResourceManager::GetInstance()->AllocateDescriptors(set, numDescriptors);
+}
+
 //
 //void VulkanInterface::InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount )
 //{

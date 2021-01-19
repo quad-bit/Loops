@@ -26,9 +26,9 @@ private:
     void UpdateCameraVectors(Camera * cam);
 
     std::vector<Camera *> cameraList;
-    std::vector<ShaderResourceDescription *> resDescriptionList;
-    UniformResourceAllocationConfig allocConfig;
-    UniformResourceSharingConfig resourceSharingConfig;
+    std::vector<ShaderBindingDescription *> resDescriptionList;
+    GlobalResourceAllocationConfig allocConfig;
+    GlobalResourceSharingConfig resourceSharingConfig;
 
     uint32_t idCounter = 0;
     uint32_t GetCamId();

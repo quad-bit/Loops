@@ -11,14 +11,23 @@ enum class AllocationMethod
     LAZY
 };
 
-struct ShaderResourceSettings
+//overall config for the entire uniform list for a binding
+struct GlobalResourceSharingConfig
 {
-    uint32_t descriptorPerUniform;
-    uint32_t resourcePerUniform;
-    uint32_t memoryPerUniform;
+    uint32_t maxUniformPerResource; // per buffer or memory
+    uint32_t allocatedUniformCount;
+    //std::vector<uint32_t> uniformIdList;
 };
+
+struct GlobalResourceAllocationConfig
+{
+    uint32_t numDescriptors;
+    uint32_t numResources;  // buffers/textures/samplers
+    uint32_t numMemories;
+};
+
 //represent one binding, might have unique descriptor for each frame in flight
-struct ShaderResourceDescription
+struct ShaderBindingDescription
 {
     DescriptorType resourceType;
     uint32_t resourceId; // buffer/texture/sampler id
@@ -32,19 +41,8 @@ struct ShaderResourceDescription
     uint32_t resParentId;
     COMPONENT_TYPE parentType;
     std::vector<size_t> offsetsForEachDescriptor;
-};
 
-struct UniformResourceSharingConfig
-{
-    uint32_t maxUniformPerResource; // per buffer or memory
-    uint32_t allocatedUniformCount;
-    std::vector<uint32_t> uniformIdList;
-};
-
-struct UniformResourceAllocationConfig
-{
-    uint32_t numDescriptors;
-    uint32_t numResources;  // buffers/textures/samplers
-    uint32_t numMemories;
+    GlobalResourceSharingConfig sharingConfig;
+    GlobalResourceAllocationConfig allocationConfig;
 };
 

@@ -123,6 +123,7 @@ public:
     void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
     void DestroyBuffer(uint32_t * ids, const uint32_t & count);
     void FreeMemory(uint32_t * ids, const uint32_t & count);
+    uint32_t * AllocateDescriptorsForASet(SetWrapper * set, const uint32_t & numDescriptors);
 
     void GetShaderIds(char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount );
     void CreateVertexInputState(const VertexInputWrapper * vertexInputWrapper);

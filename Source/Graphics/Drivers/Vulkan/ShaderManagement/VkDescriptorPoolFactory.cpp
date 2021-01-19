@@ -12,7 +12,7 @@ uint32_t VkDescriptorPoolFactory::GetId()
 
 void VkDescriptorPoolFactory::Init()
 {
-
+    CreateDescritorPool();
 }
 
 void VkDescriptorPoolFactory::DeInit()
@@ -103,7 +103,7 @@ VkDescriptorPool * VkDescriptorPoolFactory::GetDescriptorPool(const uint32_t & i
 
     it = std::find_if(poolWrapperList.begin(), poolWrapperList.end(), [&](PoolWrapper e) { return e.poolId == id; });
 
-    ASSERT_MSG(it != poolWrapperList.end(), "Image id not found");
+    ASSERT_MSG(it != poolWrapperList.end(), "Pool id not found");
     return it->pool;
 }
 

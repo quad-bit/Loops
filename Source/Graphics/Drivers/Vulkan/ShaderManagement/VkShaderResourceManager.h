@@ -24,6 +24,7 @@ struct PipelineLayoutWrapper
 //    uint32_t id;
 //    VkDescriptorSet * descriptorSet;
 //};
+
 //
 //struct VkDescriptorSetLayoutWrapper
 //{
@@ -58,7 +59,7 @@ private:
 
     std::vector<SetWrapper*> setWrapperList;
     std::map< uint32_t, VkDescriptorSetLayout *> idToSetLayoutMap;
-    std::map< uint32_t, VkDescriptorSet *> idToSetMap;
+    std::map< uint32_t, VkDescriptorSet> idToSetMap;
     std::vector<ShaderResources> perShaderResourceList;
     std::vector<PipelineLayoutWrapper> pipelineLayoutWrapperList;
 
@@ -85,4 +86,7 @@ public:
     //SetWrapper * GetSetWrapper(const uint32_t & set, const std::string & shaderName);
     //BindingWrapper * GetBinding(const std::string& bindingName, DescriptorType type, const uint32_t & set,
     //    const uint32_t & binding);
+
+    uint32_t * AllocateDescriptors(SetWrapper * set, const uint32_t & numDescriptors);
+
 };
