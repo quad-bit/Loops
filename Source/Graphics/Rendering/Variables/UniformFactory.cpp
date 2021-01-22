@@ -36,9 +36,6 @@ void UniformFactory::HandlerUniformBuffer(ShaderBindingDescription * desc, SetWr
     desc->resourceMemoryId = *memId;
     memoryIds.push_back(*memId);
     delete[] memId;
-
-    
-
 }
 
 void UniformFactory::Init(ApiInterface * api)
@@ -78,7 +75,7 @@ UniformFactory::~UniformFactory()
 {
 }
 
-void UniformFactory::AllocateResource(ShaderBindingDescription * desc, size_t * allocationSize, const uint32_t & numBindings, AllocationMethod allocation)
+SetWrapper * UniformFactory::AllocateResource(ShaderBindingDescription * desc, size_t * allocationSize, const uint32_t & numBindings, AllocationMethod allocation)
 {
     std::vector<SetWrapper*>::iterator it;
     it = std::find_if(setWrapperList->begin(), setWrapperList->end(), [&](SetWrapper * e)
@@ -127,13 +124,27 @@ void UniformFactory::AllocateResource(ShaderBindingDescription * desc, size_t * 
         }
     }
 
-    // Allocate descriptor sets
-    uint32_t numDescriptorSetsPerSet = Settings::maxFramesInFlight;
-    uint32_t * descriptorIds = apiInterface->AllocateDescriptorsForASet((*it), numDescriptorSetsPerSet);
-
+    //AllocateDescriptors(*it, desc, numBindings);
+    return *it;
 }
 
 void UniformFactory::UploadDataToBuffers(const uint32_t & bufId, const size_t & dataSize, void * data, const size_t & memoryOffset, bool keepMemoryMounted)
 {
     apiInterface->CopyBufferDataToMemory(bufId, dataSize, data, memoryOffset);
+}
+
+void UniformFactory::AllocateDescriptors(SetWrapper * wrapper, ShaderBindingDescription * desc, const uint32_t & numBindings)
+{
+    // Allocate descriptor sets
+    uint32_t numDescriptorSetsPerSet = Settings::maxFramesInFlight;
+    uint32_t * descriptorIds = apiInterface->AllocateDescriptorsForASet(wrapper, numDescriptorSetsPerSet);
+
+    for (uint32_t i = 0; i < numBindings; i++)
+    {
+        for (uint32_t k = 0; k < numDescriptorSetsPerSet; k++)
+            desc[i].descriptorIds.push_back(descriptorIds[k]);
+
+        // update the descriptors
+        apiInterface->LinkSetBindingToResources(&desc[i]);
+    }
 }

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "RenderingWrapper.h"
-
+/*
 template <typename T>
 struct PipelineNode
 {
@@ -24,3 +24,4 @@ struct VertexInputNode : public PipelineNode<T>
         //apiInterface->InitiateGraphicsPipelineCreation(mesh->meshId, attribInfo, attribCount, bindingInfo, numVertexBufferPerMesh);
     }
 };
+*/

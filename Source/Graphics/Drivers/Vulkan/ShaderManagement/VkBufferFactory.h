@@ -46,4 +46,6 @@ public:
 
     void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
     void DestroyBuffer(uint32_t id);
+
+    VkBuffer * GetBuffer(const uint32_t & id);
 };

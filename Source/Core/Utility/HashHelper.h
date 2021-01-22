@@ -47,6 +47,21 @@ bool operator==(const SetWrapper & lhs, const SetWrapper & rhs)
 }
 
 
+bool operator==(const StencilOpState & lhs, const StencilOpState & rhs)
+{
+    if (lhs.compareMask == rhs.compareMask && 
+        lhs.writeMask == rhs.writeMask &&
+        lhs.reference == rhs.reference &&
+        lhs.passOp == rhs.passOp &&
+        lhs.failOp == rhs.failOp &&
+        lhs.depthFailOp == rhs.depthFailOp
+        )
+        return true;
+    else
+        return false;
+}
+
+
 namespace std
 {
     template<> struct hash<VertexInputAttributeInfo>
@@ -75,6 +90,25 @@ namespace std
 
             std::size_t seed = 0UL;
             HashCombine(seed, h1, h2, h3);
+
+            return seed; // or use boost::hash_combine
+        }
+    };
+
+    template<> struct hash<StencilOpState>
+    {
+        std::size_t operator()(StencilOpState const& s) const noexcept
+        {
+            std::size_t h1 = std::hash<std::uint32_t>{}((uint32_t)s.compareOp);
+            std::size_t h2 = std::hash<std::uint32_t>{}((uint32_t)s.depthFailOp);
+            std::size_t h3 = std::hash<std::uint32_t>{}((uint32_t)s.failOp);
+            std::size_t h4 = std::hash<std::uint32_t>{}((uint32_t)s.passOp);
+            std::size_t h5 = std::hash<std::uint32_t>{}(s.reference);
+            std::size_t h6 = std::hash<std::uint32_t>{}(s.writeMask);
+            std::size_t h7 = std::hash<std::uint32_t>{}(s.compareMask);
+
+            std::size_t seed = 0UL;
+            HashCombine(seed, h1, h2, h3, h4, h5, h6, h7);
 
             return seed; // or use boost::hash_combine
         }

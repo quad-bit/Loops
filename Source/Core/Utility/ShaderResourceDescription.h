@@ -41,7 +41,7 @@ struct ShaderBindingDescription
     uint32_t resParentId;
     COMPONENT_TYPE parentType;
     std::vector<size_t> offsetsForEachDescriptor;
-
+    std::vector<uint32_t> descriptorIds;
     GlobalResourceSharingConfig sharingConfig;
     GlobalResourceAllocationConfig allocationConfig;
 };

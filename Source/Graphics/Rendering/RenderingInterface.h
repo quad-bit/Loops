@@ -59,6 +59,8 @@ public:
 #include "ShaderFactory.h"
 #include "MaterialFactory.h"
 #include "UniformFactory.h"
+#include "DrawGraphManager.h"
+#include "DrawGraphNode.h"
 
 template<typename T>
 inline void RenderingInterface<T>::BeginRenderLoop()
@@ -72,6 +74,8 @@ inline void RenderingInterface<T>::BeginRenderLoop()
     currentSwapchainIndex = apiInterface->GetAvailableSwapchainIndex(currentFenceId, currentRenderSemaphoreId);
 
     activeDrawCommandBuffer = drawCommandBufferList[currentSwapchainIndex];
+
+    DrawGraphNode::dcb = activeDrawCommandBuffer;
 
     CommandBufferManager<T>::GetInstance()->ResetDrawCommandBuffer(activeDrawCommandBuffer);
 
@@ -131,7 +135,7 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     MaterialFactory::GetInstance()->Init();
     ShaderFactory::GetInstance()->Init(apiInterface);
     UniformFactory::GetInstance()->Init(apiInterface);
-
+    DrawGraphManager<T>::GetInstance()->Init();
     this->apiInterface = apiInterface;
 
     Settings::clearColorValue[0] = 164.0f / 256.0f; // Red
@@ -167,6 +171,7 @@ inline void RenderingInterface<T>::SetupRenderer()
         *level = CommandBufferLevel::PRIMARY;
         drawCommandBufferList[i] = CommandBufferManager<T>::GetInstance()->CreateDrawCommandBuffer(level, graphicCommandPoolId);
     }
+    DrawGraphNode::dcb = drawCommandBufferList[0];
 
     Settings::maxFramesInFlight = Settings::swapBufferCount - 1;
 
@@ -216,7 +221,10 @@ inline void RenderingInterface<T>::DislogeRenderer()
 template<typename T>
 inline void RenderingInterface<T>::DeInit()
 {
-    PLOGD << "Rendering interface Init";
+    PLOGD << "Rendering interface DeInit";
+    
+    DrawGraphManager<T>::GetInstance()->DeInit();
+    delete DrawGraphManager<T>::GetInstance();
 
     UniformFactory::GetInstance()->DeInit();
     delete UniformFactory::GetInstance();

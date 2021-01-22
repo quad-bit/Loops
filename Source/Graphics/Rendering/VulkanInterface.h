@@ -10,6 +10,7 @@ struct RenderPassAttachmentInfo;
 struct SubpassInfo;
 struct SubpassDependency;
 struct RenderPassBeginInfo;
+struct ShaderBindingDescription;
 
 enum class Format;
 enum class CommandBufferLevel;
@@ -132,4 +133,6 @@ public:
     std::vector<SetWrapper *> GetSetsForShaders(const std::vector<std::string> & shaderNames);
     uint32_t CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets);
     std::vector<SetWrapper*> * GetSetWrapperList();
+    void LinkSetBindingToResources(ShaderBindingDescription * desc);
+
 };

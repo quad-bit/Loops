@@ -8,7 +8,6 @@
 #include "ComponentAdditionEvent.h"
 #include "ShaderResourceDescription.h"
 #include "UniformFactory.h"
-//#include "Settings.h"
 
 uint32_t CameraSystem::GetCamId()
 {
@@ -100,12 +99,13 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     {
         size_t totalSize = GetDataSizeMeantForSharing();
         // True : Allocate new buffer
-        UniformFactory::GetInstance()->AllocateResource(desc, &totalSize,  1, AllocationMethod::LAZY);
+        cameraSetWrapper = UniformFactory::GetInstance()->AllocateResource(desc, &totalSize,  1, AllocationMethod::LAZY);
     }
     else
     {
         // False : Assign the buffer id to this shaderResourceDescription
         desc->resourceId = resDescriptionList[resDescriptionList.size() - 1]->resourceId;
+        desc->resourceMemoryId = resDescriptionList[resDescriptionList.size() - 1]->resourceMemoryId;
     }
 
     resDescriptionList.push_back(desc);
@@ -115,13 +115,19 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     obj.projectionMat = inputEvent->cam->GetProjectionMat();
     obj.viewMat = inputEvent->cam->GetViewMatrix();
 
+    uint32_t numDescriptorsPerBinding = Settings::maxFramesInFlight;
+
     //upload data to buffers
-    for(uint32_t i = 0; i < Settings::maxFramesInFlight; i++)
+    for(uint32_t i = 0; i < numDescriptorsPerBinding; i++)
     {
         UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, &obj, desc->offsetsForEachDescriptor[i], false);
     }
 
+    UniformFactory::GetInstance()->AllocateDescriptors(cameraSetWrapper, desc, 1);
 
+    // draw graph node creation
+    // top level node as its Set 0
+    cameraGraphNode = new CameraGraphNode();
 }
 
 CameraSystem::CameraSystem()
@@ -197,4 +203,14 @@ void CameraSystem::UpdateCameraVectors(Camera * cam)
     // Also re-calculate the Right and Up vector
     cam->GetRight() = glm::normalize(glm::cross(cam->GetFront(), cam->GetWorlUp()));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
     cam->GetUp() = glm::normalize(glm::cross(cam->GetRight(), cam->GetFront()));
+}
+
+
+
+
+#include "DrawCommandBuffer.h"
+
+void CameraGraphNode::Execute()
+{
+    // Binding the descriptor set for Camera
 }

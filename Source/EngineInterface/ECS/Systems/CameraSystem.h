@@ -2,6 +2,7 @@
 #include "System.h"
 #include <glm\glm.hpp>
 #include "ShaderResourceDescription.h"
+#include "DrawGraphNode.h"
 
 class Camera;
 enum class Camera_Movement;
@@ -9,6 +10,13 @@ class CameraAdditionEvent;
 
 template <typename T>
 class ComponentHandle;
+
+class CameraGraphNode : public DrawGraphNode
+{
+public:
+    virtual void Execute() override;
+};
+
 
 class CameraSystem : public System
 {
@@ -35,6 +43,10 @@ private:
     size_t GetDataSizeMeantForSharing();
     std::vector<size_t> CalculateOffsetsForDescInUniform(size_t dataSizePerDescriptor);
     bool IsNewAllocationRequired();
+
+    SetWrapper * cameraSetWrapper;
+
+    DrawGraphNode * cameraGraphNode;
 
 public:
     virtual void Init() override;

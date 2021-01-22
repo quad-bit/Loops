@@ -14,10 +14,15 @@ PlayerHandlerScript::PlayerHandlerScript()
 {
     scriptName = typeid(this).raw_name();
 
-    camHandle = worldObj->CreateEntity();
-    camHandle->GetEntity()->entityName = "MainCamera";
-    Camera * camera = new Camera(&camHandle->GetTransform()->globalPosition);
-    camHandle->AddComponent<Camera>(camera);
+    camHandle0 = worldObj->CreateEntity();
+    camHandle0->GetEntity()->entityName = "MainCamera";
+    Camera * camera = new Camera(&camHandle0->GetTransform()->globalPosition);
+    camHandle0->AddComponent<Camera>(camera);
+
+    camHandle1 = worldObj->CreateEntity();
+    camHandle1->GetEntity()->entityName = "SecondCamera";
+    Camera * cam = new Camera(&camHandle1->GetTransform()->globalPosition);
+    camHandle1->AddComponent<Camera>(cam);
 
     playerHandle = worldObj->CreateEntity();
     playerHandle->GetEntity()->entityName = "player";
@@ -155,5 +160,5 @@ PlayerHandlerScript::~PlayerHandlerScript()
     worldObj->DestroyEntity(rightArm);
     worldObj->DestroyEntity(leftLeg);
     worldObj->DestroyEntity(rightLeg);
-    worldObj->DestroyEntity(camHandle);
+    worldObj->DestroyEntity(camHandle0);
 }

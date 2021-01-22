@@ -732,6 +732,11 @@ std::vector<SetWrapper*>* VulkanInterface::GetSetWrapperList()
     return VkShaderResourceManager::GetInstance()->GetSetWrapperList();
 }
 
+void VulkanInterface::LinkSetBindingToResources(ShaderBindingDescription * desc)
+{
+    VkShaderResourceManager::GetInstance()->LinkSetBindingToResources(desc);
+}
+
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)
 {
     uint32_t poolId = 0;

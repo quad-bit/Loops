@@ -5,6 +5,7 @@
 #include <rapidjson\document.h> 
 #include <vector>
 #include <map>
+#include <ShaderResourceDescription.h>
 
 struct ShaderResources
 {
@@ -18,19 +19,6 @@ struct PipelineLayoutWrapper
     std::vector<VkDescriptorSetLayout> setLayoutList;
     VkPipelineLayout * pipelineLayout;
 };
-//
-//struct DescriptorSetWrapper
-//{
-//    uint32_t id;
-//    VkDescriptorSet * descriptorSet;
-//};
-
-//
-//struct VkDescriptorSetLayoutWrapper
-//{
-//    uint32_t id;
-//    VkDescriptorSetLayout * layout;
-//};
 
 class VkShaderResourceAllocator;
 
@@ -72,6 +60,8 @@ private:
     ShaderType GetTypeFromName(const std::string & shaderName);
     std::string GetShaderNameFromRefl(const std::string & reflName);
 
+    VkDescriptorSet GetDescriptorSet(const uint32_t & id);
+
 public:
     void Init();
     void DeInit();
@@ -88,5 +78,5 @@ public:
     //    const uint32_t & binding);
 
     uint32_t * AllocateDescriptors(SetWrapper * set, const uint32_t & numDescriptors);
-
+    void LinkSetBindingToResources(ShaderBindingDescription * desc);
 };

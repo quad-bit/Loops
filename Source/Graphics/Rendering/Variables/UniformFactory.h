@@ -46,7 +46,9 @@ public:
     void Update();
     static UniformFactory* GetInstance();
     ~UniformFactory();
-
-    void AllocateResource(ShaderBindingDescription * desc, size_t * allocationSize, const uint32_t & numBindings, AllocationMethod allocation);
+    
+    // Create buffers/images
+    SetWrapper * AllocateResource(ShaderBindingDescription * desc, size_t * allocationSize, const uint32_t & numBindings, AllocationMethod allocation);
     void UploadDataToBuffers(const uint32_t & bufId, const size_t & dataSize, void * data, const size_t & memoryOffset, bool keepMemoryMounted);
+    void AllocateDescriptors(SetWrapper * wrapper, ShaderBindingDescription * desc, const uint32_t & numBindings);
 };

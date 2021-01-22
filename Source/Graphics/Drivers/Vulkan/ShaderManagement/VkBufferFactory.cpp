@@ -211,3 +211,13 @@ void VkBufferFactory::DestroyBuffer(uint32_t id)
 
     bufferWrapperList.erase(it);
 }
+
+VkBuffer * VkBufferFactory::GetBuffer(const uint32_t & id)
+{
+    std::vector<VkBufferWrapper>::iterator it;
+    it = std::find_if(bufferWrapperList.begin(), bufferWrapperList.end(), [&](VkBufferWrapper e) { return e.id == id; });
+
+    ASSERT_MSG(it != bufferWrapperList.end(), "Buffer not found");
+    
+    return it->buffer;
+}

@@ -236,6 +236,29 @@ enum class PrimtiveType
     TOPOLOGY_MAX_ENUM = 0x7FFFFFFF
 };
 
+enum class PolygonMode
+{
+    POLYGON_MODE_FILL = 0,
+    POLYGON_MODE_LINE = 1,
+    POLYGON_MODE_POINT = 2,
+    POLYGON_MODE_FILL_RECTANGLE_NV = 1000153000,
+    POLYGON_MODE_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class FrontFace {
+    FRONT_FACE_COUNTER_CLOCKWISE = 0,
+    FRONT_FACE_CLOCKWISE = 1,
+    FRONT_FACE_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class CullMode {
+    CULL_MODE_NONE = 0,
+    CULL_MODE_FRONT_BIT = 0x00000001,
+    CULL_MODE_BACK_BIT = 0x00000002,
+    CULL_MODE_FRONT_AND_BACK = 0x00000003,
+    CULL_MODE_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+};
+
 struct MeshInfo
 {
     BitArray attribMaskReq;
@@ -258,6 +281,159 @@ struct ShaderDescription
     std::string shaderName;
 };
 
+struct Viewport 
+{
+    float    x;
+    float    y;
+    float    width;
+    float    height;
+    float    minDepth;
+    float    maxDepth;
+};
+
+struct Rect2D 
+{
+    float offsetX;
+    float offsetY;
+    float lengthX;
+    float lengthY;
+} ;
+
+enum class CompareOp 
+{
+    COMPARE_OP_NEVER = 0,
+    COMPARE_OP_LESS = 1,
+    COMPARE_OP_EQUAL = 2,
+    COMPARE_OP_LESS_OR_EQUAL = 3,
+    COMPARE_OP_GREATER = 4,
+    COMPARE_OP_NOT_EQUAL = 5,
+    COMPARE_OP_GREATER_OR_EQUAL = 6,
+    COMPARE_OP_ALWAYS = 7,
+    COMPARE_OP_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class StencilOp 
+{
+    STENCIL_OP_KEEP = 0,
+    STENCIL_OP_ZERO = 1,
+    STENCIL_OP_REPLACE = 2,
+    STENCIL_OP_INCREMENT_AND_CLAMP = 3,
+    STENCIL_OP_DECREMENT_AND_CLAMP = 4,
+    STENCIL_OP_INVERT = 5,
+    STENCIL_OP_INCREMENT_AND_WRAP = 6,
+    STENCIL_OP_DECREMENT_AND_WRAP = 7,
+    STENCIL_OP_MAX_ENUM = 0x7FFFFFFF
+} ;
+
+enum class LogicOp {
+    LOGIC_OP_CLEAR = 0,
+    LOGIC_OP_AND = 1,
+    LOGIC_OP_AND_REVERSE = 2,
+    LOGIC_OP_COPY = 3,
+    LOGIC_OP_AND_INVERTED = 4,
+    LOGIC_OP_NO_OP = 5,
+    LOGIC_OP_XOR = 6,
+    LOGIC_OP_OR = 7,
+    LOGIC_OP_NOR = 8,
+    LOGIC_OP_EQUIVALENT = 9,
+    LOGIC_OP_INVERT = 10,
+    LOGIC_OP_OR_REVERSE = 11,
+    LOGIC_OP_COPY_INVERTED = 12,
+    LOGIC_OP_OR_INVERTED = 13,
+    LOGIC_OP_NAND = 14,
+    LOGIC_OP_SET = 15,
+    LOGIC_OP_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class BlendOp 
+{
+    BLEND_OP_ADD = 0,
+    BLEND_OP_SUBTRACT = 1,
+    BLEND_OP_REVERSE_SUBTRACT = 2,
+    BLEND_OP_MIN = 3,
+    BLEND_OP_MAX = 4,
+    BLEND_OP_ZERO_EXT = 1000148000,
+    BLEND_OP_SRC_EXT = 1000148001,
+    BLEND_OP_DST_EXT = 1000148002,
+    BLEND_OP_SRC_OVER_EXT = 1000148003,
+    BLEND_OP_DST_OVER_EXT = 1000148004,
+    BLEND_OP_SRC_IN_EXT = 1000148005,
+    BLEND_OP_DST_IN_EXT = 1000148006,
+    BLEND_OP_SRC_OUT_EXT = 1000148007,
+    BLEND_OP_DST_OUT_EXT = 1000148008,
+    BLEND_OP_SRC_ATOP_EXT = 1000148009,
+    BLEND_OP_DST_ATOP_EXT = 1000148010,
+    BLEND_OP_XOR_EXT = 1000148011,
+    BLEND_OP_MULTIPLY_EXT = 1000148012,
+    BLEND_OP_SCREEN_EXT = 1000148013,
+    BLEND_OP_OVERLAY_EXT = 1000148014,
+    BLEND_OP_DARKEN_EXT = 1000148015,
+    BLEND_OP_LIGHTEN_EXT = 1000148016,
+    BLEND_OP_COLORDODGE_EXT = 1000148017,
+    BLEND_OP_COLORBURN_EXT = 1000148018,
+    BLEND_OP_HARDLIGHT_EXT = 1000148019,
+    BLEND_OP_SOFTLIGHT_EXT = 1000148020,
+    BLEND_OP_DIFFERENCE_EXT = 1000148021,
+    BLEND_OP_EXCLUSION_EXT = 1000148022,
+    BLEND_OP_INVERT_EXT = 1000148023,
+    BLEND_OP_INVERT_RGB_EXT = 1000148024,
+    BLEND_OP_LINEARDODGE_EXT = 1000148025,
+    BLEND_OP_LINEARBURN_EXT = 1000148026,
+    BLEND_OP_VIVIDLIGHT_EXT = 1000148027,
+    BLEND_OP_LINEARLIGHT_EXT = 1000148028,
+    BLEND_OP_PINLIGHT_EXT = 1000148029,
+    BLEND_OP_HARDMIX_EXT = 1000148030,
+    BLEND_OP_HSL_HUE_EXT = 1000148031,
+    BLEND_OP_HSL_SATURATION_EXT = 1000148032,
+    BLEND_OP_HSL_COLOR_EXT = 1000148033,
+    BLEND_OP_HSL_LUMINOSITY_EXT = 1000148034,
+    BLEND_OP_PLUS_EXT = 1000148035,
+    BLEND_OP_PLUS_CLAMPED_EXT = 1000148036,
+    BLEND_OP_PLUS_CLAMPED_ALPHA_EXT = 1000148037,
+    BLEND_OP_PLUS_DARKER_EXT = 1000148038,
+    BLEND_OP_MINUS_EXT = 1000148039,
+    BLEND_OP_MINUS_CLAMPED_EXT = 1000148040,
+    BLEND_OP_CONTRAST_EXT = 1000148041,
+    BLEND_OP_INVERT_OVG_EXT = 1000148042,
+    BLEND_OP_RED_EXT = 1000148043,
+    BLEND_OP_GREEN_EXT = 1000148044,
+    BLEND_OP_BLUE_EXT = 1000148045,
+    BLEND_OP_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class BlendFactor 
+{
+    BLEND_FACTOR_ZERO = 0,
+    BLEND_FACTOR_ONE = 1,
+    BLEND_FACTOR_SRC_COLOR = 2,
+    BLEND_FACTOR_ONE_MINUS_SRC_COLOR = 3,
+    BLEND_FACTOR_DST_COLOR = 4,
+    BLEND_FACTOR_ONE_MINUS_DST_COLOR = 5,
+    BLEND_FACTOR_SRC_ALPHA = 6,
+    BLEND_FACTOR_ONE_MINUS_SRC_ALPHA = 7,
+    BLEND_FACTOR_DST_ALPHA = 8,
+    BLEND_FACTOR_ONE_MINUS_DST_ALPHA = 9,
+    BLEND_FACTOR_CONSTANT_COLOR = 10,
+    BLEND_FACTOR_ONE_MINUS_CONSTANT_COLOR = 11,
+    BLEND_FACTOR_CONSTANT_ALPHA = 12,
+    BLEND_FACTOR_ONE_MINUS_CONSTANT_ALPHA = 13,
+    BLEND_FACTOR_SRC_ALPHA_SATURATE = 14,
+    BLEND_FACTOR_SRC1_COLOR = 15,
+    BLEND_FACTOR_ONE_MINUS_SRC1_COLOR = 16,
+    BLEND_FACTOR_SRC1_ALPHA = 17,
+    BLEND_FACTOR_ONE_MINUS_SRC1_ALPHA = 18,
+    BLEND_FACTOR_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class ColorComponentFlagBits
+{
+    COLOR_COMPONENT_R_BIT = 0x00000001,
+    COLOR_COMPONENT_G_BIT = 0x00000002,
+    COLOR_COMPONENT_B_BIT = 0x00000004,
+    COLOR_COMPONENT_A_BIT = 0x00000008,
+    COLOR_COMPONENT_TRUE_BIT = 0xf,
+    COLOR_COMPONENT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
+};
 
 #if (RENDERING_API == VULKAN)
 
@@ -412,6 +588,138 @@ struct ShaderDescription
         PipelineStates state = PipelineStates::InputAssemblyState;
         PrimtiveType * primitiveType;
         bool isPrimtiveRestartEnabled;
+    };
+
+    struct TessellationState
+    {
+        PipelineStates state = PipelineStates::TessellationState;
+        uint32_t patchControlPoints;
+    };
+
+    struct MultiSampleState
+    {
+        PipelineStates state = PipelineStates::MultisampleState;
+        bool sampleShadingEnable;
+        float minSampleShading;
+        bool alphaToCoverageEnable;
+        bool alphaToOneEnable;
+        Samples sampleCount;
+    };
+
+    struct ViewportState
+    {
+        PipelineStates state = PipelineStates::ViewportState;
+        uint32_t viewportCount;
+        Viewport* pViewports;
+        uint32_t scissorCount;
+        Rect2D* pScissors;
+    };
+
+    struct RasterizationState
+    {
+        PipelineStates state = PipelineStates::RasterizationState;
+        bool depthClampEnable;
+        bool rasterizerDiscardEnable;
+        PolygonMode polygonMode;
+        CullMode cullMode;
+        FrontFace frontFace;
+        bool depthBiasEnable;
+        float depthBiasConstantFactor;
+        float depthBiasClamp;
+        float depthBiasSlopeFactor;
+        float lineWidth;
+    };
+
+    struct StencilOpState 
+    {
+        StencilOp failOp;
+        StencilOp passOp;
+        StencilOp depthFailOp;
+        CompareOp compareOp;
+        uint32_t compareMask;
+        uint32_t writeMask;
+        uint32_t reference;
+    } ;
+
+
+    struct DepthStencilState
+    {
+        PipelineStates state = PipelineStates::DepthStencilState;
+
+        bool depthTestEnable;
+        bool depthWriteEnable;
+        bool depthBoundsTestEnable;
+        bool stencilTestEnable;
+        CompareOp depthCompareOp;
+        StencilOpState front;
+        StencilOpState back;
+        float minDepthBounds;
+        float maxDepthBounds;
+    };
+
+    struct PipelineColorBlendAttachmentState 
+    {
+
+        bool blendEnable;
+        BlendFactor srcColorBlendFactor;
+        BlendFactor dstColorBlendFactor;
+        BlendOp colorBlendOp;
+        BlendFactor srcAlphaBlendFactor;
+        BlendFactor dstAlphaBlendFactor;
+        BlendOp alphaBlendOp;
+        ColorComponentFlagBits colorWriteMask;
+    };
+
+    struct ColorBlendState
+    {
+        PipelineStates state = PipelineStates::ColorBlendState;
+
+        bool logicOpEnable;
+        LogicOp logicOp;
+        uint32_t attachmentCount;
+        PipelineColorBlendAttachmentState* pAttachments;
+        float blendConstants[4];
+    };
+
+    enum class DynamicState
+    {
+        DYNAMIC_STATE_VIEWPORT = 0,
+        DYNAMIC_STATE_SCISSOR = 1,
+        DYNAMIC_STATE_LINE_WIDTH = 2,
+        DYNAMIC_STATE_DEPTH_BIAS = 3,
+        DYNAMIC_STATE_BLEND_CONSTANTS = 4,
+        DYNAMIC_STATE_DEPTH_BOUNDS = 5,
+        DYNAMIC_STATE_STENCIL_COMPARE_MASK = 6,
+        DYNAMIC_STATE_STENCIL_WRITE_MASK = 7,
+        DYNAMIC_STATE_STENCIL_REFERENCE = 8,
+        DYNAMIC_STATE_VIEWPORT_W_SCALING_NV = 1000087000,
+        DYNAMIC_STATE_DISCARD_RECTANGLE_EXT = 1000099000,
+        DYNAMIC_STATE_SAMPLE_LOCATIONS_EXT = 1000143000,
+        DYNAMIC_STATE_VIEWPORT_SHADING_RATE_PALETTE_NV = 1000164004,
+        DYNAMIC_STATE_VIEWPORT_COARSE_SAMPLE_ORDER_NV = 1000164006,
+        DYNAMIC_STATE_EXCLUSIVE_SCISSOR_NV = 1000205001,
+        DYNAMIC_STATE_LINE_STIPPLE_EXT = 1000259000,
+        DYNAMIC_STATE_CULL_MODE_EXT = 1000267000,
+        DYNAMIC_STATE_FRONT_FACE_EXT = 1000267001,
+        DYNAMIC_STATE_PRIMITIVE_TOPOLOGY_EXT = 1000267002,
+        DYNAMIC_STATE_VIEWPORT_WITH_COUNT_EXT = 1000267003,
+        DYNAMIC_STATE_SCISSOR_WITH_COUNT_EXT = 1000267004,
+        DYNAMIC_STATE_VERTEX_INPUT_BINDING_STRIDE_EXT = 1000267005,
+        DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT = 1000267006,
+        DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT = 1000267007,
+        DYNAMIC_STATE_DEPTH_COMPARE_OP_EXT = 1000267008,
+        DYNAMIC_STATE_DEPTH_BOUNDS_TEST_ENABLE_EXT = 1000267009,
+        DYNAMIC_STATE_STENCIL_TEST_ENABLE_EXT = 1000267010,
+        DYNAMIC_STATE_STENCIL_OP_EXT = 1000267011,
+        DYNAMIC_STATE_MAX_ENUM = 0x7FFFFFFF
+    };
+
+    struct DynamicStateList
+    {
+        PipelineStates state = PipelineStates::DynamicState;
+
+        uint32_t                           dynamicStateCount;
+        const DynamicState*                pDynamicStates;
     };
 
     enum class DescriptorType

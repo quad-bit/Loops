@@ -8,6 +8,7 @@
 #include <VkRenderingUnwrapper.h>
 #include "VkShaderResourceAllocator.h"
 #include "VkDescriptorPoolFactory.h"
+#include "VkBufferFactory.h"
 
 using namespace rapidjson;
 
@@ -223,6 +224,11 @@ std::string VkShaderResourceManager::GetShaderNameFromRefl(const std::string & r
 
     shaderName = shaderName.substr(reflName.find_last_of("\\")+1);
     return shaderName;
+}
+
+VkDescriptorSet VkShaderResourceManager::GetDescriptorSet(const uint32_t & id)
+{
+    return idToSetMap[id];
 }
 
 
@@ -566,4 +572,57 @@ uint32_t * VkShaderResourceManager::AllocateDescriptors(SetWrapper * setwrapper,
         idToSetMap.insert(std::pair<uint32_t, VkDescriptorSet>(ids[i], sets[i]));
 
     return ids;
+}
+
+void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription * desc)
+{
+    VkDescriptorType descriptorType = UnwrapDescriptorType(desc->resourceType);
+
+    uint32_t numWrites = (uint32_t)desc->descriptorIds.size();
+    uint32_t numDescriptors = numWrites;
+
+    std::vector<VkDescriptorBufferInfo> bufferInfoList;
+    std::vector<VkDescriptorImageInfo> imageInfoList;
+
+    switch (descriptorType)
+    {
+    case VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+        for (uint32_t i = 0; i < numWrites; i++)
+        {
+            VkDescriptorBufferInfo info = {};
+            info.buffer = *VkBufferFactory::GetInstance()->GetBuffer(desc->resourceId);
+            info.offset = desc->offsetsForEachDescriptor[i];
+            info.range = desc->dataSizePerDescriptor;
+            bufferInfoList.push_back(info);
+        }
+        break;
+
+    case VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+        ASSERT_MSG(0, "Yet to be implemented");
+        break;
+
+    case VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER:
+        ASSERT_MSG(0, "Yet to be implemented");
+        break;
+
+    default:
+        ASSERT_MSG(0, "Yet to be implemented");
+    }
+
+    std::vector<VkWriteDescriptorSet> writeList;
+
+    for (uint32_t i = 0; i < numWrites; i++)
+    {
+        VkWriteDescriptorSet write = {};
+        write.descriptorCount = 1; //since linking only one binding of a set
+        write.descriptorType = descriptorType;
+        write.dstArrayElement = 0;
+        write.dstBinding = desc->binding;
+        write.pBufferInfo = &bufferInfoList[i];
+        write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        write.dstSet = GetDescriptorSet(desc->descriptorIds[i]);
+        writeList.push_back(write);
+    }
+
+    vkUpdateDescriptorSets(*CoreObjects::logicalDeviceObj, (uint32_t)writeList.size(), writeList.data(), 0, nullptr);
 }
