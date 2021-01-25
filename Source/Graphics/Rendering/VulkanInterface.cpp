@@ -717,6 +717,46 @@ void VulkanInterface::CreateShaderState(const ShaderStateWrapper * shaderStateWr
     VulkanGraphicsPipelineFactory::GetInstance()->CreateShaderState(shaderStateWrapper);
 }
 
+void VulkanInterface::CreateTessellationState(const TessellationStateWrapper * wrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateTessellationState(wrapper);
+}
+
+void VulkanInterface::CreateViewportState(const ViewPortStateWrapper * wrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateViewportState(wrapper);
+}
+
+void VulkanInterface::CreateRasterisationState(const RasterizationStateWrapper * wrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateRasterisationState(wrapper);
+}
+
+void VulkanInterface::CreateDepthStencilState(const DepthStencilStateWrapper * wrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateDepthStencilState(wrapper);
+}
+
+void VulkanInterface::CreateColorBlendState(const ColorBlendStateWrapper * wrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateColorBlendState(wrapper);
+}
+
+void VulkanInterface::CreateMultiSampleState(const MultiSampleStateWrapper * wrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateMultiSampleState(wrapper);
+}
+
+void VulkanInterface::CreateDynamicState(const DynamicStateWrapper * wrapper)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreateDynamicState(wrapper);
+}
+
+void VulkanInterface::CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineId)
+{
+    VulkanGraphicsPipelineFactory::GetInstance()->CreatePipeline(info, pipelineId);
+}
+
 std::vector<SetWrapper*> VulkanInterface::GetSetsForShaders(const std::vector<std::string>& shaderNames)
 {
     return VkShaderResourceManager::GetInstance()->GetSetsForShaders(shaderNames);

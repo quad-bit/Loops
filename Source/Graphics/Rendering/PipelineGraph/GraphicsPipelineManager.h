@@ -5,6 +5,12 @@
 #include <Graph.h>
 #include <vector>
 
+struct PipelineWrapper
+{
+    uint32_t id;
+    std::vector<uint32_t> meshList;
+};
+
 template <typename T>
 class GraphicsPipelineManager
 {
@@ -31,8 +37,37 @@ private:
 
     std::map<uint32_t, std::vector<GraphNode<StateWrapperBase>*>> meshToGraphNodeMap;
     void InsertToMeshList(const uint32_t & meshId, PipelineStates state, GraphNode<StateWrapperBase>* node);
+
+    int maxGraphNodes = 30;
+    Graph<StateWrapperBase> * pipelineGraph;// TODO: add the graph construction without predefined length
+    std::vector<PipelineStates> pipelineStateList;
+    std::map < PipelineStates, std::vector<GraphNode<StateWrapperBase> *>> stateToNodeMap; // nodes per pipeline state
+    std::map<PipelineStates, int> stateToDefaultNodeIndex; // index into stateToNodeMap's vector
+    GraphNode<StateWrapperBase> * CreateGraphNode(StateWrapperBase * stateWrapper);
+
+    // for a pipeline
+    uint32_t renderPassID, subPassId;
+    uint32_t pipelineIdCounter = 0;
+    uint32_t GeneratePipelineId();
     
+    std::vector<PipelineWrapper> pipelineList;
+
+    //really heavy function
+    void CreateGraphEdges();
+
+    //connects the nodes containing the mesh id, if not connects it with default node
+    void CreateGraphEdges(const uint32_t & meshId, PipelineStates src, PipelineStates dest); 
+
+    // connects all the src state state node to the give dest node
+    void CreateGraphEdges(GraphNode<StateWrapperBase> * destNode, PipelineStates src, PipelineStates dest); 
+
+    // connects all the src state state node to the give dest node
+    void CreateGraphEdges(GraphNode<StateWrapperBase> * srcNode, GraphNode<StateWrapperBase> * destNode);
+    
+    GraphNode<StateWrapperBase> * GetNode(PipelineStates state, StateWrapperBase * stateObj);
+
     uint32_t defaultAssemblyListIndex;
+
     void CreateVertexAssemblyDefault();
     void CreateTessellationDefault();
     void CreateViewportDefault();
@@ -54,17 +89,6 @@ private:
     void DestroyColorblend();
     void DestroyDynamicState();
 
-
-    int maxGraphNodes = 30;
-    Graph<StateWrapperBase> * pipelineGraph;// TODO: add the graph construction without predefined length
-    std::vector<PipelineStates> pipelineStateList;
-    std::map < PipelineStates, std::vector<GraphNode<StateWrapperBase> *>> stateToNodeMap;
-    GraphNode<StateWrapperBase> * CreateGraphNode(StateWrapperBase * stateWrapper);
-
-    void CreateGraphEdges();
-    void CreateGraphEdges(const uint32_t & meshId, PipelineStates src, PipelineStates dest);
-    GraphNode<StateWrapperBase> * GetNode(PipelineStates state, StateWrapperBase * stateObj);
-
 public:
     void Init(T * apiInterface);
     void DeInit();
@@ -77,6 +101,9 @@ public:
     void AssignDefaultState(const uint32_t & meshId, const PipelineStates & state);
     void CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
     std::vector<SetWrapper*> CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
+
+    void TraversalEventHandler(GraphTraversalEvent * event);
+    void GenerateAllPipelines(const uint32_t & renderPassId, const uint32_t & subpassId);
 };
 
 template<typename T>
@@ -110,6 +137,8 @@ inline void GraphicsPipelineManager<T>::CreateVertexAssemblyDefault()
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateTessellationDefault()
 {
+    PipelineStates currentState = PipelineStates::TessellationState;
+
     TessellationStateWrapper * wrapper = new TessellationStateWrapper;
     wrapper->tessellationState = new TessellationState;
     wrapper->tessellationState->patchControlPoints = 0;
@@ -119,11 +148,20 @@ inline void GraphicsPipelineManager<T>::CreateTessellationDefault()
     int test = HashManager::GetInstance()->FindTessellationStateHash(wrapper->tessellationState, wrapper->GetId());
     ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
 
+    //Create graph node
+    GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
+
+    // WONT CREATE EDGE AS SHADER RESOURCE LAYOUT WONT BE CREATED BY DEFAULT
+    //CreateGraphEdges(node, PipelineStates((uint32_t)currentState - 1), currentState);
+
+    apiInterface->CreateTessellationState(wrapper);
 }
 
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateViewportDefault()
 {
+    PipelineStates currentState = PipelineStates::ViewportState;
+
     ViewPortStateWrapper * wrapper = new ViewPortStateWrapper;
     ViewportState * viewport = new ViewportState;
     viewport->pScissors = nullptr; // as viewport and scissor are dynamic states
@@ -136,11 +174,22 @@ inline void GraphicsPipelineManager<T>::CreateViewportDefault()
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindViewportStateHash(viewport, wrapper->GetId());
     ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+
+    //Create graph node
+    GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
+
+    //Create edges
+    CreateGraphEdges(node, PipelineStates((uint32_t)currentState - 1), currentState);
+
+    apiInterface->CreateViewportState(wrapper);
+
 }
 
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateRasterizationDefault()
 {
+    PipelineStates currentState = PipelineStates::RasterizationState;
+    
     RasterizationStateWrapper * wrapper = new RasterizationStateWrapper;
     RasterizationState * raster = new RasterizationState;
     raster->cullMode = CullMode::CULL_MODE_BACK_BIT;
@@ -159,11 +208,21 @@ inline void GraphicsPipelineManager<T>::CreateRasterizationDefault()
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindRasterizationHash(raster, wrapper->GetId());
     ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+    
+    //Create graph node
+    GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
+
+    //Create edges
+    CreateGraphEdges(node, PipelineStates((uint32_t)currentState - 1), currentState);
+    apiInterface->CreateRasterisationState(wrapper);
+
 }
 
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateMultiSampleDefault()
 {
+    PipelineStates currentState = PipelineStates::MultisampleState;
+
     MultiSampleStateWrapper * wrapper = new MultiSampleStateWrapper;
     MultiSampleState * multisample = new MultiSampleState;
     multisample->alphaToCoverageEnable = false;
@@ -179,11 +238,21 @@ inline void GraphicsPipelineManager<T>::CreateMultiSampleDefault()
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindMultiSampleHash(multisample, wrapper->GetId());
     ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+
+    //Create graph node
+    GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
+
+    //Create edges
+    CreateGraphEdges(node, PipelineStates((uint32_t)currentState - 1), currentState);
+    
+    apiInterface->CreateMultiSampleState(wrapper);
 }
 
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateDepthStencilDefault()
 {
+    PipelineStates currentState = PipelineStates::DepthStencilState;
+
     DepthStencilStateWrapper * wrapper = new DepthStencilStateWrapper;
     DepthStencilState * depthStencil = new DepthStencilState;
     depthStencil->back.passOp = StencilOp::STENCIL_OP_KEEP;
@@ -210,18 +279,28 @@ inline void GraphicsPipelineManager<T>::CreateDepthStencilDefault()
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindDepthStencilHash(depthStencil, wrapper->GetId());
     ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+
+    //Create graph node
+    GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
+
+    //Create edges
+    CreateGraphEdges(node, PipelineStates((uint32_t)currentState - 1), currentState);
+    apiInterface->CreateDepthStencilState(wrapper);
+
 }
 
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateColorblendDefault()
 {
+    PipelineStates currentState = PipelineStates::ColorBlendState;
+
     ColorBlendStateWrapper * wrapper = new ColorBlendStateWrapper;
 
     PipelineColorBlendAttachmentState * attachment = new PipelineColorBlendAttachmentState[1];
     attachment[0].alphaBlendOp = BlendOp::BLEND_OP_ADD;
     attachment[0].blendEnable = false;
     attachment[0].colorBlendOp = BlendOp::BLEND_OP_ADD;
-    attachment[0].colorWriteMask = ColorComponentFlagBits::COLOR_COMPONENT_TRUE_BIT;
+    attachment[0].colorWriteMask = ColorComponentFlagBits::COLOR_COMPONENT_ALL_TRUE_BIT;
     attachment[0].dstAlphaBlendFactor = BlendFactor::BLEND_FACTOR_ZERO;
     attachment[0].dstColorBlendFactor = BlendFactor::BLEND_FACTOR_ZERO;
     attachment[0].srcAlphaBlendFactor = BlendFactor::BLEND_FACTOR_ZERO;
@@ -243,11 +322,21 @@ inline void GraphicsPipelineManager<T>::CreateColorblendDefault()
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindColorBlendHash(colorBlend, wrapper->GetId());
     ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+
+    //Create graph node
+    GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
+
+    //Create edges
+    CreateGraphEdges(node, PipelineStates((uint32_t)currentState - 1), currentState);
+    apiInterface->CreateColorBlendState(wrapper);
+
 }
 
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateDynamicStateDefault()
 {
+    PipelineStates currentState = PipelineStates::DynamicState;
+
     DynamicStateWrapper * wrapper = new DynamicStateWrapper;
     DynamicStateList * dynamic = new DynamicStateList;
     DynamicState * states = new DynamicState[2];
@@ -262,6 +351,13 @@ inline void GraphicsPipelineManager<T>::CreateDynamicStateDefault()
 
     int test = HashManager::GetInstance()->FindDynamicStateHash(dynamic, wrapper->GetId());
     ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+
+    //Create graph node
+    GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
+
+    //Create edges
+    CreateGraphEdges(node, PipelineStates((uint32_t)currentState - 1), currentState);
+    apiInterface->CreateDynamicState(wrapper);
 }
 
 template<typename T>
@@ -439,6 +535,12 @@ inline GraphNode<StateWrapperBase> * GraphicsPipelineManager<T>::CreateGraphNode
     return node;
 }
 
+template<typename T>
+inline uint32_t GraphicsPipelineManager<T>::GeneratePipelineId()
+{
+    return pipelineIdCounter ++;
+}
+
 //really heavy function, use the other one
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateGraphEdges()
@@ -486,6 +588,7 @@ inline void GraphicsPipelineManager<T>::CreateGraphEdges()
 template<typename T>
 inline void GraphicsPipelineManager<T>::CreateGraphEdges(const uint32_t & meshId, PipelineStates src, PipelineStates dest)
 {
+    
     auto it = meshToGraphNodeMap.find(meshId);
     if (it == meshToGraphNodeMap.end())
     {
@@ -493,7 +596,50 @@ inline void GraphicsPipelineManager<T>::CreateGraphEdges(const uint32_t & meshId
     }
 
     GraphNode<StateWrapperBase>* srcNode = it->second[(uint32_t)src];
+    if (srcNode == NULL)
+    {
+        //ASSERT_MSG(0, "src node not found");
+        int id = stateToDefaultNodeIndex[src];
+        ASSERT_MSG(id != -1, "default stage doesn't exist");
+        srcNode = stateToNodeMap[src].at(id);
+    }
+
     GraphNode<StateWrapperBase>* destNode = it->second[(uint32_t)dest];
+    if (destNode == NULL)
+    {
+        int id = stateToDefaultNodeIndex[dest];
+        ASSERT_MSG(id != -1, "default stage doesn't exist");
+        destNode = stateToNodeMap[dest].at(id);
+    }
+
+    pipelineGraph->AttachDirectedEdge(srcNode, destNode);
+
+}
+
+template<typename T>
+inline void GraphicsPipelineManager<T>::CreateGraphEdges(GraphNode<StateWrapperBase>* destNode, PipelineStates src, PipelineStates dest)
+{
+    auto it = stateToNodeMap.find(src);
+    if (it == stateToNodeMap.end())
+    {
+        ASSERT_MSG(0, "node not found");
+    }
+
+    // Get all the node of the source state and connect it to destNode
+    //uint32_t numNodes = (uint32_t)stateToNodeMap[src].size();
+    for each (auto var in stateToNodeMap[src])
+    {
+        pipelineGraph->AttachDirectedEdge(var, destNode);
+    }
+}
+
+template<typename T>
+inline void GraphicsPipelineManager<T>::CreateGraphEdges(GraphNode<StateWrapperBase>* srcNode, GraphNode<StateWrapperBase>* destNode)
+{
+    if (srcNode->GetNodeData()->state == destNode->GetNodeData()->state)
+    {
+        ASSERT_MSG(0, "Circular graph");
+    }
 
     pipelineGraph->AttachDirectedEdge(srcNode, destNode);
 }
@@ -511,7 +657,7 @@ inline GraphNode<StateWrapperBase>* GraphicsPipelineManager<T>::GetNode(Pipeline
 
     std::vector<GraphNode<StateWrapperBase>*>::iterator it;
     it = std::find_if(nodeList.begin(), nodeList.end(), [&](GraphNode<StateWrapperBase>* e) {
-        return (e->GetNode()->state == state) && (e->GetNode()->GetId() == stateObj->GetId()); });
+        return (e->GetNodeData()->state == state) && (e->GetNodeData()->GetId() == stateObj->GetId()); });
 
     ASSERT_MSG(it != nodeList.end(), "Node not found");
     return (*it);
@@ -535,6 +681,18 @@ inline void GraphicsPipelineManager<T>::Init(T * apiInterface)
     pipelineStateList.push_back(PipelineStates::ColorBlendState);
     pipelineStateList.push_back(PipelineStates::DynamicState);
     
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::VertexInputState , -1 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::InputAssemblyState , 0 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::ShaderStage , -1 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::ShaderResourcesLayout , -1 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::TessellationState , 0 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::ViewportState , 0 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::RasterizationState , 0 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::MultisampleState , 0 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::DepthStencilState , 0 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::ColorBlendState , 0 }));
+    stateToDefaultNodeIndex.insert(std::pair<PipelineStates, int>({ PipelineStates::DynamicState , 0}));
+
     CreateVertexAssemblyDefault();
     CreateTessellationDefault();
     CreateViewportDefault();
@@ -543,6 +701,8 @@ inline void GraphicsPipelineManager<T>::Init(T * apiInterface)
     CreateDepthStencilDefault();
     CreateColorblendDefault();
     CreateDynamicStateDefault();
+
+    EventBus::GetInstance()->Subscribe<GraphicsPipelineManager<T>, GraphTraversalEvent>(this, &GraphicsPipelineManager<T>::TraversalEventHandler);
 }
 
 template<typename T>
@@ -803,7 +963,60 @@ inline std::vector<SetWrapper*> GraphicsPipelineManager<T>::CreatResourceLayoutS
     }
 
     InsertToMeshList(meshId, PipelineStates::ShaderResourcesLayout, node);
+
+    // edge from a higher level
     CreateGraphEdges(meshId, PipelineStates::ShaderStage, PipelineStates::ShaderResourcesLayout);
+    
+    // edge to a lower level
+    CreateGraphEdges(meshId, PipelineStates::ShaderResourcesLayout, PipelineStates::TessellationState);
 
     return setWrapperList;
 }
+
+template<typename T>
+inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEvent * event)
+{
+    // pipeline create info
+    PipelineCreateInfo info = {};
+    info.renderPassId = renderPassID;
+    info.subpassId = subPassId;
+    info.statesToIdMap = stateToIdMap;
+
+    // Generate pipeline
+    PipelineWrapper wrapper = {};
+    wrapper.id = GeneratePipelineId();
+    //wrapper.meshList = ;
+
+    apiInterface->CreatePipeline(&info, wrapper.id);
+    stateToIdMap.clear();
+}
+
+template<typename T>
+inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & renderPassId, const uint32_t & subpassId)
+{
+    // traversal
+
+    this->renderPassID = renderPassId;
+    this->subPassId = subpassId;
+
+    // Get all the source states
+    std::vector<GraphNode<StateWrapperBase> * > sourceNodeList = stateToNodeMap[PipelineStates::VertexInputState];
+    
+    // Get all the dest states
+    std::vector<GraphNode<StateWrapperBase> * > destNodeList = stateToNodeMap[PipelineStates::DynamicState];
+
+    // Execute Traversal
+    for each(auto srcNode in sourceNodeList)
+        for each (auto destNode in destNodeList)
+        {
+            pipelineGraph->FindAllPaths(srcNode->GetNodeId(), destNode->GetNodeId());
+            // traversal event getting handled in TraversalEventHandler
+        }
+
+    // Get ids of all pipeline states
+    // Get all the meshId from a given path
+}
+
+
+
+

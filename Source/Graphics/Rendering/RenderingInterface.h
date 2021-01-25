@@ -49,7 +49,9 @@ public:
     void SetupRenderer();
     void DislogeRenderer();
     void DeInit();
+    void PreRender();
     void Render();
+    void PostRenderLoopEnd();
 };
 
 #include "ForwardInterface.h"
@@ -249,9 +251,21 @@ inline void RenderingInterface<T>::DeInit()
 }
 
 template<typename T>
+inline void RenderingInterface<T>::PreRender()
+{
+    forwardRenderer->PreRender();
+
+}
+
+template<typename T>
 inline void RenderingInterface<T>::Render()
 {
     BeginRenderLoop();
 
     EndRenderLoop();
+}
+
+template<typename T>
+inline void RenderingInterface<T>::PostRenderLoopEnd()
+{
 }

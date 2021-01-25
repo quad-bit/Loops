@@ -32,12 +32,22 @@ void EngineManager::DeInit()
 
 void EngineManager::Update()
 {
+    // Before the update, will run just once
+    {
+        GraphicsManager::GetInstance()->PreUpdate();
+    }
+
     while (GraphicsManager::GetInstance()->IsWindowActive())
     {
         CoreManager::GetInstance()->Update();
         InputManager::GetInstance()->Update();
         ECS_Manager::GetInstance()->Update();
         GraphicsManager::GetInstance()->Update();
+    }
+
+    // After the update, will run just once
+    {
+        GraphicsManager::GetInstance()->PostUpdate();
     }
 }
 

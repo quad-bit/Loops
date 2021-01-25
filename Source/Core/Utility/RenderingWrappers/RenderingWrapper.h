@@ -3,6 +3,7 @@
 #include <Settings.h>
 #include <BitArray.h>
 #include <string>
+#include <map>
 
 enum class Format
 {
@@ -200,18 +201,18 @@ enum class MemoryType
 
 enum class PipelineStates
 {
-    VertexInputState,
-    InputAssemblyState,
-    ShaderStage,
-    ShaderResourcesLayout,
-    TessellationState,
-    ViewportState,
-    RasterizationState,
-    MultisampleState,
-    DepthStencilState,
-    ColorBlendState,
-    DynamicState,
-    NumStates
+    VertexInputState = 0,
+    InputAssemblyState = 1,
+    ShaderStage = 2,
+    ShaderResourcesLayout = 3,
+    TessellationState = 4,
+    ViewportState = 5,
+    RasterizationState = 6,
+    MultisampleState = 7,
+    DepthStencilState = 8,
+    ColorBlendState = 9,
+    DynamicState = 10,
+    NumStates = 11
 };
 
 enum class VertexIputRate
@@ -431,7 +432,7 @@ enum class ColorComponentFlagBits
     COLOR_COMPONENT_G_BIT = 0x00000002,
     COLOR_COMPONENT_B_BIT = 0x00000004,
     COLOR_COMPONENT_A_BIT = 0x00000008,
-    COLOR_COMPONENT_TRUE_BIT = 0xf,
+    COLOR_COMPONENT_ALL_TRUE_BIT = 0xf,
     COLOR_COMPONENT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
@@ -774,15 +775,12 @@ enum class ColorComponentFlagBits
         //uint32_t descriptorSetId;
     };
 
-    
-    /*struct UniformWrapper
+    struct PipelineCreateInfo
     {
-        std::vector<void*> rawMemPointers;
-        uint32_t descriptorSetId;
-        std::vector<uint32_t> bufferIds;
-        std::vector<uint32_t> memoryIds;
+        std::map<PipelineStates, uint32_t> statesToIdMap;
+        uint32_t renderPassId;
+        uint32_t subpassId;
     };
-*/
 
 #elif (RENDERING_API == DX12)
 

@@ -30,12 +30,12 @@ public:
 
     }
 
-    T * GetNode()
+    T * GetNodeData()
     {
         return node;
     }
 
-    const std::uint32_t & GetIndex() { return nodeId; }
+    const std::uint32_t & GetNodeId() { return nodeId; }
 
     friend class Graph<T>;
 };
@@ -209,7 +209,7 @@ inline bool Graph<T>::DepthFirstSearch(int startIndex, int endIndex)
 
     visitedVertices[startIndex] = 1;
 
-    std::cout << *vertices[startIndex]->GetNode(); // REMOVE>>!!!
+    std::cout << *vertices[startIndex]->GetNodeData(); // REMOVE>>!!!
 
     Stack<int> searchStack;
     int vert = 0;
@@ -227,7 +227,7 @@ inline bool Graph<T>::DepthFirstSearch(int startIndex, int endIndex)
         {
             visitedVertices[vert] = 1;
 
-            std::cout << *vertices[vert]->GetNode(); // REMOVE>>!!!
+            std::cout << *vertices[vert]->GetNodeData(); // REMOVE>>!!!
             searchStack.Push(vert);
         }
 
@@ -251,7 +251,7 @@ inline bool Graph<T>::BreadthFirstSearch(int startIndex, int endIndex)
 
     visitedVertices[startIndex] = 1;
 
-    std::cout << *vertices[startIndex]->GetNode(); // REMOVE>>!!!
+    std::cout << *vertices[startIndex]->GetNodeData(); // REMOVE>>!!!
 
     std::queue<int> searchQueue;
     int vert1 = 0, vert2 = 0;
@@ -271,7 +271,7 @@ inline bool Graph<T>::BreadthFirstSearch(int startIndex, int endIndex)
         while ((vert2 = GetNextUnvisitedVertex(vert1)) != -1)
         {
             visitedVertices[vert2] = 1;
-            std::cout << *vertices[vert2]->GetNode();
+            std::cout << *vertices[vert2]->GetNodeData();
             searchQueue.push(vert2);
         }
     }
@@ -327,10 +327,10 @@ inline void Graph<T>::FindAllPaths(int startIndex, int endIndex)
         if (vert == endIndex)
         {
             //path found
-            std::cout << "\n";
+            //std::cout << "\n";
             for (std::size_t i = 0; i < searchStack.size(); i++)
             {
-                std::cout << *vertices[searchStack[i]]->GetNode(); // REMOVE>>!!!
+                vertices[searchStack[i]]->GetNodeData()->Execute(); // REMOVE>>!!!
             }
 
             bool pathFound = true;

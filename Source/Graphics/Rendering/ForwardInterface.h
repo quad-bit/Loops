@@ -1,8 +1,8 @@
+#include <CorePrecompiled.h>
 #pragma once
 
 #include "VulkanInterface.h"
 #include "DxInterface.h"
-#include <CorePrecompiled.h>
 
 template <typename T>
 class DrawCommandBuffer;
@@ -22,6 +22,8 @@ public:
     void Init(T * apiInterface);
     void SetupRenderer();
     void DislogeRenderer();
+    void PreRender();
+    void PostRender();
     void BeginRender(DrawCommandBuffer<T> * drawCommandBuffer, const uint32_t & activeSwapChainIndex);
     void EndRender(DrawCommandBuffer<T> * drawCommandBuffer);
     void DeInit();
@@ -30,6 +32,7 @@ public:
 #include "RenderingWrapper.h"
 #include <Settings.h>
 #include <CorePrecompiled.h>
+#include "GraphicsPipelineManager.h"
 
 template<typename T>
 inline void ForwardRendering<T>::Init()
@@ -166,6 +169,17 @@ inline void ForwardRendering<T>::DislogeRenderer()
     apiInterface->DestroyRenderPass(defaultRenderPassId);
     apiInterface->DestroyDepthTarget(&defaultDepthTargetList, true);
     apiInterface->DestroyRenderTarget(&defaultRenderTargetList, true);
+}
+
+template<typename T>
+inline void ForwardRendering<T>::PreRender()
+{
+    GraphicsPipelineManager<T>::GetInstance()->GenerateAllPipelines(defaultRenderPassId, 0);
+}
+
+template<typename T>
+inline void ForwardRendering<T>::PostRender()
+{
 }
 
 template<typename T>

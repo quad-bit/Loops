@@ -38,5 +38,8 @@ public:
     static GraphicsManager* GetInstance();
     ~GraphicsManager();
 
+    void PreUpdate();
+    void PostUpdate();
+
     bool IsWindowActive();
 };

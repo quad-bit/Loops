@@ -1,21 +1,37 @@
+#include "CorePrecompiled.h"
+
 #pragma once
 #include "RenderingWrapper.h"
 #include "Shader.h"
+#include <map>
+#include <EventBus.h>
+
+#include <Event.h>
+
+struct GraphTraversalEvent : public Event
+{
+    
+};
+
+#define PRINT_STATE 1
+
+extern std::map<PipelineStates, uint32_t> stateToIdMap;
 
 struct StateWrapperBase
 {
 protected:
     uint32_t id;
+
 public:
     PipelineStates state;
     std::vector<uint32_t> meshIdList;
 
-    const uint32_t & GetId()
+    const uint32_t & GetId() const
     {
         return id;
     }
 
-    virtual void Execute() {}
+    virtual void Execute() = 0;
 };
 
 template<typename T>
@@ -40,6 +56,14 @@ struct VertexInputWrapper : public StateWrapperBase
         AssignId<VertexInputWrapper>(&this->id);
         state = PipelineStates::VertexInputState;
     }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE 
+        PLOGD << std::to_string(this->GetId())  + " PipelineStates::VertexInputState " ;
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::VertexInputState, id }));
+    }
 };
 
 struct InputAssemblyWrapper : public StateWrapperBase
@@ -51,6 +75,15 @@ struct InputAssemblyWrapper : public StateWrapperBase
     {
         AssignId<InputAssemblyWrapper>(&this->id);
         state = PipelineStates::InputAssemblyState;
+    }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE 
+        PLOGD << this->GetId() + " PipelineStates::InputAssemblyState";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::InputAssemblyState, id }));
+
     }
 };
 
@@ -65,6 +98,15 @@ struct ShaderStateWrapper : public StateWrapperBase
     {
         AssignId<ShaderStateWrapper>(&this->id);
         state = PipelineStates::ShaderStage;
+    }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << this->GetId() + " PipelineStates::ShaderStateWrapper";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderStage, id }));
+
     }
 };
 
@@ -82,6 +124,15 @@ struct ShaderResourceStateWrapper : public StateWrapperBase
         AssignId<ShaderResourceStateWrapper>(&this->id);
         state = PipelineStates::ShaderResourcesLayout;
     }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << this->GetId() + " PipelineStates::ShaderResourcesLayout";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderResourcesLayout, id }));
+
+    }
 };
 
 struct TessellationStateWrapper : public StateWrapperBase
@@ -92,6 +143,15 @@ struct TessellationStateWrapper : public StateWrapperBase
     {
         AssignId<TessellationStateWrapper>(&this->id);
         state = PipelineStates::TessellationState;
+    }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << std::to_string(this->GetId()) + " PipelineStates::Tessellation";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::TessellationState, id }));
+
     }
 };
 
@@ -104,6 +164,15 @@ struct ColorBlendStateWrapper : public StateWrapperBase
         AssignId<ColorBlendStateWrapper >(&this->id);
         state = PipelineStates::ColorBlendState;
     }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << std::to_string(this->GetId())  + " PipelineStates::Colorblend";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ColorBlendState, id }));
+
+    }
 };
 
 struct ViewPortStateWrapper : public StateWrapperBase
@@ -114,6 +183,15 @@ struct ViewPortStateWrapper : public StateWrapperBase
     {
         AssignId<ViewPortStateWrapper>(&this->id);
         state = PipelineStates::ViewportState;
+    }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << std::to_string(this->GetId())  + " PipelineStates::Viewport";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ViewportState, id }));
+
     }
 };
 
@@ -126,6 +204,15 @@ struct RasterizationStateWrapper : public StateWrapperBase
         AssignId<RasterizationStateWrapper>(&this->id);
         state = PipelineStates::RasterizationState;
     }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << std::to_string(this->GetId())  + " PipelineStates::Rasterisation";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::RasterizationState, id }));
+
+    }
 };
 
 struct MultiSampleStateWrapper : public StateWrapperBase
@@ -136,6 +223,15 @@ struct MultiSampleStateWrapper : public StateWrapperBase
     {
         AssignId<MultiSampleStateWrapper>(&this->id);
         state = PipelineStates::MultisampleState;
+    }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << std::to_string(this->GetId())  + " PipelineStates::MultiSample";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::MultisampleState, id }));
+
     }
 };
 
@@ -148,6 +244,15 @@ struct DepthStencilStateWrapper : public StateWrapperBase
         AssignId<DepthStencilStateWrapper>(&this->id);
         state = PipelineStates::DepthStencilState;
     }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << std::to_string(this->GetId())  + " PipelineStates::DepthStencilState";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DepthStencilState, id }));
+
+    }
 };
 
 struct DynamicStateWrapper : public StateWrapperBase
@@ -158,5 +263,16 @@ struct DynamicStateWrapper : public StateWrapperBase
     {
         AssignId<DynamicStateWrapper>(&this->id);
         state = PipelineStates::DynamicState;
+    }
+
+    virtual void Execute() override
+    {
+#if PRINT_STATE
+        PLOGD << std::to_string(this->GetId())  + " PipelineStates::DynamicState";
+#endif
+        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DynamicState, id }));
+        
+        GraphTraversalEvent event;
+        EventBus::GetInstance()->Publish(&event);
     }
 };
