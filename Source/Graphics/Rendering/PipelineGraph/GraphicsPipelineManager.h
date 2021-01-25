@@ -50,6 +50,7 @@ private:
     uint32_t pipelineIdCounter = 0;
     uint32_t GeneratePipelineId();
     
+    std::vector<PipelineCreateInfo> pipelineCreateInfoList;
     std::vector<PipelineWrapper> pipelineList;
 
     //really heavy function
@@ -269,7 +270,7 @@ inline void GraphicsPipelineManager<T>::CreateDepthStencilDefault()
     depthStencil->depthWriteEnable = true;
     depthStencil->front = depthStencil->back;
     depthStencil->maxDepthBounds = 0;
-    depthStencil->maxDepthBounds = 0;
+    depthStencil->minDepthBounds = 0;
     depthStencil->stencilTestEnable = false;
 
     wrapper->depthState = depthStencil;
@@ -982,12 +983,9 @@ inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEven
     info.subpassId = subPassId;
     info.statesToIdMap = stateToIdMap;
 
-    // Generate pipeline
-    PipelineWrapper wrapper = {};
-    wrapper.id = GeneratePipelineId();
-    //wrapper.meshList = ;
+    pipelineCreateInfoList.push_back(info);
 
-    apiInterface->CreatePipeline(&info, wrapper.id);
+    
     stateToIdMap.clear();
 }
 
@@ -1005,7 +1003,8 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & re
     // Get all the dest states
     std::vector<GraphNode<StateWrapperBase> * > destNodeList = stateToNodeMap[PipelineStates::DynamicState];
 
-    // Execute Traversal
+    // Execute Traversal, the above function TraversalEventHandler, gets triggered 
+    // for every path traversal.
     for each(auto srcNode in sourceNodeList)
         for each (auto destNode in destNodeList)
         {
@@ -1013,6 +1012,25 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & re
             // traversal event getting handled in TraversalEventHandler
         }
 
+    // TraversalEventHandler gets triggered first
+
+    uint32_t numPipelines = (uint32_t)pipelineCreateInfoList.size();
+    uint32_t * ids = new uint32_t[numPipelines];
+
+    for (uint32_t i = 0; i < numPipelines; i++)
+    {
+        // Generate pipeline
+        PipelineWrapper wrapper = {};
+        wrapper.id = GeneratePipelineId();
+        //wrapper.meshList = ;
+        pipelineList.push_back(wrapper);
+
+        ids[i] = wrapper.id;
+    }
+
+    apiInterface->CreatePipeline(&pipelineCreateInfoList[0], numPipelines, ids);
+
+    delete[] ids;
     // Get ids of all pipeline states
     // Get all the meshId from a given path
 }

@@ -64,7 +64,10 @@ private:
     std::map<uint32_t, VkPipelineColorBlendStateCreateInfo *> idToColorBlendMap;
     std::map<uint32_t, VkPipelineDynamicStateCreateInfo *> idToDynamicMap;
     std::map<uint32_t, VkGraphicsPipelineCreateInfo *> idToPipelineInfoMap;
-        
+    std::map<uint32_t, VkPipeline *> idToPipelineMap;
+
+    std::vector<VkPipeline *> tempVectorToBeDeleted;
+
     //deprecated
     VkVertexInputAttributeDescription UnwrapVertexInputAttributeInfo(VertexInputAttributeInfo * info);
     //deprecated
@@ -96,6 +99,7 @@ private:
     void DestroyColorBlendState();
     void DestroyMultiSampleState();
     void DestroyDynamicState();
+    void DestroyPipelines();
 
 public:
     void Init();
@@ -117,5 +121,5 @@ public:
     void CreateMultiSampleState(const MultiSampleStateWrapper * wrapper);
     void CreateDynamicState(const DynamicStateWrapper * wrapper);
 
-    void CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineId);
+    void CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineCount, uint32_t * pipelineId);
 };

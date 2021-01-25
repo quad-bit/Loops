@@ -144,7 +144,7 @@ public:
     void CreateColorBlendState(const ColorBlendStateWrapper * wrapper);
     void CreateMultiSampleState(const MultiSampleStateWrapper * wrapper);
     void CreateDynamicState(const DynamicStateWrapper * wrapper);
-    void CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineId);
+    void CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineCount, uint32_t * pipelineId);
 
     std::vector<SetWrapper *> GetSetsForShaders(const std::vector<std::string> & shaderNames);
     uint32_t CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets);

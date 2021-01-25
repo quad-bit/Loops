@@ -752,9 +752,9 @@ void VulkanInterface::CreateDynamicState(const DynamicStateWrapper * wrapper)
     VulkanGraphicsPipelineFactory::GetInstance()->CreateDynamicState(wrapper);
 }
 
-void VulkanInterface::CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineId)
+void VulkanInterface::CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineCount, uint32_t * pipelineId)
 {
-    VulkanGraphicsPipelineFactory::GetInstance()->CreatePipeline(info, pipelineId);
+    VulkanGraphicsPipelineFactory::GetInstance()->CreatePipeline(info, pipelineCount, pipelineId);
 }
 
 std::vector<SetWrapper*> VulkanInterface::GetSetsForShaders(const std::vector<std::string>& shaderNames)

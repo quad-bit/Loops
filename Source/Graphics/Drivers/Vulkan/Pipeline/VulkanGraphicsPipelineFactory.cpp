@@ -4,6 +4,9 @@
 #include "VkRenderingUnwrapper.h"
 #include <CorePrecompiled.h>
 #include "VkShaderFactory.h"
+#include "VulkanUtility.h"
+#include "VkRenderPassFactory.h"
+#include "VkShaderResourceManager.h"
 
 VulkanGraphicsPipelineFactory* VulkanGraphicsPipelineFactory::instance = nullptr;
 
@@ -682,6 +685,21 @@ void VulkanGraphicsPipelineFactory::DestroyDynamicState()
     idToDynamicMap.clear();
 }
 
+void VulkanGraphicsPipelineFactory::DestroyPipelines()
+{
+    for each(auto obj in idToPipelineMap)
+    {
+        vkDestroyPipeline(*CoreObjects::logicalDeviceObj, *obj.second, CoreObjects::pAllocator);
+    }
+    idToPipelineMap.clear();
+
+    for each(auto obj in tempVectorToBeDeleted)
+    {
+        delete[] obj;
+    }
+    tempVectorToBeDeleted.clear();
+}
+
 //deprecated
 VkVertexInputAttributeDescription VulkanGraphicsPipelineFactory::UnwrapVertexInputAttributeInfo(VertexInputAttributeInfo * info)
 {
@@ -699,10 +717,10 @@ VkVertexInputAttributeDescription * VulkanGraphicsPipelineFactory::UnwrapVertexI
     VkVertexInputAttributeDescription * inputAttributeDesc = new VkVertexInputAttributeDescription[count];
     for (uint32_t i = 0; i < count; i++)
     {
-        inputAttributeDesc[i].binding = info->binding;
-        inputAttributeDesc[i].location = info->location;
-        inputAttributeDesc[i].offset = info->offset;
-        inputAttributeDesc[i].format = UnWrapFormat(info->format);
+        inputAttributeDesc[i].binding = info[i].binding;
+        inputAttributeDesc[i].location = info[i].location;
+        inputAttributeDesc[i].offset = info[i].offset;
+        inputAttributeDesc[i].format = UnWrapFormat(info[i].format);
     }
     return inputAttributeDesc;
 }
@@ -767,12 +785,13 @@ void VulkanGraphicsPipelineFactory::DeInit()
     DestroyColorBlendState();
     DestroyMultiSampleState();
     DestroyDynamicState();
-
+    DestroyPipelines();
+/*
     size_t numObjects = pipelineList.size();
     for (uint32_t i = 0; i < numObjects; i++)
     {
         delete pipelineList[i];
-    }
+    }*/
 }
 
 void VulkanGraphicsPipelineFactory::Update()
@@ -832,7 +851,7 @@ void VulkanGraphicsPipelineFactory::CreateShaderState(const ShaderStateWrapper *
     vkStateWrapper->shaderCount = shaderStateWrapper->shaderCount;
 
     vkStateWrapper->shaderStageCreateInfo = new VkPipelineShaderStageCreateInfo[vkStateWrapper->shaderCount];
-
+    vkStateWrapper->id = shaderStateWrapper->GetId();
     for (uint32_t i = 0; i < vkStateWrapper->shaderCount; i++)
     {
         VkPipelineShaderStageCreateInfo * vkInfo = &vkStateWrapper->shaderStageCreateInfo[i];
@@ -868,6 +887,7 @@ void VulkanGraphicsPipelineFactory::CreateViewportState(const ViewPortStateWrapp
     info->pNext = nullptr;
     info->scissorCount = wrapper->viewportState->scissorCount;
     info->viewportCount = wrapper->viewportState->viewportCount;
+    info->sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 
     if (wrapper->viewportState->pScissors == nullptr)
         info->pScissors = nullptr;
@@ -882,6 +902,7 @@ void VulkanGraphicsPipelineFactory::CreateViewportState(const ViewPortStateWrapp
     {
         ASSERT_MSG(0, "Yet to be implemented");
     }
+    
     idToViewportMap.insert(std::pair<uint32_t, VkPipelineViewportStateCreateInfo *>({wrapper->GetId(), info}));
 }
 
@@ -980,9 +1001,65 @@ void VulkanGraphicsPipelineFactory::CreateDynamicState(const DynamicStateWrapper
     idToDynamicMap.insert(std::pair<uint32_t, VkPipelineDynamicStateCreateInfo *>({ wrapper->GetId(), info }));
 }
 
-void VulkanGraphicsPipelineFactory::CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineId)
+void VulkanGraphicsPipelineFactory::CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineCount, uint32_t * pipelineIds)
 {
-    int k = 0;
+    std::vector<VkGraphicsPipelineCreateInfo> infoList;
+    infoList.resize(pipelineCount);
+    
+    VkPipeline * list = new VkPipeline[pipelineCount];
+
+    for (uint32_t i = 0; i < pipelineCount; i++)
+    {
+        std::vector<VkShaderStageWrapper *>::iterator it;
+
+        it = std::find_if(shaderStageWrapperList.begin(), shaderStageWrapperList.end(), [&](VkShaderStageWrapper * e) {
+            return e->id == info[i].statesToIdMap[PipelineStates::ShaderStage]; });
+
+        ASSERT_MSG(it != shaderStageWrapperList.end(), "Shader stage id not found");
+
+        VkPipelineLayout layout = *VkShaderResourceManager::GetInstance()->GetPipelineLayout(info[i].statesToIdMap[PipelineStates::ShaderResourcesLayout]);
+        VkRenderPass renderpass = *VkRenderPassFactory::GetInstance()->GetRenderPass(info[i].renderPassId);
+
+        VkGraphicsPipelineCreateInfo vkinfo = {};
+        vkinfo.basePipelineHandle = VK_NULL_HANDLE;
+        vkinfo.basePipelineIndex = -1;
+        vkinfo.flags = 0;
+        vkinfo.layout = layout;
+        vkinfo.pColorBlendState = idToColorBlendMap[info[i].statesToIdMap[PipelineStates::ColorBlendState]];
+        vkinfo.pDepthStencilState = idToDepthStencilMap[info[i].statesToIdMap[PipelineStates::DepthStencilState]];
+        vkinfo.pDynamicState = idToDynamicMap[info[i].statesToIdMap[PipelineStates::DynamicState]];
+        vkinfo.pInputAssemblyState = idToInputAssemblyMap[info[i].statesToIdMap[PipelineStates::InputAssemblyState]];
+        vkinfo.pMultisampleState = idToMultiSampleMap[info[i].statesToIdMap[PipelineStates::MultisampleState]];
+        vkinfo.pNext = nullptr;
+        vkinfo.pRasterizationState = idToRasterizationMap[info[i].statesToIdMap[PipelineStates::RasterizationState]];
+        vkinfo.pStages = (*it)->shaderStageCreateInfo;
+        vkinfo.pTessellationState = idToTessellationMap[info[i].statesToIdMap[PipelineStates::TessellationState]];
+        vkinfo.pVertexInputState = idToVertexInputMap[info[i].statesToIdMap[PipelineStates::VertexInputState]];
+        vkinfo.pViewportState = idToViewportMap[info[i].statesToIdMap[PipelineStates::ViewportState]];
+        vkinfo.renderPass = renderpass;
+        vkinfo.stageCount = (*it)->shaderCount;
+        vkinfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        vkinfo.subpass = info[i].subpassId;
+
+        infoList[i] = vkinfo;
+    }
+
+    VkPipelineCache cache = VK_NULL_HANDLE;
+
+    ErrorCheck(vkCreateGraphicsPipelines(
+        *CoreObjects::logicalDeviceObj,
+        cache,
+        infoList.size(),
+        infoList.data(),
+        CoreObjects::pAllocator,
+        list));
+    
+    for (uint32_t i = 0; i < pipelineCount; i++)
+    {
+        idToPipelineMap.insert(std::pair<uint32_t, VkPipeline *>({pipelineIds[i], &list[i]}));
+    }
+
+    tempVectorToBeDeleted.push_back(list);
 }
 
 /*

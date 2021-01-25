@@ -50,6 +50,7 @@ private:
     std::map< uint32_t, VkDescriptorSet> idToSetMap;
     std::vector<ShaderResources> perShaderResourceList;
     std::vector<PipelineLayoutWrapper> pipelineLayoutWrapperList;
+    std::vector<VkDescriptorSetLayout> fillerSetLayouts;
 
     void CreateUniqueSetLayoutWrapper(std::vector<BindingWrapper> & bindingList, std::string shaderName, uint32_t set);
     void AccumulateSetLayoutPerShader(std::string shaderName, SetWrapper * setWrapper);
@@ -61,6 +62,9 @@ private:
     std::string GetShaderNameFromRefl(const std::string & reflName);
 
     VkDescriptorSet GetDescriptorSet(const uint32_t & id);
+    
+    // will add fller setlayouts in case intermediate sets are missing.
+    void GetSetLayouts(SetWrapper ** setWrapperList, const uint32_t & numSets, std::vector<VkDescriptorSetLayout> & layoutList);
 
 public:
     void Init();
@@ -71,11 +75,9 @@ public:
 
     std::vector<SetWrapper*> GetSetsForShaders(const std::vector<std::string> & shaderNames);
     uint32_t CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets);
-
+    VkPipelineLayout * GetPipelineLayout(const uint32_t & id);
     std::vector<SetWrapper*> * GetSetWrapperList();
-    //SetWrapper * GetSetWrapper(const uint32_t & set, const std::string & shaderName);
-    //BindingWrapper * GetBinding(const std::string& bindingName, DescriptorType type, const uint32_t & set,
-    //    const uint32_t & binding);
+    
 
     uint32_t * AllocateDescriptors(SetWrapper * set, const uint32_t & numDescriptors);
     void LinkSetBindingToResources(ShaderBindingDescription * desc);
