@@ -57,6 +57,7 @@ public:
 #include "Entity.h"
 #include "EntityMap.h"
 #include "ComponentHandle.h"
+#include "Material.h"
 
 template<typename ComponentType>
 inline ComponentManager<ComponentType>::ComponentManager()
@@ -85,6 +86,18 @@ inline ComponentManager<ComponentType>::~ComponentManager()
 
 template<typename ComponentType>
 inline ComponentIndex ComponentManager<ComponentType>::AddComponent(ComponentType * componentType, Entity * entity)
+{
+    ComponentIndex ind = componentDataObj.size;
+    componentDataObj.data->at(ind) = componentType;
+
+    entityMapObj->AddToMap(entity, &ind);
+    componentDataObj.size++;
+
+    return ind;
+}
+
+template<>
+inline ComponentIndex ComponentManager<Material>::AddComponent(Material * componentType, Entity * entity)
 {
     ComponentIndex ind = componentDataObj.size;
     componentDataObj.data->at(ind) = componentType;
@@ -133,13 +146,4 @@ inline void ComponentManager<ComponentType>::iterateAll(std::function<void(Compo
     for (int i = 1; i<componentDataObj.size; i++) {
         lambda(componentDataObj.data[i]);
     }
-
-    /*
-
-    componentManager.iterateAll([](positionComponent c){
-    c.position += c.velocity;
-    c.velocity += c.acceleration;
-    }
-
-    */
 }

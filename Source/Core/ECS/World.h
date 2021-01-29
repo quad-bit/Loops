@@ -77,10 +77,10 @@ public:
     template<typename ComponentType, typename... Args>
     void Unpack(Entity* e, ComponentHandle<ComponentType>** handle, ComponentHandle<Args>**... args)
     {
-        typedef ComponentManager<ComponentType> componentTypeManagerType;
+        typedef ComponentManager<ComponentType> componentManagerType;
 
         componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
-        handle = (manager->GetComponentHandle(e));
+        *handle = (manager->GetComponentHandle(e));
 
         Unpack<Args...>(e, args...);
     }

@@ -1,3 +1,4 @@
+#include <CorePrecompiled.h>
 #include "ECS_EngineManager.h"
 #include "World.h"
 #include "Transform.h"
@@ -7,10 +8,11 @@
 #include "ECS_Setting.h"
 #include "EventBus.h"
 #include "Mesh.h"
-#include <CorePrecompiled.h>
 #include "Material.h"
 #include "Camera.h"
 #include "CameraSystem.h"
+#include "MeshRenderer.h"
+#include "MeshRendererSystem.h"
 
 ECS_Manager* ECS_Manager::instance = nullptr;
 World * worldObj;
@@ -26,6 +28,7 @@ void ECS_Manager::Init()
     meshManager = worldObj->CreateManager<Mesh>();
     materialManager = worldObj->CreateManager<Material>();
     cameraManager = worldObj->CreateManager<Camera>();
+    meshRendererManager = worldObj->CreateManager<MeshRenderer>();
 
     scriptableSystemObj = new ScriptableSystem();
     worldObj->AddSystem(scriptableSystemObj);
@@ -35,6 +38,9 @@ void ECS_Manager::Init()
 
     cameraSystemObj = new CameraSystem();
     worldObj->AddSystem(cameraSystemObj);
+
+    meshRendererSystem = new MeshRendererSystem();
+    worldObj->AddSystem(meshRendererSystem);
 
     worldObj->Init();
 }
@@ -48,6 +54,7 @@ void ECS_Manager::DeInit()
 
     worldObj->DeInit();
 
+    delete meshRendererSystem;
     delete cameraSystemObj;
     delete transformSystemObj;
     delete scriptableSystemObj;

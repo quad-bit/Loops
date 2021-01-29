@@ -9,6 +9,7 @@
 #include <BitArray.h>
 #include <MaterialFactory.h>
 #include <Camera.h>
+#include <MeshRenderer.h>
 
 PlayerHandlerScript::PlayerHandlerScript()
 {
@@ -57,9 +58,11 @@ PlayerHandlerScript::PlayerHandlerScript()
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "Color.frag";
 
-        //ShaderFactory::GetInstance()->CreateShader(torsoMesh->meshId, shaders, 2);
         Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
         torso->AddComponent<Material>(mat);
+
+        torsoMeshRenderer = new MeshRenderer(torsoMesh, mat);
+        torso->AddComponent<MeshRenderer>(torsoMeshRenderer);
     }
 
     // HEAD
@@ -93,9 +96,11 @@ PlayerHandlerScript::PlayerHandlerScript()
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "Color.frag";
 
-        //ShaderFactory::GetInstance()->CreateShader(headMesh->meshId, shaders, 2);
         Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, headMesh->componentId);
         head->AddComponent<Material>(mat);
+
+        headMeshRenderer = new MeshRenderer(headMesh, mat);
+        head->AddComponent<MeshRenderer>(headMeshRenderer);
     }
 
     //LEFT ARM

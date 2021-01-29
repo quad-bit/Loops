@@ -3,6 +3,7 @@
 #include <Scriptable.h>
 
 class EntityHandle;
+class MeshRenderer;
 
 class PlayerHandlerScript : public Scriptable
 {
@@ -16,6 +17,13 @@ private:
     EntityHandle* rightArm;
     EntityHandle* rightLeg;
     EntityHandle* leftLeg;
+
+    MeshRenderer * headMeshRenderer;
+    MeshRenderer * torsoMeshRenderer;
+    MeshRenderer * leftArmMeshRenderer;
+    MeshRenderer * rightArmMeshRenderer;
+    MeshRenderer * rightLegMeshRenderer;
+    MeshRenderer * leftLegMeshRenderer;
 
 public:
     PlayerHandlerScript();

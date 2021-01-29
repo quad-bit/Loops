@@ -1,7 +1,7 @@
 
 #pragma once
 #include "System.h"
-#pragma once
+
 class Scriptable;
 
 class ScriptableSystem : public System

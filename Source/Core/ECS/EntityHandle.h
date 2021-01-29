@@ -53,6 +53,7 @@ public:
 #include "Camera.h"
 #include "ComponentAdditionEvent.h"
 #include "EventBus.h"
+#include "MeshRenderer.h"
 
 template<typename ComponentType>
 inline void EntityHandle::AddComponent(ComponentType * componentType)
@@ -67,6 +68,16 @@ inline void EntityHandle::AddComponent(Camera * componentType)
     
     CameraAdditionEvent evt;
     evt.cam = componentType;
+    EventBus::GetInstance()->Publish(&evt);
+}
+
+template<>
+inline void EntityHandle::AddComponent(MeshRenderer * componentType)
+{
+    worldObj->AddComponent<MeshRenderer>(componentType, entityObj);
+
+    MeshRendererAdditionEvent evt;
+    evt.renderer = componentType;
     EventBus::GetInstance()->Publish(&evt);
 }
 

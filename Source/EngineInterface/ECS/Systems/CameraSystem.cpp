@@ -8,12 +8,13 @@
 #include "ComponentAdditionEvent.h"
 #include "ShaderResourceDescription.h"
 #include "UniformFactory.h"
+#include "ResourceAllocationHelper.h"
 
-uint32_t CameraSystem::GetCamId()
+uint32_t CameraSystem::GeneratedCamId()
 {
     return idCounter++;
 }
-
+/*
 size_t CameraSystem::GetDataSizeMeantForSharing()
 {
     return sizeof(CameraUniform) * allocConfig.numDescriptors * resourceSharingConfig.maxUniformPerResource;
@@ -40,7 +41,7 @@ bool CameraSystem::IsNewAllocationRequired()
     else
         return false;
 }
-
+*/
 void CameraSystem::Init()
 {
     EventBus::GetInstance()->Subscribe<CameraSystem, CameraAdditionEvent>(this, &CameraSystem::HandleCameraAddition);
@@ -79,7 +80,7 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
 {
     // recieved the camera addition to the scene 
     cameraList.push_back(inputEvent->cam);
-    inputEvent->cam->componentId = GetCamId();
+    inputEvent->cam->componentId = GeneratedCamId();
 
     ShaderBindingDescription * desc = new ShaderBindingDescription;
     desc->set = 0;
@@ -91,13 +92,13 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     desc->parentType = inputEvent->cam->type;
     desc->dataSizePerDescriptor = sizeof(CameraUniform);
     desc->uniformId = inputEvent->cam->componentId; // as one cam = one uniform
-    desc->offsetsForEachDescriptor = CalculateOffsetsForDescInUniform(sizeof(CameraUniform));
+    desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(sizeof(CameraUniform), allocConfig, resourceSharingConfig);
     desc->allocationConfig = allocConfig;
 
     // Check if it can be fit into an existing buffer
-    if (IsNewAllocationRequired())
+    if (AllocationUtility::IsNewAllocationRequired(resourceSharingConfig))
     {
-        size_t totalSize = GetDataSizeMeantForSharing();
+        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(sizeof(CameraUniform), allocConfig, resourceSharingConfig);
         // True : Allocate new buffer
         cameraSetWrapper = UniformFactory::GetInstance()->AllocateResource(desc, &totalSize,  1, AllocationMethod::LAZY);
     }
@@ -115,15 +116,13 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     obj.projectionMat = inputEvent->cam->GetProjectionMat();
     obj.viewMat = inputEvent->cam->GetViewMatrix();
 
-    uint32_t numDescriptorsPerBinding = Settings::maxFramesInFlight;
-
     //upload data to buffers
-    for(uint32_t i = 0; i < numDescriptorsPerBinding; i++)
+    for(uint32_t i = 0; i < allocConfig.numDescriptors; i++)
     {
         UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, &obj, desc->offsetsForEachDescriptor[i], false);
     }
 
-    UniformFactory::GetInstance()->AllocateDescriptors(cameraSetWrapper, desc, 1);
+    UniformFactory::GetInstance()->AllocateDescriptors(cameraSetWrapper, desc, 1, allocConfig.numDescriptors);
 
     // draw graph node creation
     // top level node as its Set 0
@@ -204,8 +203,6 @@ void CameraSystem::UpdateCameraVectors(Camera * cam)
     cam->GetRight() = glm::normalize(glm::cross(cam->GetFront(), cam->GetWorlUp()));  // Normalize the vectors, because their length gets closer to 0 the more you look up or down which results in slower movement.
     cam->GetUp() = glm::normalize(glm::cross(cam->GetRight(), cam->GetFront()));
 }
-
-
 
 
 #include "DrawCommandBuffer.h"

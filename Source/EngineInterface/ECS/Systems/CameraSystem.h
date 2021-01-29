@@ -17,7 +17,6 @@ public:
     virtual void Execute() override;
 };
 
-
 class CameraSystem : public System
 {
 private:
@@ -39,10 +38,10 @@ private:
     GlobalResourceSharingConfig resourceSharingConfig;
 
     uint32_t idCounter = 0;
-    uint32_t GetCamId();
-    size_t GetDataSizeMeantForSharing();
-    std::vector<size_t> CalculateOffsetsForDescInUniform(size_t dataSizePerDescriptor);
-    bool IsNewAllocationRequired();
+    uint32_t GeneratedCamId();
+    //size_t GetDataSizeMeantForSharing();
+    //std::vector<size_t> CalculateOffsetsForDescInUniform(size_t dataSizePerDescriptor);
+    //bool IsNewAllocationRequired();
 
     SetWrapper * cameraSetWrapper;
 

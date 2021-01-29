@@ -50,5 +50,5 @@ public:
     // Create buffers/images
     SetWrapper * AllocateResource(ShaderBindingDescription * desc, size_t * allocationSize, const uint32_t & numBindings, AllocationMethod allocation);
     void UploadDataToBuffers(const uint32_t & bufId, const size_t & dataSize, void * data, const size_t & memoryOffset, bool keepMemoryMounted);
-    void AllocateDescriptors(SetWrapper * wrapper, ShaderBindingDescription * desc, const uint32_t & numBindings);
+    void AllocateDescriptors(SetWrapper * wrapper, ShaderBindingDescription * desc, const uint32_t & numBindings, const uint32_t & numDescriptorsPerBinding);
 };

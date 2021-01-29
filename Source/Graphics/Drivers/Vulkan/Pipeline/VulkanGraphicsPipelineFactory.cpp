@@ -1049,7 +1049,7 @@ void VulkanGraphicsPipelineFactory::CreatePipeline(PipelineCreateInfo * info, co
     ErrorCheck(vkCreateGraphicsPipelines(
         *CoreObjects::logicalDeviceObj,
         cache,
-        infoList.size(),
+        (uint32_t)infoList.size(),
         infoList.data(),
         CoreObjects::pAllocator,
         list));

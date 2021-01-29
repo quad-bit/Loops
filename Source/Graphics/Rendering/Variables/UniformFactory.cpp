@@ -133,15 +133,14 @@ void UniformFactory::UploadDataToBuffers(const uint32_t & bufId, const size_t & 
     apiInterface->CopyBufferDataToMemory(bufId, dataSize, data, memoryOffset);
 }
 
-void UniformFactory::AllocateDescriptors(SetWrapper * wrapper, ShaderBindingDescription * desc, const uint32_t & numBindings)
+void UniformFactory::AllocateDescriptors(SetWrapper * wrapper, ShaderBindingDescription * desc, const uint32_t & numBindings, const uint32_t & numDescriptorsPerBinding)
 {
     // Allocate descriptor sets
-    uint32_t numDescriptorSetsPerSet = Settings::maxFramesInFlight;
-    uint32_t * descriptorIds = apiInterface->AllocateDescriptorsForASet(wrapper, numDescriptorSetsPerSet);
+    uint32_t * descriptorIds = apiInterface->AllocateDescriptorsForASet(wrapper, numDescriptorsPerBinding);
 
     for (uint32_t i = 0; i < numBindings; i++)
     {
-        for (uint32_t k = 0; k < numDescriptorSetsPerSet; k++)
+        for (uint32_t k = 0; k < numDescriptorsPerBinding; k++)
             desc[i].descriptorIds.push_back(descriptorIds[k]);
 
         // update the descriptors

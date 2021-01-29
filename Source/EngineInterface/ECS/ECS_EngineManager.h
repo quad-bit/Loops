@@ -7,6 +7,7 @@ class Scriptable;
 class Mesh;
 class Material;
 class Camera;
+class MeshRenderer;
 
 template<typename T>
 class ComponentManager;
@@ -34,6 +35,9 @@ public:
 
     ComponentManager<Mesh>* meshManager;
     ComponentManager<Material>* materialManager;
+
+    ComponentManager<MeshRenderer>* meshRendererManager;
+    System* meshRendererSystem;
 
     void Init();
     void DeInit();
