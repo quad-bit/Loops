@@ -26,8 +26,6 @@ ShaderFactory::~ShaderFactory()
 {
 }
 
-
-
 std::vector<SetWrapper*> ShaderFactory::CreateShader(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount)
 {
     // Get the ids for each shader object.

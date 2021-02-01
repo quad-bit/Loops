@@ -4,6 +4,17 @@
 #include "PipelineStateWrappers.h"
 #include <Graph.h>
 #include <vector>
+#include "DrawGraphNode.h"
+
+class PipelineDrawNode : public DrawGraphNode
+{
+public:
+    virtual void Execute() override;
+    PipelineDrawNode()
+    {
+        drawNodeType = DrawNodeTypes::PIPELINE;
+    }
+};
 
 struct PipelineWrapper
 {
@@ -52,6 +63,7 @@ private:
     
     std::vector<PipelineCreateInfo> pipelineCreateInfoList;
     std::vector<PipelineWrapper> pipelineList;
+    std::vector<GraphNode<DrawGraphNode> * > pipelineDrawNodeList;
 
     //really heavy function
     void CreateGraphEdges();
@@ -736,6 +748,12 @@ inline void GraphicsPipelineManager<T>::DeInit()
     pipelineStateList.clear();
     meshToGraphNodeMap.clear();
     delete pipelineGraph;
+
+    for each(auto obj in pipelineDrawNodeList)
+    {
+        delete obj->node;
+        delete obj;
+    }
 }
 
 template<typename T>
@@ -866,7 +884,7 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
     wrapper->shaderCount = shaderCount;
 
     // check if the hash exist for the above object
-    uint32_t id = HashManager::GetInstance()->FindShaderStateHash(shaders, shaderCount, wrapper->GetId(), &wrapper->state);
+    int id = HashManager::GetInstance()->FindShaderStateHash(shaders, shaderCount, wrapper->GetId(), &wrapper->state);
     GraphNode<StateWrapperBase> * node;
 
     // if not add the wrapper to the list
@@ -982,10 +1000,10 @@ inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEven
     info.renderPassId = renderPassID;
     info.subpassId = subPassId;
     info.statesToIdMap = stateToIdMap;
-
+    info.meshList = pipelineStateMeshList;
     pipelineCreateInfoList.push_back(info);
-
     
+    pipelineStateMeshList.clear();
     stateToIdMap.clear();
 }
 
@@ -1022,10 +1040,18 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & re
         // Generate pipeline
         PipelineWrapper wrapper = {};
         wrapper.id = GeneratePipelineId();
-        //wrapper.meshList = ;
+        wrapper.meshList = pipelineCreateInfoList[i].meshList;
         pipelineList.push_back(wrapper);
 
         ids[i] = wrapper.id;
+
+        DrawGraphNode * pipelineNode = new PipelineDrawNode;
+        pipelineNode->setWrapper = nullptr;
+        pipelineNode->meshList = wrapper.meshList;
+        
+        GraphNode<DrawGraphNode> * pipelinGraphNode = new GraphNode<DrawGraphNode>(pipelineNode);
+        DrawGraphManager::GetInstance()->AddNode(pipelinGraphNode);
+        pipelineDrawNodeList.push_back(pipelinGraphNode);
     }
 
     apiInterface->CreatePipeline(&pipelineCreateInfoList[0], numPipelines, ids);

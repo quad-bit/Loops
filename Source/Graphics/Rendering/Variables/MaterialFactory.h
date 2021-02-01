@@ -5,6 +5,12 @@
 
 struct ShaderDescription;
 
+struct MatSetWrapper
+{
+    Material * mat;
+    std::vector<SetWrapper * > wrapperList;
+};
+
 class MaterialFactory
 {
 private:
@@ -19,7 +25,7 @@ private:
     void DecrementMatCounter();
 
     std::map<uint32_t, Material*> idToMaterialMap;
-
+    std::vector<MatSetWrapper> matSetWrapperList;
     void CreateSetResources(std::vector<SetWrapper *> setWrapperList);
 
 public:
@@ -31,4 +37,9 @@ public:
 
     //Material * CreateMaterial(Shader * shaders, const uint32_t & shaderCount, const uint32_t & meshId);
     Material * CreateMaterial(ShaderDescription * shaders, const uint32_t & shaderCount, const uint32_t & meshId);
+    void AddMeshIds(Material * mat, const uint32_t & meshId);
+
+    std::vector<uint32_t> GetMeshList(SetWrapper * setwrapper, const uint32_t & setWrapperCount);
 };
+
+

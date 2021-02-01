@@ -147,3 +147,9 @@ void UniformFactory::AllocateDescriptors(SetWrapper * wrapper, ShaderBindingDesc
         apiInterface->LinkSetBindingToResources(&desc[i]);
     }
 }
+
+std::vector<uint32_t> UniformFactory::AcquireMeshList(SetWrapper * wrapper)
+{
+
+    return std::vector<uint32_t>();
+}

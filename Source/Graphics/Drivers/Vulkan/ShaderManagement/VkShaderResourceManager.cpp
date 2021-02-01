@@ -58,6 +58,8 @@ uint32_t VkShaderResourceManager::GetVkDescriptorSetID()
 
 void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWrapper> & bindingList, std::string shaderName, uint32_t set)
 {
+    std::string glslShader = GetShaderNameFromRefl(shaderName);
+
     SetWrapper * setWrapper = new SetWrapper;
     setWrapper->bindingWrapperList = bindingList;
     setWrapper->setValue = set;
@@ -76,23 +78,23 @@ void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWr
             ASSERT_MSG(0, "Id mismatch");
         }
 
-        (*it)->shaderNames.push_back(shaderName);
-        (*it)->shaderFlags.push_back(GetTypeFromName(shaderName));
+        (*it)->shaderNames.push_back(glslShader);
+        (*it)->shaderFlags.push_back(GetTypeFromName(glslShader));
 
         DecrementSetLayoutId();
 
-        AccumulateSetLayoutPerShader(shaderName, (*it));
+        AccumulateSetLayoutPerShader(glslShader, (*it));
 
         delete setWrapper;
     }
     else
     {
         // if not add this new object to the wrapper list
-        setWrapper->shaderNames.push_back(shaderName);
-        setWrapper->shaderFlags.push_back(GetTypeFromName(shaderName));
+        setWrapper->shaderNames.push_back(glslShader);
+        setWrapper->shaderFlags.push_back(GetTypeFromName(glslShader));
         setWrapperList.push_back(setWrapper);
         
-        AccumulateSetLayoutPerShader(shaderName, setWrapper);
+        AccumulateSetLayoutPerShader(glslShader, setWrapper);
 
         // create vulkan descriptor set layout per set wrapper
         {
@@ -114,17 +116,17 @@ void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWr
     }
 }
 
-void VkShaderResourceManager::AccumulateSetLayoutPerShader(std::string reflName, SetWrapper * setWrapper)
+void VkShaderResourceManager::AccumulateSetLayoutPerShader(std::string glslName, SetWrapper * setWrapper)
 {
-    std::string glslShader = GetShaderNameFromRefl(reflName);
+    //std::string glslShader = GetShaderNameFromRefl(reflName);
 
     std::vector<ShaderResources>::iterator it;
-    it = std::find_if(perShaderResourceList.begin(), perShaderResourceList.end(), [&](ShaderResources e) { return e.shaderName == glslShader; });
+    it = std::find_if(perShaderResourceList.begin(), perShaderResourceList.end(), [&](ShaderResources e) { return e.shaderName == glslName; });
 
     if (it == perShaderResourceList.end())
     {
         ShaderResources obj = {};
-        obj.shaderName = glslShader;
+        obj.shaderName = glslName;
         obj.setWrappers.push_back(setWrapper);
         perShaderResourceList.push_back(obj);
     }
@@ -489,7 +491,7 @@ uint32_t VkShaderResourceManager::CreatePipelineLayout(SetWrapper ** setWrapperL
     pipelineLayoutWrapperObj.id = GetPipelineLayoutID();
     //pipelineLayoutWrapperObj.setLayoutList.resize(numSets);
 
-    GetSetLayouts(setWrapperList, numSets, pipelineLayoutWrapperObj.setLayoutList);
+    GetSetLayouts(setWrapperList, (uint32_t)numSets, pipelineLayoutWrapperObj.setLayoutList);
     
     /*PipelineLayoutWrapper pipelineLayoutWrapperObj = {};
     pipelineLayoutWrapperObj.id = GetPipelineLayoutID();

@@ -3,6 +3,10 @@
 #include <glm\glm.hpp>
 #include "ShaderResourceDescription.h"
 #include "DrawGraphNode.h"
+#include "MeshAdditionEvent.h"
+
+template <typename T>
+class GraphNode;
 
 class Camera;
 enum class Camera_Movement;
@@ -15,6 +19,10 @@ class CameraGraphNode : public DrawGraphNode
 {
 public:
     virtual void Execute() override;
+    CameraGraphNode()
+    {
+        drawNodeType = DrawNodeTypes::CAMERA;
+    }
 };
 
 class CameraSystem : public System
@@ -45,7 +53,7 @@ private:
 
     SetWrapper * cameraSetWrapper;
 
-    DrawGraphNode * cameraGraphNode;
+    std::vector<GraphNode<DrawGraphNode> *> cameraGraphNodeList;
 
 public:
     virtual void Init() override;
@@ -53,6 +61,7 @@ public:
     virtual void Update(float dt) override;
 
     void HandleCameraAddition(CameraAdditionEvent * inputEvent);
+    void HandleMeshAddition(MeshAdditionEvent *  meshAdditionEvent);
 
     CameraSystem();
     virtual ~CameraSystem();

@@ -31,3 +31,6 @@ GraphicsPipelineManager<DxInterface> * GraphicsPipelineManager<DxInterface>::Get
 
 #endif
 
+void PipelineDrawNode::Execute()
+{
+}

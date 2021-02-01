@@ -17,7 +17,7 @@ private:
     static int family;
 
 public:
-    uint32_t componentId;
+    uint32_t componentId = UINT32_MAX;
     COMPONENT_TYPE type;
 
     static inline int Family()

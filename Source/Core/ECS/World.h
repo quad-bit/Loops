@@ -72,7 +72,6 @@ public:
         componentManagerType* manager = (componentManagerType*)GetComponentManager<ComponentType>();
         handle = *(manager->GetComponentHandle(e));
     }
-
     
     template<typename ComponentType, typename... Args>
     void Unpack(Entity* e, ComponentHandle<ComponentType>** handle, ComponentHandle<Args>**... args)

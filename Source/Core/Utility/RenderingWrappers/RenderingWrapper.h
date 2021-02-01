@@ -780,6 +780,7 @@ enum class ColorComponentFlagBits
         std::map<PipelineStates, uint32_t> statesToIdMap;
         uint32_t renderPassId;
         uint32_t subpassId;
+        std::vector<uint32_t> meshList;
     };
 
 #elif (RENDERING_API == DX12)

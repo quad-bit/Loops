@@ -1,9 +1,12 @@
 #pragma once
 
 #include <Event.h>
-#include "Camera.h"
+//#include "Camera.h"
 
+class Camera;
 class MeshRenderer;
+class Entity;
+
 class CameraAdditionEvent : public Event
 {
 public:

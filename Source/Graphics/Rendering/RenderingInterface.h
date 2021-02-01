@@ -63,6 +63,7 @@ public:
 #include "UniformFactory.h"
 #include "DrawGraphManager.h"
 #include "DrawGraphNode.h"
+#include "ForwardDrawGraph.h"
 
 template<typename T>
 inline void RenderingInterface<T>::BeginRenderLoop()
@@ -137,7 +138,7 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     MaterialFactory::GetInstance()->Init();
     ShaderFactory::GetInstance()->Init(apiInterface);
     UniformFactory::GetInstance()->Init(apiInterface);
-    DrawGraphManager<T>::GetInstance()->Init();
+    DrawGraphManager::GetInstance()->Init(RendererType::Forward);
     this->apiInterface = apiInterface;
 
     Settings::clearColorValue[0] = 164.0f / 256.0f; // Red
@@ -208,7 +209,6 @@ inline void RenderingInterface<T>::DislogeRenderer()
     for (uint32_t i = 0; i < Settings::swapBufferCount; i++)
     {
         CommandBufferManager<T>::GetInstance()->DestroyDrawCommandBuffer(drawCommandBufferList[i]);
-        //delete drawCommandBufferObj[i];
     }
 
     delete[] drawCommandBufferList;
@@ -225,8 +225,8 @@ inline void RenderingInterface<T>::DeInit()
 {
     PLOGD << "Rendering interface DeInit";
     
-    DrawGraphManager<T>::GetInstance()->DeInit();
-    delete DrawGraphManager<T>::GetInstance();
+    DrawGraphManager::GetInstance()->DeInit();
+    delete DrawGraphManager::GetInstance();
 
     UniformFactory::GetInstance()->DeInit();
     delete UniformFactory::GetInstance();

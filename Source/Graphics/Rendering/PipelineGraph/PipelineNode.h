@@ -1,7 +1,8 @@
+/*
 #pragma once
 
 #include "RenderingWrapper.h"
-/*
+
 template <typename T>
 struct PipelineNode
 {

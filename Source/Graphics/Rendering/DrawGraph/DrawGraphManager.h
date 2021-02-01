@@ -2,11 +2,29 @@
 
 #include "DrawGraphNode.h"
 #include "CorePrecompiled.h"
+#include "Settings.h"
+#include "Graph.h"
+
+#if (RENDERING_API == VULKAN)
+#include "VulkanInterface.h"
+typedef VulkanInterface ApiInterface;
+#elif (RENDERING_API == DX)
+#include "DxInterface.h"
+typedef DxInterface ApiInterface
+#endif
+
+#include "ForwardDrawGraph.h"
+#include "DeferredDrawGraph.h"
+
+enum class RendererType
+{
+    Forward,
+    Deferred
+};
 
 template <typename T>
 class DrawCommandBuffer;
 
-template <typename T>
 class DrawGraphManager
 {
 private:
@@ -14,10 +32,17 @@ private:
     DrawGraphManager(DrawGraphManager const &) {}
     DrawGraphManager const & operator= (DrawGraphManager const &) {}
     static DrawGraphManager* instance;
-    T * apiInterface;
     
-    int maxGraphNodes = 30;
-    //Graph<StateWrapperBase> * pipelineGraph;// TODO: add the graph construction without predefined length
+    ApiInterface * apiInterface;
+    RendererType rendererType;
+    
+    ForwardGraph<ApiInterface> * fwdGraph = nullptr;
+    DeferredGraph<ApiInterface> * dfrdGraph = nullptr;
+
+    int maxDrawNodes = 30;
+
+    std::vector<DrawGraphNode *> drawGraphNodeList;
+    Graph<DrawGraphNode> * drawGraph;// TODO: add the graph construction without predefined length
     //GraphNode<StateWrapperBase> * CreateGraphNode(StateWrapperBase * stateWrapper);
 
     //void CreateGraphEdges();
@@ -25,31 +50,21 @@ private:
     //GraphNode<StateWrapperBase> * GetNode(PipelineStates state, StateWrapperBase * stateObj);
 
 public:
-    void Init();
+    void Init(RendererType rendererType);
     void DeInit();
+    
+    template <typename T>
     void Update(DrawCommandBuffer<T> * dcb);
+    
     static DrawGraphManager* GetInstance();
     ~DrawGraphManager();
+
+    void AddNode(GraphNode<DrawGraphNode> * node);
+    void CreateGraphEdges(GraphNode<DrawGraphNode> * src, GraphNode<DrawGraphNode> * dest);
+
 };
 
 template<typename T>
-inline void DrawGraphManager<T>::Init()
-{
-    PLOGD << "DrawGraphManager Init";
-}
-
-template<typename T>
-inline void DrawGraphManager<T>::DeInit()
-{
-    PLOGD << "DrawGraphManager DeInit";
-}
-
-template<typename T>
-inline void DrawGraphManager<T>::Update(DrawCommandBuffer<T> * dcb)
-{
-}
-
-template<typename T>
-inline DrawGraphManager<T>::~DrawGraphManager()
+inline void DrawGraphManager::Update(DrawCommandBuffer<T>* dcb)
 {
 }

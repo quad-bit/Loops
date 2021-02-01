@@ -60,6 +60,7 @@ PlayerHandlerScript::PlayerHandlerScript()
 
         Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
         torso->AddComponent<Material>(mat);
+        //MaterialFactory::GetInstance()->AddMeshIds(mat, torsoMesh->componentId);
 
         torsoMeshRenderer = new MeshRenderer(torsoMesh, mat);
         torso->AddComponent<MeshRenderer>(torsoMeshRenderer);
@@ -98,6 +99,7 @@ PlayerHandlerScript::PlayerHandlerScript()
 
         Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, headMesh->componentId);
         head->AddComponent<Material>(mat);
+        //MaterialFactory::GetInstance()->AddMeshIds(mat, headMesh->componentId);
 
         headMeshRenderer = new MeshRenderer(headMesh, mat);
         head->AddComponent<MeshRenderer>(headMeshRenderer);

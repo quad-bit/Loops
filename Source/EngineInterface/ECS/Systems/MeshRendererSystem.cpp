@@ -8,6 +8,8 @@
 #include "ComponentAdditionEvent.h"
 #include "ResourceAllocationHelper.h"
 #include "UniformFactory.h"
+#include "DrawGraphManager.h"
+#include "Graph.h"
 
 uint32_t MeshRendererSystem::GenerateId()
 {
@@ -24,11 +26,25 @@ void MeshRendererSystem::Init()
 
     resourceSharingConfig.maxUniformPerResource = 2;
     resourceSharingConfig.allocatedUniformCount = 0;
-
 }
 
 void MeshRendererSystem::DeInit()
 {
+    for each(auto obj in meshNodeList)
+    {
+        delete obj->node;
+        delete obj;
+    }
+
+    meshNodeList.clear();
+    
+    for each(auto obj in transformNodeList)
+    {
+        delete obj->node;
+        delete obj;
+    }
+
+    transformNodeList.clear();
 }
 
 void MeshRendererSystem::Update(float dt)
@@ -91,4 +107,35 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     resourceSharingConfig.allocatedUniformCount += 1;
 
     UniformFactory::GetInstance()->AllocateDescriptors(transformSetWrapper, desc, 1, allocConfig.numDescriptors);
+
+    // Create transform descriptor node.
+    uint32_t meshId = inputEvent->renderer->geometry->componentId;
+ 
+    DrawGraphNode * meshNode = new MeshNode;
+    meshNode->setWrapper = nullptr;
+    meshNode->meshList.push_back(meshId);
+
+    DrawGraphNode * trfnode = new TransformNode;
+    trfnode->setWrapper = transformSetWrapper;
+    trfnode->meshList.push_back(meshId);
+    trfnode->setLevel = transformSetWrapper->setValue;
+
+    GraphNode<DrawGraphNode> * transformGraphNode = new GraphNode<DrawGraphNode>(trfnode);
+    GraphNode<DrawGraphNode> * meshGraphNode = new GraphNode<DrawGraphNode>(meshNode);
+    DrawGraphManager::GetInstance()->AddNode(transformGraphNode);
+    DrawGraphManager::GetInstance()->AddNode(meshGraphNode);
+    
+    meshNodeList.push_back(meshGraphNode);
+    transformNodeList.push_back(transformGraphNode);
+    
+    DrawGraphManager::GetInstance()->CreateGraphEdges(meshGraphNode, transformGraphNode);
+}
+
+void TransformNode::Execute()
+{
+
+}
+
+void MeshNode::Execute()
+{
 }

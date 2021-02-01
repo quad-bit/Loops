@@ -9,43 +9,20 @@
 #include "ShaderResourceDescription.h"
 #include "UniformFactory.h"
 #include "ResourceAllocationHelper.h"
+#include "MaterialFactory.h"
+#include "DrawGraphManager.h"
+
 
 uint32_t CameraSystem::GeneratedCamId()
 {
     return idCounter++;
 }
-/*
-size_t CameraSystem::GetDataSizeMeantForSharing()
-{
-    return sizeof(CameraUniform) * allocConfig.numDescriptors * resourceSharingConfig.maxUniformPerResource;
-}
 
-std::vector<size_t> CameraSystem::CalculateOffsetsForDescInUniform(size_t dataSizePerDescriptor)
-{
-    std::vector<size_t> offsets;
-    offsets.resize(allocConfig.numDescriptors);
-
-    uint32_t index = resourceSharingConfig.allocatedUniformCount % resourceSharingConfig.maxUniformPerResource;
-
-    for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
-    {
-        offsets[i] = index * allocConfig.numDescriptors * dataSizePerDescriptor + dataSizePerDescriptor * i;
-    }
-    return offsets;
-}
-
-bool CameraSystem::IsNewAllocationRequired()
-{
-    if (resourceSharingConfig.allocatedUniformCount % resourceSharingConfig.maxUniformPerResource == 0)
-        return true;
-    else
-        return false;
-}
-*/
 void CameraSystem::Init()
 {
     EventBus::GetInstance()->Subscribe<CameraSystem, CameraAdditionEvent>(this, &CameraSystem::HandleCameraAddition);
-    
+    EventBus::GetInstance()->Subscribe<CameraSystem, MeshAdditionEvent>(this, &CameraSystem::HandleMeshAddition);
+
     allocConfig.numDescriptors = Settings::maxFramesInFlight;
     allocConfig.numMemories = 1;
     allocConfig.numResources = 1;
@@ -126,7 +103,37 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
 
     // draw graph node creation
     // top level node as its Set 0
-    cameraGraphNode = new CameraGraphNode();
+    DrawGraphNode * cameraNode = new CameraGraphNode();
+    cameraNode->meshList = MaterialFactory::GetInstance()->GetMeshList(cameraSetWrapper, 1);
+    cameraNode->setLevel = 0;
+    cameraNode->setWrapper = cameraSetWrapper;
+
+    GraphNode<DrawGraphNode> * graphNode = new GraphNode<DrawGraphNode>(cameraNode);
+    cameraGraphNodeList.push_back(graphNode);
+
+    DrawGraphManager::GetInstance()->AddNode(graphNode);
+}
+
+void CameraSystem::HandleMeshAddition(MeshAdditionEvent * meshAdditionEvent)
+{
+    uint32_t setCount = (uint32_t)meshAdditionEvent->setWrapperList.size();
+    for (uint32_t k = 0; k < cameraGraphNodeList.size(); k++)
+    for (uint32_t i = 0; i < setCount; i++)
+    {
+        SetWrapper * wrapper = meshAdditionEvent->setWrapperList[i];
+        if (wrapper->id == cameraSetWrapper->id)
+        {
+            std::vector<uint32_t> meshList = cameraGraphNodeList[k]->node->meshList;
+            std::vector<uint32_t>::iterator it;
+            it = std::find_if(meshList.begin(), meshList.end(), [=](uint32_t id) {
+                return id == meshAdditionEvent->meshId; });
+
+            if (it == meshList.end())
+            {
+                cameraGraphNodeList[k]->node->meshList.push_back(meshAdditionEvent->meshId);
+            }
+        }
+    }
 }
 
 CameraSystem::CameraSystem()

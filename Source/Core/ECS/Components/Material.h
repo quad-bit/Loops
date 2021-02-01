@@ -21,7 +21,7 @@ public:
     Shader * shaders;
     uint32_t numShaders;
     std::vector<SetWrapper*> resourceLayoutList;
-
+    std::vector<uint32_t> meshList;
 
     Material(Shader * shaders, const uint32_t & numShaders)
     {

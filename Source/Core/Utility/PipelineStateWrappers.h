@@ -16,6 +16,12 @@ struct GraphTraversalEvent : public Event
 #define PRINT_STATE 1
 
 extern std::map<PipelineStates, uint32_t> stateToIdMap;
+extern std::vector<uint32_t> pipelineStateMeshList;
+
+namespace PipelineUtil
+{
+    void FillGlobalMeshList(std::vector<uint32_t> & meshList);
+}
 
 struct StateWrapperBase
 {
@@ -63,6 +69,7 @@ struct VertexInputWrapper : public StateWrapperBase
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::VertexInputState " ;
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::VertexInputState, id }));
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -83,7 +90,7 @@ struct InputAssemblyWrapper : public StateWrapperBase
         PLOGD << this->GetId() + " PipelineStates::InputAssemblyState";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::InputAssemblyState, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -106,7 +113,7 @@ struct ShaderStateWrapper : public StateWrapperBase
         PLOGD << this->GetId() + " PipelineStates::ShaderStateWrapper";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderStage, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -131,7 +138,7 @@ struct ShaderResourceStateWrapper : public StateWrapperBase
         PLOGD << this->GetId() + " PipelineStates::ShaderResourcesLayout";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderResourcesLayout, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -151,7 +158,7 @@ struct TessellationStateWrapper : public StateWrapperBase
         PLOGD << std::to_string(this->GetId()) + " PipelineStates::Tessellation";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::TessellationState, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -171,7 +178,7 @@ struct ColorBlendStateWrapper : public StateWrapperBase
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::Colorblend";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ColorBlendState, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -191,7 +198,7 @@ struct ViewPortStateWrapper : public StateWrapperBase
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::Viewport";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ViewportState, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -211,7 +218,7 @@ struct RasterizationStateWrapper : public StateWrapperBase
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::Rasterisation";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::RasterizationState, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -231,7 +238,7 @@ struct MultiSampleStateWrapper : public StateWrapperBase
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::MultiSample";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::MultisampleState, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -251,7 +258,7 @@ struct DepthStencilStateWrapper : public StateWrapperBase
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::DepthStencilState";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DepthStencilState, id }));
-
+        PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
 
@@ -271,7 +278,7 @@ struct DynamicStateWrapper : public StateWrapperBase
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::DynamicState";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DynamicState, id }));
-        
+        PipelineUtil::FillGlobalMeshList(meshIdList);
         GraphTraversalEvent event;
         EventBus::GetInstance()->Publish(&event);
     }

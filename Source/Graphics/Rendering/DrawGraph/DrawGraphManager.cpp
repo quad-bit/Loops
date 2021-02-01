@@ -1,13 +1,39 @@
 #include "DrawGraphManager.h"
-#include "Settings.h"
 
-#if (RENDERING_API == VULKAN)
+DrawGraphManager * DrawGraphManager::instance = nullptr;
 
-#include "VulkanInterface.h"
+void DrawGraphManager::Init(RendererType rendererType)
+{
+    drawGraph = new Graph<DrawGraphNode>(maxDrawNodes);
 
-DrawGraphManager<VulkanInterface>* DrawGraphManager<VulkanInterface>::instance = nullptr;
+    this->rendererType = rendererType;
+    if (rendererType == RendererType::Forward)
+    {
+        fwdGraph = new ForwardGraph<ApiInterface>();
+        fwdGraph->Init(drawGraph);
+    }
+    else if (rendererType == RendererType::Deferred)
+    {
+        dfrdGraph = new DeferredGraph<ApiInterface>();
+        dfrdGraph->Init(drawGraph);
+    }
+}
 
-DrawGraphManager<VulkanInterface> * DrawGraphManager<VulkanInterface>::GetInstance()
+void DrawGraphManager::DeInit()
+{
+    switch (rendererType)
+    {
+    case RendererType::Forward:
+        fwdGraph->DeInit();
+        delete fwdGraph;
+
+    case RendererType::Deferred:
+        dfrdGraph->DeInit();
+        delete dfrdGraph;
+    }
+}
+
+DrawGraphManager * DrawGraphManager::GetInstance()
 {
     if (instance == nullptr)
     {
@@ -15,19 +41,24 @@ DrawGraphManager<VulkanInterface> * DrawGraphManager<VulkanInterface>::GetInstan
     }
     return instance;
 }
-#elif (RENDERING_API == DX)
 
-#include "DxInterface.h"
-
-DrawGraphManager<DxInterface>* DrawGraphManager<DxInterface>::instance = nullptr;
-DrawGraphManager<DxInterface> * DrawGraphManager<DxInterface>::GetInstance()
+DrawGraphManager::~DrawGraphManager()
 {
-    if (instance == nullptr)
-    {
-        instance = new DrawGraphManager();
-    }
-    return instance;
 }
 
-#endif
+void DrawGraphManager::AddNode(GraphNode<DrawGraphNode> * node)
+{
+    switch (rendererType)
+    {
+    case RendererType::Forward:
+        fwdGraph->AddNode(node);
 
+    case RendererType::Deferred:
+        dfrdGraph->AddNode(node);
+    }
+}
+
+void DrawGraphManager::CreateGraphEdges(GraphNode<DrawGraphNode> * src, GraphNode<DrawGraphNode> * dest)
+{
+    drawGraph->AttachDirectedEdge(src, dest);
+}

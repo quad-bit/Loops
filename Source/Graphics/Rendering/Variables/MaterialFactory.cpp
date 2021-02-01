@@ -3,6 +3,8 @@
 #include "Assertion.h"
 #include "ShaderFactory.h"
 #include "RenderingWrapper.h"
+#include "EventBus.h"
+#include "MeshAdditionEvent.h"
 
 MaterialFactory* MaterialFactory::instance = nullptr;
 
@@ -69,11 +71,11 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
     // check for hash (shader names)
     int id = HashManager::GetInstance()->FindMaterialHash(&shaderNames, matId);
     Material * mat;
+    MatSetWrapper matSetWrapper;
 
     if (id == -1)
     {
         // use matid and create a material
-
         Shader * shaders = new Shader[shaderCount];
         for (uint32_t i = 0; i < shaderCount; i++)
         {
@@ -89,11 +91,15 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
         
         // get the setWrappers for the shader combination
         mat->resourceLayoutList = setWrapperList;
-
+        
         // using the set wrappers create shader resources
         CreateSetResources(setWrapperList);
-        
+        mat->componentId = matId;
 
+        matSetWrapper.mat = mat;
+        matSetWrapper.wrapperList = setWrapperList;
+        matSetWrapperList.push_back(matSetWrapper);
+        
     }
     else
     {
@@ -105,12 +111,57 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
         {
             ASSERT_MSG(0, "Mat not found");
         }
-        DecrementMatCounter();
 
+        DecrementMatCounter();
+        AddMeshIds(mat, meshId);
         // if it exists then add the meshid to the list
-        ShaderFactory::GetInstance()->AddMeshToShader(meshId, mat->shaders, shaderCount);
     }
 
+    MeshAdditionEvent event;
+    event.meshId = meshId;
+    event.setWrapperList = mat->resourceLayoutList;
+    EventBus::GetInstance()->Publish(&event);
 
     return mat;
+}
+
+void MaterialFactory::AddMeshIds(Material * mat, const uint32_t & meshId)
+{
+    ShaderFactory::GetInstance()->AddMeshToShader(meshId, mat->shaders, mat->numShaders);
+    mat->meshList.push_back(meshId);
+}
+
+std::vector<uint32_t> MaterialFactory::GetMeshList(SetWrapper * setwrapper, const uint32_t & setWrapperCount)
+{
+    std::vector<uint32_t> meshList;
+
+    for (uint32_t i = 0; i < setWrapperCount; i++)
+    {
+        SetWrapper * wrapper = &setwrapper[i];
+        for each(auto obj in matSetWrapperList )
+        {
+            std::vector<SetWrapper *>::iterator it;
+            it = std::find_if(obj.wrapperList.begin(), obj.wrapperList.end(), [=](SetWrapper * e) { 
+                return e->id == wrapper->id && e->setValue == wrapper->setValue; });
+
+            if (it != obj.wrapperList.end())
+            {
+                // found
+                for each(auto meshId in obj.mat->meshList)
+                {
+                    std::vector<uint32_t>::iterator itt;
+                    itt = std::find_if(meshList.begin(), meshList.end(), [=](uint32_t e) {
+                        return e == meshId;
+                    });
+
+                    if (itt == meshList.end())
+                    {
+                        meshList.push_back(*itt);
+                    }
+                }
+            }
+        }
+    }
+
+    return meshList;
 }
