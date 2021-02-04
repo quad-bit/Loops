@@ -128,6 +128,8 @@ public:
     int GetNextUnvisitedVertex(int index);
     bool DepthFirstSearch(int startIndex, int endIndex);
     bool BreadthFirstSearch(int startIndex, int endIndex);
+    bool BreadthFirstTraversal(GraphNode<T> * srcNode, GraphNode<T> * destNode);
+    bool DepthFirstTraversal(GraphNode<T> * srcNode, GraphNode<T> * destNode);
     void FindAllPaths(int startIndex, int endIndex);
     void ExtendMatrix();
     void CopyMat(char ** src, char ** dest);
@@ -278,6 +280,97 @@ inline bool Graph<T>::BreadthFirstSearch(int startIndex, int endIndex)
 
     memset(visitedVertices, 0, maxVertices);
     return false;
+}
+
+template<class T>
+inline bool Graph<T>::BreadthFirstTraversal(GraphNode<T>* srcNode, GraphNode<T>* destNode)
+{
+    assert(visitedVertices != NULL);
+    assert(adjMatrix != NULL);
+
+    int startIndex = srcNode->nodeId; int endIndex = destNode->nodeId;
+
+    visitedVertices[startIndex] = 1;
+
+    //std::cout << *vertices[startIndex]->GetNodeData(); // REMOVE>>!!!
+    srcNode->node->Execute();
+
+    Stack<int> searchStack;
+    int vert = 0;
+    searchStack.Push(startIndex);
+
+    while (!searchStack.Empty())
+    {
+        vert = GetNextUnvisitedVertex(searchStack.Top());
+
+        if (vert == -1)
+        {
+            searchStack.Pop();
+        }
+        else
+        {
+            visitedVertices[vert] = 1;
+
+            //std::cout << *vertices[vert]->GetNodeData(); // REMOVE>>!!!
+            vertices[vert]->node->Execute();
+            searchStack.Push(vert);
+        }
+
+        if (vert == endIndex)
+        {
+            memset(visitedVertices, 0, maxVertices);
+            return true;
+        }
+    }
+
+    memset(visitedVertices, 0, maxVertices);
+    return false;
+}
+
+template<class T>
+inline bool Graph<T>::DepthFirstTraversal(GraphNode<T>* srcNode, GraphNode<T>* destNode)
+{
+    assert(visitedVertices != NULL);
+    assert(adjMatrix != NULL);
+
+    int startIndex = srcNode->nodeId; int endIndex = destNode->nodeId;
+
+    visitedVertices[startIndex] = 1;
+
+//    std::cout << *vertices[startIndex]->GetNodeData(); // REMOVE>>!!!
+    srcNode->node->Execute();
+
+    Stack<int> searchStack;
+    int vert = 0;
+    searchStack.Push(startIndex);
+
+    while (!searchStack.Empty())
+    {
+        vert = GetNextUnvisitedVertex(searchStack.Top());
+
+        if (vert == -1)
+        {
+            searchStack.Pop();
+        }
+        else
+        {
+            visitedVertices[vert] = 1;
+
+            //std::cout << *vertices[vert]->GetNodeData(); // REMOVE>>!!!
+            vertices[vert]->node->Execute();
+            searchStack.Push(vert);
+        }
+
+        if (vert == endIndex)
+        {
+            memset(visitedVertices, 0, maxVertices);
+            return true;
+        }
+    }
+
+    memset(visitedVertices, 0, maxVertices);
+    return false;
+
 }
 
 template<class T>

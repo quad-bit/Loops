@@ -781,6 +781,7 @@ enum class ColorComponentFlagBits
         uint32_t renderPassId;
         uint32_t subpassId;
         std::vector<uint32_t> meshList;
+        std::vector<SetWrapper*> setsPerPipeline;
     };
 
 #elif (RENDERING_API == DX12)

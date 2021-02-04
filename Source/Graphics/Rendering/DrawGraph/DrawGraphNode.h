@@ -24,7 +24,8 @@ enum class DrawNodeTypes
     SAMPLER,
     MATERIAL_SURFACE,
     MESH,
-    TRANSFORM
+    TRANSFORM,
+    DRAWING
 };
 
 
@@ -42,7 +43,7 @@ protected:
 public:
     DrawNodeTypes drawNodeType;
     uint32_t setLevel;
-    SetWrapper * setWrapper;
+    std::vector<SetWrapper*> setWrapperList;// pipeline node can have multiple sets wrappers
     std::vector<uint32_t> meshList;
     uint32_t numMeshes;
     virtual void Execute() = 0;

@@ -99,13 +99,13 @@ public:
     	Clear();
     }
 
-    Node<T> * Begin()
+    Node<T> * Begin() const
     {
     	assert(firstNode != NULL);
     	return firstNode;
     }
 
-    Node<T> * End()
+    Node<T> * End() const
     {
     	assert(lastNode != NULL);
     	return lastNode;
@@ -186,7 +186,7 @@ public:
     	size = (size == 0 ? 0 : size - 1);
     }
 
-    std::uint32_t GetSize()
+    std::uint32_t GetSize() const
     {
     	return size;
     }

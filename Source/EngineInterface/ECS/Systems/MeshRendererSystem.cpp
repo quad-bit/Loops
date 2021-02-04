@@ -10,6 +10,7 @@
 #include "UniformFactory.h"
 #include "DrawGraphManager.h"
 #include "Graph.h"
+#include <plog/Log.h> 
 
 uint32_t MeshRendererSystem::GenerateId()
 {
@@ -45,6 +46,14 @@ void MeshRendererSystem::DeInit()
     }
 
     transformNodeList.clear();
+
+    for each(auto obj in drawingNodeList)
+    {
+        delete obj->node;
+        delete obj;
+    }
+
+    drawingNodeList.clear();
 }
 
 void MeshRendererSystem::Update(float dt)
@@ -112,30 +121,52 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     uint32_t meshId = inputEvent->renderer->geometry->componentId;
  
     DrawGraphNode * meshNode = new MeshNode;
-    meshNode->setWrapper = nullptr;
+    //meshNode->setWrapper = nullptr;
     meshNode->meshList.push_back(meshId);
 
     DrawGraphNode * trfnode = new TransformNode;
-    trfnode->setWrapper = transformSetWrapper;
+    trfnode->setWrapperList.push_back(transformSetWrapper);
     trfnode->meshList.push_back(meshId);
     trfnode->setLevel = transformSetWrapper->setValue;
 
+    DrawGraphNode * drawingnode = new DrawingNode;
+    drawingnode->meshList.push_back(meshId);
+
     GraphNode<DrawGraphNode> * transformGraphNode = new GraphNode<DrawGraphNode>(trfnode);
     GraphNode<DrawGraphNode> * meshGraphNode = new GraphNode<DrawGraphNode>(meshNode);
+    GraphNode<DrawGraphNode> * drawingGraphNode = new GraphNode<DrawGraphNode>(drawingnode);
     DrawGraphManager::GetInstance()->AddNode(transformGraphNode);
     DrawGraphManager::GetInstance()->AddNode(meshGraphNode);
+    DrawGraphManager::GetInstance()->AddNode(drawingGraphNode);
     
     meshNodeList.push_back(meshGraphNode);
     transformNodeList.push_back(transformGraphNode);
+    drawingNodeList.push_back(drawingGraphNode);
     
     DrawGraphManager::GetInstance()->CreateGraphEdges(meshGraphNode, transformGraphNode);
+    DrawGraphManager::GetInstance()->CreateGraphEdges(transformGraphNode, drawingGraphNode);
 }
 
 void TransformNode::Execute()
 {
-
+    for each(auto mesh in this->meshList)
+    {
+        //PLOGD << std::to_string(mesh) + " Transform ";
+    }
 }
 
 void MeshNode::Execute()
 {
+    for each(auto mesh in this->meshList)
+    {
+        //PLOGD << std::to_string(mesh) + " Mesh ";
+    }
+}
+
+void DrawingNode::Execute()
+{
+    for each(auto mesh in this->meshList)
+    {
+        //PLOGD << std::to_string(mesh) + " Drawing";
+    }
 }

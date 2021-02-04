@@ -105,8 +105,8 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     // top level node as its Set 0
     DrawGraphNode * cameraNode = new CameraGraphNode();
     cameraNode->meshList = MaterialFactory::GetInstance()->GetMeshList(cameraSetWrapper, 1);
-    cameraNode->setLevel = 0;
-    cameraNode->setWrapper = cameraSetWrapper;
+    cameraNode->setLevel = cameraSetWrapper->setValue;
+    cameraNode->setWrapperList.push_back(cameraSetWrapper);
 
     GraphNode<DrawGraphNode> * graphNode = new GraphNode<DrawGraphNode>(cameraNode);
     cameraGraphNodeList.push_back(graphNode);

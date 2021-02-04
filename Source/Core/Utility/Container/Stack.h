@@ -16,7 +16,7 @@ public:
     const T& Top() const;
     bool Empty() const
     {
-    	return (container.size == 0 ? true : false);
+    	return (container.GetSize() == 0 ? true : false);
     }
 
     //Stack<T>& operator=(Stack<T> const &);

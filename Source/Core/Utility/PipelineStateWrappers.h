@@ -13,10 +13,12 @@ struct GraphTraversalEvent : public Event
     
 };
 
-#define PRINT_STATE 1
+#define PRINT_STATE 0
 
 extern std::map<PipelineStates, uint32_t> stateToIdMap;
 extern std::vector<uint32_t> pipelineStateMeshList;
+extern std::vector<SetWrapper *>  setsPerPipeline;
+
 
 namespace PipelineUtil
 {
@@ -87,7 +89,7 @@ struct InputAssemblyWrapper : public StateWrapperBase
     virtual void Execute() override
     {
 #if PRINT_STATE 
-        PLOGD << this->GetId() + " PipelineStates::InputAssemblyState";
+        PLOGD << std::to_string(this->GetId()) + " PipelineStates::InputAssemblyState";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::InputAssemblyState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
@@ -110,7 +112,7 @@ struct ShaderStateWrapper : public StateWrapperBase
     virtual void Execute() override
     {
 #if PRINT_STATE
-        PLOGD << this->GetId() + " PipelineStates::ShaderStateWrapper";
+        PLOGD << std::to_string(this->GetId()) + " PipelineStates::ShaderStateWrapper";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderStage, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
@@ -135,10 +137,11 @@ struct ShaderResourceStateWrapper : public StateWrapperBase
     virtual void Execute() override
     {
 #if PRINT_STATE
-        PLOGD << this->GetId() + " PipelineStates::ShaderResourcesLayout";
+        PLOGD << std::to_string(this->GetId()) + " PipelineStates::ShaderResourcesLayout";
 #endif
         stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderResourcesLayout, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
+        setsPerPipeline = resourcesSetList;
     }
 };
 

@@ -39,6 +39,7 @@ private:
 
     void BeginRenderLoop();
     void EndRenderLoop();
+    void RenderLoop();
 
     T * apiInterface;
 
@@ -122,6 +123,12 @@ inline void RenderingInterface<T>::EndRenderLoop()
     apiInterface->PresentSwapchainImage(&RendererSettings::queueReq[1], &presentInfo, 0);
 
     currentFrameIndex = (currentFrameIndex + 1) % Settings::maxFramesInFlight;
+}
+
+template<typename T>
+inline void RenderingInterface<T>::RenderLoop()
+{
+    DrawGraphManager::GetInstance()->Update(activeDrawCommandBuffer);
 }
 
 template<typename T>
@@ -254,14 +261,13 @@ template<typename T>
 inline void RenderingInterface<T>::PreRender()
 {
     forwardRenderer->PreRender();
-
 }
 
 template<typename T>
 inline void RenderingInterface<T>::Render()
 {
     BeginRenderLoop();
-
+    RenderLoop();
     EndRenderLoop();
 }
 

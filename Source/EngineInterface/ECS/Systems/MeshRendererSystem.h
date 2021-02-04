@@ -21,6 +21,17 @@ public:
     }
 };
 
+class DrawingNode : public DrawGraphNode
+{
+public:
+    virtual void Execute() override;
+    DrawingNode()
+    {
+        numMeshes = 1;
+        drawNodeType = DrawNodeTypes::DRAWING;
+    }
+};
+
 class MeshNode : public DrawGraphNode
 {
 public:
@@ -52,6 +63,7 @@ private:
 
     std::vector<GraphNode<DrawGraphNode> * >  meshNodeList;
     std::vector<GraphNode<DrawGraphNode> * >  transformNodeList;
+    std::vector<GraphNode<DrawGraphNode> * >  drawingNodeList;
 
 public:
     virtual void Init() override;

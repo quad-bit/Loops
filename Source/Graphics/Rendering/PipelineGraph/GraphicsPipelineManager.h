@@ -1001,8 +1001,10 @@ inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEven
     info.subpassId = subPassId;
     info.statesToIdMap = stateToIdMap;
     info.meshList = pipelineStateMeshList;
+    info.setsPerPipeline = setsPerPipeline;
     pipelineCreateInfoList.push_back(info);
     
+    setsPerPipeline.clear();
     pipelineStateMeshList.clear();
     stateToIdMap.clear();
 }
@@ -1046,7 +1048,7 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & re
         ids[i] = wrapper.id;
 
         DrawGraphNode * pipelineNode = new PipelineDrawNode;
-        pipelineNode->setWrapper = nullptr;
+        pipelineNode->setWrapperList = pipelineCreateInfoList[i].setsPerPipeline;
         pipelineNode->meshList = wrapper.meshList;
         
         GraphNode<DrawGraphNode> * pipelinGraphNode = new GraphNode<DrawGraphNode>(pipelineNode);

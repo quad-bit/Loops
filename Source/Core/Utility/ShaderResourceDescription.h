@@ -10,6 +10,15 @@ enum class AllocationMethod
     IMMEDIATE,
     LAZY
 };
+//
+//enum class ShaderResourceSetClassification
+//{
+//    Camera = 0,
+//    Light = 1,
+//    PerMat = 2,
+//    ObjectSurface = 3
+//
+//};
 
 //overall config for the entire uniform list for a binding
 struct GlobalResourceSharingConfig

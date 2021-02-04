@@ -2,6 +2,7 @@
 
 std::map<PipelineStates, uint32_t> stateToIdMap;
 std::vector<uint32_t> pipelineStateMeshList;
+std::vector<SetWrapper *>  setsPerPipeline;
 
 uint32_t VertexInputWrapper::idCounter = 0;
 uint32_t InputAssemblyWrapper::idCounter = 0;
