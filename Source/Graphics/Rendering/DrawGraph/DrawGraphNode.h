@@ -2,6 +2,7 @@
 #include "Settings.h"
 #include "RenderingWrapper.h"
 #include <CorePrecompiled.h>
+#include <vector>
 
 #if (RENDERING_API == VULKAN)
 #include "VulkanInterface.h"
@@ -28,13 +29,12 @@ enum class DrawNodeTypes
     DRAWING
 };
 
-
-class GraphConnectionRequirement
+namespace DrawGraphUtil
 {
-public:
-    std::vector<uint32_t> meshList;
-    int numMeshes;// if -1 connect to all the incoming/outgoing nodes
-};
+    extern uint32_t pipelineLayoutId;
+    extern std::vector<uint32_t> descriptorIdList;
+    extern uint32_t setOffset;
+}
 
 class DrawGraphNode
 {
@@ -46,7 +46,9 @@ public:
     std::vector<SetWrapper*> setWrapperList;// pipeline node can have multiple sets wrappers
     std::vector<uint32_t> meshList;
     uint32_t numMeshes;
-    virtual void Execute() = 0;
+    virtual void Entry() = 0;
+    virtual void Exit();
+    
     static DrawCommandBuffer<ApiInterface> * dcb;
 };
 

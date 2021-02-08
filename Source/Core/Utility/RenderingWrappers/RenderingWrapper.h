@@ -269,6 +269,11 @@ struct MeshInfo
     bool isPrimitiveRestartEnabled;
 };
 
+enum class IndexType {
+    INDEX_TYPE_UINT16 = 0,
+    INDEX_TYPE_UINT32 = 1,
+};
+
 enum class ShaderResourceClassification
 {
     PER_SCENE,
@@ -782,6 +787,44 @@ enum class ColorComponentFlagBits
         uint32_t subpassId;
         std::vector<uint32_t> meshList;
         std::vector<SetWrapper*> setsPerPipeline;
+        uint32_t pipelineLayoutId;
+    };
+
+    struct DescriptorSetBindingInfo
+    {
+        PipelineType* pipelineBindPoint;
+        uint32_t pipelineLayoutId;
+        uint32_t firstSet;
+        std::vector<uint32_t> descriptorSetIds;
+        uint32_t descriptorSetId;
+        uint32_t dynamicOffsetCount;
+        const uint32_t* pDynamicOffsets;
+    };
+
+    // vkCmdBindVertexBuffer 
+    struct VertexBufferBindingInfo
+    {
+        uint32_t firstBinding;
+        uint32_t bindingCount;
+        std::vector<uint32_t> bufferIds;
+        std::vector<size_t> pOffsets;
+    };
+
+    // vkCmdBindIndexBuffer 
+    struct IndexBufferBindingInfo
+    {
+        uint32_t bufferId;
+        size_t offset;
+        IndexType indexType;
+    };
+
+    struct IndexedDrawInfo
+    {
+        uint32_t indexCount;
+        uint32_t instanceCount;
+        uint32_t firstIndex;
+        int32_t vertexOffset;
+        uint32_t firstInstance;
     };
 
 #elif (RENDERING_API == DX12)

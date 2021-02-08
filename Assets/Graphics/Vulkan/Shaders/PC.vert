@@ -13,7 +13,7 @@ layout (std140, set = 0, binding = 0) uniform View
 layout(std140, set = 4, binding = 0) uniform Transform
 {
     mat4 model;
-};
+}transform;
 
 layout (location = 0) in vec4 pos;
 layout (location = 1) in vec4 inColor;
@@ -23,5 +23,5 @@ layout (location = 0) out vec4 outColor;
 void main()
 {
    outColor = inColor;
-   gl_Position = view.projection * view.view * model * vec4(pos.xyz, 1.0);
+   gl_Position = view.projection * view.view * transform.model * vec4(pos.xyz, 1.0);
 }

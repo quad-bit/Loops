@@ -370,13 +370,20 @@ inline void ForwardGraph<T>::Update(DrawCommandBuffer<T>* dcb)
 {
     std::vector<GraphNode<DrawGraphNode> *>* cameraNodeList = &typeToNodeMap[DrawNodeTypes::CAMERA];
     std::vector<GraphNode<DrawGraphNode> *>* drawingNodeList = &typeToNodeMap[DrawNodeTypes::DRAWING];
-
+    
+    /*
     for each(auto cam in *cameraNodeList)
     {
         for each(auto draw in *drawingNodeList)
         {
             drawGraph->FindAllPaths(cam->GetNodeId(), draw->GetNodeId());
         }
+    }
+    */
+    DrawGraphUtil::setOffset = 0;
+    for each(auto cam in *cameraNodeList)
+    {
+        drawGraph->DepthFirstTraversal(cam->GetNodeId(), drawingNodeList->back()->GetNodeId());
     }
 }
 

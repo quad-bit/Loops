@@ -12,8 +12,14 @@ public:
     VkCommandBufferLevel level;
     PipelineType commandBufferType;
 
-    void SetViewport(const float & width, const float & height, const float & positionX, const float & positionY);
+    void SetViewport(const float & width, const float & height, const float & positionX, const float & positionY, const float & minDepth, const float & maxDepth);
     void SetScissor(const float & width, const float & height, const float & positionX, const float & positionY);
     void BeginRenderPass(RenderPassBeginInfo * renderPassBeginInfo, SubpassContentStatus * subpassContentStatus);
     void EndRenderPass();
+
+    void BindPipeline(PipelineType * type, const uint32_t & pipelineId);
+    void BindDescriptorSet(DescriptorSetBindingInfo * info);
+    void BindVertexBuffers(VertexBufferBindingInfo * info);
+    void BindIndexBuffers(IndexBufferBindingInfo * info);
+    void DrawIndex(IndexedDrawInfo * info);
 };

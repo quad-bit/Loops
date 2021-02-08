@@ -160,6 +160,7 @@ inline void ForwardRendering<T>::SetupRenderer()
         Settings::windowWidth, Settings::windowHeight, &defaultFbos[0]);
 
     delete[] imageIds;
+
 }
 
 template<typename T>
@@ -206,6 +207,24 @@ inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBu
     SubpassContentStatus subpassStatus = SubpassContentStatus::SUBPASS_CONTENTS_INLINE;
 
     drawCommandBuffer->BeginRenderPass(&info, &subpassStatus);
+
+    Viewport viewport;
+    viewport.height = (float)Settings::windowHeight;
+    viewport.width = (float)Settings::windowWidth;
+    viewport.minDepth = (float)0.0f;
+    viewport.maxDepth = (float)1.0f;
+    viewport.x = 0;
+    viewport.y = 0;
+    //vkCmdSetViewport(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), 0, 1, &viewport);
+    drawCommandBuffer->SetViewport(viewport.width, viewport.height, viewport.x, viewport.y, viewport.minDepth, viewport.maxDepth);
+
+    Rect2D scissor;
+    scissor.lengthX = (float)Settings::windowWidth;
+    scissor.lengthY = (float)Settings::windowHeight;
+    scissor.offsetX = 0;
+    scissor.offsetY = 0;
+    //vkCmdSetScissor(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), 0, 1, &scissor);
+    drawCommandBuffer->SetScissor(scissor.lengthX, scissor.lengthY, scissor.offsetX, scissor.offsetY);
 }
 
 template<typename T>

@@ -130,6 +130,7 @@ public:
     bool BreadthFirstSearch(int startIndex, int endIndex);
     bool BreadthFirstTraversal(GraphNode<T> * srcNode, GraphNode<T> * destNode);
     bool DepthFirstTraversal(GraphNode<T> * srcNode, GraphNode<T> * destNode);
+    bool DepthFirstTraversal(const uint32_t & srcNodeId, const uint32_t & destNodeId);
     void FindAllPaths(int startIndex, int endIndex);
     void ExtendMatrix();
     void CopyMat(char ** src, char ** dest);
@@ -330,15 +331,18 @@ inline bool Graph<T>::BreadthFirstTraversal(GraphNode<T>* srcNode, GraphNode<T>*
 template<class T>
 inline bool Graph<T>::DepthFirstTraversal(GraphNode<T>* srcNode, GraphNode<T>* destNode)
 {
+    int startIndex = srcNode->nodeId; int endIndex = destNode->nodeId;
+    return DepthFirstTraversal(startIndex, endIndex);
+
+/*
     assert(visitedVertices != NULL);
     assert(adjMatrix != NULL);
 
-    int startIndex = srcNode->nodeId; int endIndex = destNode->nodeId;
 
     visitedVertices[startIndex] = 1;
 
 //    std::cout << *vertices[startIndex]->GetNodeData(); // REMOVE>>!!!
-    srcNode->node->Execute();
+    srcNode->node->Entry();
 
     Stack<int> searchStack;
     int vert = 0;
@@ -350,6 +354,7 @@ inline bool Graph<T>::DepthFirstTraversal(GraphNode<T>* srcNode, GraphNode<T>* d
 
         if (vert == -1)
         {
+            vertices[searchStack.Top()]->node->Exit();
             searchStack.Pop();
         }
         else
@@ -357,7 +362,59 @@ inline bool Graph<T>::DepthFirstTraversal(GraphNode<T>* srcNode, GraphNode<T>* d
             visitedVertices[vert] = 1;
 
             //std::cout << *vertices[vert]->GetNodeData(); // REMOVE>>!!!
-            vertices[vert]->node->Execute();
+            //vertices[vert]->node->Execute();
+            vertices[vert]->node->Entry();
+
+            searchStack.Push(vert);
+        }
+
+        if (vert == endIndex)
+        {
+            memset(visitedVertices, 0, maxVertices);
+            return true;
+        }
+    }
+
+    memset(visitedVertices, 0, maxVertices);
+    return false;
+*/
+}
+
+template<class T>
+inline bool Graph<T>::DepthFirstTraversal(const uint32_t & srcNodeId, const uint32_t & destNodeId)
+{
+    assert(visitedVertices != NULL);
+    assert(adjMatrix != NULL);
+
+    int startIndex = srcNodeId; int endIndex = destNodeId;
+
+    visitedVertices[startIndex] = 1;
+
+    //    std::cout << *vertices[startIndex]->GetNodeData(); // REMOVE>>!!!
+    vertices[startIndex]->node->Entry();
+    //srcNode->node->Entry();
+
+    Stack<int> searchStack;
+    int vert = 0;
+    searchStack.Push(startIndex);
+
+    while (!searchStack.Empty())
+    {
+        vert = GetNextUnvisitedVertex(searchStack.Top());
+
+        if (vert == -1)
+        {
+            vertices[searchStack.Top()]->node->Exit();
+            searchStack.Pop();
+        }
+        else
+        {
+            visitedVertices[vert] = 1;
+
+            //std::cout << *vertices[vert]->GetNodeData(); // REMOVE>>!!!
+            //vertices[vert]->node->Execute();
+            vertices[vert]->node->Entry();
+
             searchStack.Push(vert);
         }
 

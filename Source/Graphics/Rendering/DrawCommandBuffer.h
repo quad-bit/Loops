@@ -42,10 +42,17 @@ public:
     const uint32_t & GetId() { return cmdBufferId; }
     const uint32_t & GetPoolId() { return poolId; }
 
-    void SetViewport(const float & width, const float & height, const float & positionX, const float & positionY);
+    void SetViewport(const float & width, const float & height, const float & positionX, const float & positionY, const float & minDepth, const float & maxDepth);
     void SetScissor(const float & width, const float & height, const float & positionX, const float & positionY);
     void BeginRenderPass(RenderPassBeginInfo * renderPassBeginInfo, SubpassContentStatus * subpassContentStatus);
     void EndRenderPass();
+
+    void BindPipeline(PipelineType * type, const uint32_t & pipelineId);
+
+    void BindDescriptorSets(DescriptorSetBindingInfo * info);
+    void BindVertexBuffers(VertexBufferBindingInfo * info);
+    void BindIndexBuffer(IndexBufferBindingInfo * info);
+    void DrawIndex(IndexedDrawInfo * info);
 };
 
 #include "RenderingWrapper.h"
@@ -108,9 +115,9 @@ inline void DrawCommandBuffer<T>::SetCommandInterface(VkDrawCommandBuffer * comm
 #endif
 
 template<typename T>
-inline void DrawCommandBuffer<T>::SetViewport(const float & width, const float & height, const float & positionX, const float & positionY)
+inline void DrawCommandBuffer<T>::SetViewport(const float & width, const float & height, const float & positionX, const float & positionY, const float & minDepth, const float & maxDepth)
 {
-    commandInterface->SetViewport(width, height, positionX, positionY);
+    commandInterface->SetViewport(width, height, positionX, positionY, minDepth, maxDepth);
 }
 
 template<typename T>
@@ -129,4 +136,34 @@ template<typename T>
 inline void DrawCommandBuffer<T>::EndRenderPass()
 {
     commandInterface->EndRenderPass();
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::BindPipeline(PipelineType * type, const uint32_t & pipelineId)
+{
+    commandInterface->BindPipeline(type, pipelineId);
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::BindDescriptorSets(DescriptorSetBindingInfo * info)
+{
+    commandInterface->BindDescriptorSet(info);
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::BindVertexBuffers(VertexBufferBindingInfo * info)
+{
+    commandInterface->BindVertexBuffers(info);
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::BindIndexBuffer(IndexBufferBindingInfo * info)
+{
+    commandInterface->BindIndexBuffers(info);
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::DrawIndex(IndexedDrawInfo * info)
+{
+    commandInterface->DrawIndex(info);
 }

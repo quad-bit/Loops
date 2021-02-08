@@ -6,6 +6,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
+struct TransformUniform
+{
+    glm::mat4 modelMat;
+};
 
 class Entity;
 class Transform : public Component<Transform>, public SceneNode

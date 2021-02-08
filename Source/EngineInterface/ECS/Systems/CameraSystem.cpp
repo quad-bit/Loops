@@ -11,7 +11,8 @@
 #include "ResourceAllocationHelper.h"
 #include "MaterialFactory.h"
 #include "DrawGraphManager.h"
-
+#include "DrawCommandBuffer.h"
+#include "DrawGraphNode.h"
 
 uint32_t CameraSystem::GeneratedCamId()
 {
@@ -103,13 +104,17 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
 
     // draw graph node creation
     // top level node as its Set 0
-    DrawGraphNode * cameraNode = new CameraGraphNode();
+    DrawGraphNode * cameraNode = new CameraDrawNode();
     cameraNode->meshList = MaterialFactory::GetInstance()->GetMeshList(cameraSetWrapper, 1);
     cameraNode->setLevel = cameraSetWrapper->setValue;
     cameraNode->setWrapperList.push_back(cameraSetWrapper);
+    ((CameraDrawNode*)cameraNode)->descriptorIds = desc->descriptorIds;
 
     GraphNode<DrawGraphNode> * graphNode = new GraphNode<DrawGraphNode>(cameraNode);
     cameraGraphNodeList.push_back(graphNode);
+
+    //nodeToDescriptionMap.insert(std::pair<DrawGraphNode*, ShaderBindingDescription *>
+    //    ({cameraNode, desc}));
 
     DrawGraphManager::GetInstance()->AddNode(graphNode);
 }
@@ -214,7 +219,19 @@ void CameraSystem::UpdateCameraVectors(Camera * cam)
 
 #include "DrawCommandBuffer.h"
 
-void CameraGraphNode::Execute()
+void CameraDrawNode::Entry()
 {
+    PipelineType bindPoint = PipelineType::GRAPHICS;
+
     // Binding the descriptor set for Camera
+    DescriptorSetBindingInfo info = {};
+    //info.descriptorSetIds.push_back( this->descriptorIds[Settings::currentFrameInFlight]);
+    //info.dynamicOffsetCount = 0;
+    //info.firstSet = 0;
+    //info.pDynamicOffsets = nullptr;
+    //info.pipelineBindPoint = &bindPoint;
+    //info.pipelineLayoutId = DrawGraphUtil::pipelineLayoutId;
+    info.descriptorSetId = this->descriptorIds[Settings::currentFrameInFlight];
+    DrawGraphUtil::descriptorIdList.push_back(info.descriptorSetId);
+    //dcb->BindDescriptorSets(&info);
 }

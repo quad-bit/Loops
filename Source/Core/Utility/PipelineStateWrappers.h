@@ -15,13 +15,15 @@ struct GraphTraversalEvent : public Event
 
 #define PRINT_STATE 0
 
-extern std::map<PipelineStates, uint32_t> stateToIdMap;
-extern std::vector<uint32_t> pipelineStateMeshList;
-extern std::vector<SetWrapper *>  setsPerPipeline;
 
 
 namespace PipelineUtil
 {
+    extern std::map<PipelineStates, uint32_t> stateToIdMap;
+    extern std::vector<uint32_t> pipelineStateMeshList;
+    extern std::vector<SetWrapper *>  setsPerPipeline;
+    extern uint32_t pipelineLayoutId;
+
     void FillGlobalMeshList(std::vector<uint32_t> & meshList);
 }
 
@@ -70,7 +72,7 @@ struct VertexInputWrapper : public StateWrapperBase
 #if PRINT_STATE 
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::VertexInputState " ;
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::VertexInputState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::VertexInputState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -91,7 +93,7 @@ struct InputAssemblyWrapper : public StateWrapperBase
 #if PRINT_STATE 
         PLOGD << std::to_string(this->GetId()) + " PipelineStates::InputAssemblyState";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::InputAssemblyState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::InputAssemblyState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -114,7 +116,7 @@ struct ShaderStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId()) + " PipelineStates::ShaderStateWrapper";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderStage, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderStage, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -124,7 +126,7 @@ struct ShaderResourceStateWrapper : public StateWrapperBase
     Shader * shader;
     uint32_t shaderCount;
     std::vector<SetWrapper*> resourcesSetList;
-    uint32_t pipelineId;
+    uint32_t pipelineLayoutId;
 
     static uint32_t idCounter;
 
@@ -139,9 +141,10 @@ struct ShaderResourceStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId()) + " PipelineStates::ShaderResourcesLayout";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderResourcesLayout, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderResourcesLayout, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
-        setsPerPipeline = resourcesSetList;
+        PipelineUtil::setsPerPipeline = resourcesSetList;
+        PipelineUtil::pipelineLayoutId = pipelineLayoutId;
     }
 };
 
@@ -160,7 +163,7 @@ struct TessellationStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId()) + " PipelineStates::Tessellation";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::TessellationState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::TessellationState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -180,7 +183,7 @@ struct ColorBlendStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::Colorblend";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ColorBlendState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ColorBlendState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -200,7 +203,7 @@ struct ViewPortStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::Viewport";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ViewportState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ViewportState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -220,7 +223,7 @@ struct RasterizationStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::Rasterisation";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::RasterizationState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::RasterizationState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -240,7 +243,7 @@ struct MultiSampleStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::MultiSample";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::MultisampleState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::MultisampleState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -260,7 +263,7 @@ struct DepthStencilStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::DepthStencilState";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DepthStencilState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DepthStencilState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
     }
 };
@@ -280,7 +283,7 @@ struct DynamicStateWrapper : public StateWrapperBase
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::DynamicState";
 #endif
-        stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DynamicState, id }));
+        PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DynamicState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList);
         GraphTraversalEvent event;
         EventBus::GetInstance()->Publish(&event);

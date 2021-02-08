@@ -63,8 +63,8 @@ public:
 #include "MaterialFactory.h"
 #include "UniformFactory.h"
 #include "DrawGraphManager.h"
-#include "DrawGraphNode.h"
-#include "ForwardDrawGraph.h"
+//#include "DrawGraphNode.h"
+//#include "ForwardDrawGraph.h"
 
 template<typename T>
 inline void RenderingInterface<T>::BeginRenderLoop()
@@ -123,6 +123,7 @@ inline void RenderingInterface<T>::EndRenderLoop()
     apiInterface->PresentSwapchainImage(&RendererSettings::queueReq[1], &presentInfo, 0);
 
     currentFrameIndex = (currentFrameIndex + 1) % Settings::maxFramesInFlight;
+    Settings::currentFrameInFlight = currentFrameIndex;
 }
 
 template<typename T>
@@ -155,6 +156,8 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
 
     Settings::depthClearValue = 1.0f;
     Settings::stencilClearValue = 0.0f;
+
+    Settings::currentFrameInFlight = currentFrameIndex;
 }
 
 template<typename T>
@@ -274,4 +277,5 @@ inline void RenderingInterface<T>::Render()
 template<typename T>
 inline void RenderingInterface<T>::PostRenderLoopEnd()
 {
+    apiInterface->IsApplicationSafeForClosure();
 }

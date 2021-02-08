@@ -13,7 +13,9 @@ class MeshRendererAdditionEvent;
 class TransformNode : public DrawGraphNode
 {
 public:
-    virtual void Execute() override;
+    std::vector<uint32_t> descriptorSetIds;
+    virtual void Entry() override;
+    //virtual void Exit() override;
     TransformNode()
     {
         numMeshes = 1;
@@ -21,11 +23,14 @@ public:
     }
 };
 
-class DrawingNode : public DrawGraphNode
+class IndexedDrawNode : public DrawGraphNode
 {
 public:
-    virtual void Execute() override;
-    DrawingNode()
+    IndexedDrawInfo info;
+
+    virtual void Entry() override;
+    virtual void Exit() override;
+    IndexedDrawNode()
     {
         numMeshes = 1;
         drawNodeType = DrawNodeTypes::DRAWING;
@@ -35,7 +40,11 @@ public:
 class MeshNode : public DrawGraphNode
 {
 public:
-    virtual void Execute() override;
+    std::vector<uint32_t> bufferIds;
+    std::vector<size_t> pOffsets;
+    uint32_t indexBufferId;
+    virtual void Entry() override;
+    virtual void Exit() override;
     MeshNode()
     {
         numMeshes = 1; //  for now vertex buffer and index buffer are not getting shared

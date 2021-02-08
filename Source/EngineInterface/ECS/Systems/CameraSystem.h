@@ -4,6 +4,7 @@
 #include "ShaderResourceDescription.h"
 #include "DrawGraphNode.h"
 #include "MeshAdditionEvent.h"
+#include <map>
 
 template <typename T>
 class GraphNode;
@@ -15,11 +16,13 @@ class CameraAdditionEvent;
 template <typename T>
 class ComponentHandle;
 
-class CameraGraphNode : public DrawGraphNode
+class CameraDrawNode : public DrawGraphNode
 {
 public:
-    virtual void Execute() override;
-    CameraGraphNode()
+    std::vector<uint32_t> descriptorIds;
+    virtual void Entry() override;
+    //virtual void Exit() override;
+    CameraDrawNode()
     {
         drawNodeType = DrawNodeTypes::CAMERA;
     }
@@ -44,7 +47,7 @@ private:
     std::vector<ShaderBindingDescription *> resDescriptionList;
     GlobalResourceAllocationConfig allocConfig;
     GlobalResourceSharingConfig resourceSharingConfig;
-
+    
     uint32_t idCounter = 0;
     uint32_t GeneratedCamId();
     //size_t GetDataSizeMeantForSharing();
@@ -54,6 +57,7 @@ private:
     SetWrapper * cameraSetWrapper;
 
     std::vector<GraphNode<DrawGraphNode> *> cameraGraphNodeList;
+    std::map<DrawGraphNode *, ShaderBindingDescription *> nodeToDescriptionMap;
 
 public:
     virtual void Init() override;

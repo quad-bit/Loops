@@ -122,4 +122,6 @@ public:
     void CreateDynamicState(const DynamicStateWrapper * wrapper);
 
     void CreatePipeline(PipelineCreateInfo * info, const uint32_t & pipelineCount, uint32_t * pipelineId);
+
+    VkPipeline * GetPipeline(const uint32_t & id) ;
 };

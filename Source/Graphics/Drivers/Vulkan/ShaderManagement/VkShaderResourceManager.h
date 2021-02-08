@@ -17,6 +17,7 @@ struct PipelineLayoutWrapper
 {
     uint32_t id;
     std::vector<VkDescriptorSetLayout> setLayoutList;
+    std::vector<int> setValuesInPipelineLayout;
     VkPipelineLayout * pipelineLayout;
 };
 
@@ -48,9 +49,15 @@ private:
     std::vector<SetWrapper*> setWrapperList;
     std::map< uint32_t, VkDescriptorSetLayout *> idToSetLayoutMap;
     std::map< uint32_t, VkDescriptorSet> idToSetMap;
+    std::map< uint32_t, uint32_t> descIdToSetValueMap;
     std::vector<ShaderResources> perShaderResourceList;
     std::vector<PipelineLayoutWrapper> pipelineLayoutWrapperList;
     std::vector<VkDescriptorSetLayout> fillerSetLayouts;
+
+    VkDescriptorSetLayout fillerSetLayout = VK_NULL_HANDLE;
+    VkDescriptorSet fillerSet = VK_NULL_HANDLE;
+    
+    std::map< uint32_t, std::vector<int>> pipelineLayoutIdToSetValuesMap;
 
     void CreateUniqueSetLayoutWrapper(std::vector<BindingWrapper> & bindingList, std::string shaderName, uint32_t set);
     void AccumulateSetLayoutPerShader(std::string shaderName, SetWrapper * setWrapper);
@@ -64,7 +71,8 @@ private:
     VkDescriptorSet GetDescriptorSet(const uint32_t & id);
     
     // will add fller setlayouts in case intermediate sets are missing.
-    void GetSetLayouts(SetWrapper ** setWrapperList, const uint32_t & numSets, std::vector<VkDescriptorSetLayout> & layoutList);
+    void GetSetLayouts(SetWrapper ** setWrapperList, const uint32_t & numSets, std::vector<VkDescriptorSetLayout> & layoutList,
+        std::vector<int> & setValueList);
 
 public:
     void Init();
@@ -78,7 +86,8 @@ public:
     VkPipelineLayout * GetPipelineLayout(const uint32_t & id);
     std::vector<SetWrapper*> * GetSetWrapperList();
     
-
+    std::vector<VkDescriptorSet> GetDescriptors(uint32_t * ids, const uint32_t & count, const uint32_t & pipelineLayoutId);
     uint32_t * AllocateDescriptors(SetWrapper * set, const uint32_t & numDescriptors);
     void LinkSetBindingToResources(ShaderBindingDescription * desc);
+    const std::vector<int> * GetSetValuesInPipelineLayout(const uint32_t & pipelineLayoutId);
 };

@@ -20,10 +20,10 @@ PlayerHandlerScript::PlayerHandlerScript()
     Camera * camera = new Camera(&camHandle0->GetTransform()->globalPosition);
     camHandle0->AddComponent<Camera>(camera);
 
-    camHandle1 = worldObj->CreateEntity();
-    camHandle1->GetEntity()->entityName = "SecondCamera";
-    Camera * cam = new Camera(&camHandle1->GetTransform()->globalPosition);
-    camHandle1->AddComponent<Camera>(cam);
+    //camHandle1 = worldObj->CreateEntity();
+    //camHandle1->GetEntity()->entityName = "SecondCamera";
+    //Camera * cam = new Camera(&camHandle1->GetTransform()->globalPosition);
+    //camHandle1->AddComponent<Camera>(cam);
 
     playerHandle = worldObj->CreateEntity();
     playerHandle->GetEntity()->entityName = "player";
@@ -62,7 +62,7 @@ PlayerHandlerScript::PlayerHandlerScript()
         torso->AddComponent<Material>(mat);
         //MaterialFactory::GetInstance()->AddMeshIds(mat, torsoMesh->componentId);
 
-        torsoMeshRenderer = new MeshRenderer(torsoMesh, mat);
+        torsoMeshRenderer = new MeshRenderer(torsoMesh, mat, torsoTrf);
         torso->AddComponent<MeshRenderer>(torsoMeshRenderer);
     }
 
@@ -72,6 +72,7 @@ PlayerHandlerScript::PlayerHandlerScript()
     Transform * headTrf = head->GetTransform();
     headTrf->SetParent(torsoTrf);
 
+#if 0
     //TESTING
     {
         BitArray req(10);
@@ -104,7 +105,7 @@ PlayerHandlerScript::PlayerHandlerScript()
         headMeshRenderer = new MeshRenderer(headMesh, mat);
         head->AddComponent<MeshRenderer>(headMeshRenderer);
     }
-
+#endif
     //LEFT ARM
     leftArm = worldObj->CreateEntity();
     leftArm->GetEntity()->entityName = "leftArm";
@@ -154,13 +155,14 @@ PlayerHandlerScript::~PlayerHandlerScript()
     torsoMat.DestroyComponent();
 
     worldObj->DestroyEntity(torso);
-
+#if 0
     ComponentHandle<Mesh> headMesh = head->GetComponent<Mesh>();
     MeshFactory::GetInstance()->DestroyMesh(headMesh->componentId);
     headMesh.DestroyComponent();
     //head->RemoveComponent<Mesh>(headMesh.GetComponent());
     ComponentHandle<Material> headMat = head->GetComponent<Material>();
     headMat.DestroyComponent();
+#endif
     worldObj->DestroyEntity(head);
 
     worldObj->DestroyEntity(leftArm);

@@ -1,5 +1,6 @@
 #include "GraphicsPipelineManager.h"
 #include "Settings.h"
+#include "DrawCommandBuffer.h"
 
 #if (RENDERING_API == VULKAN)
 
@@ -31,6 +32,16 @@ GraphicsPipelineManager<DxInterface> * GraphicsPipelineManager<DxInterface>::Get
 
 #endif
 
-void PipelineDrawNode::Execute()
+void PipelineDrawNode::Entry()
 {
+    DrawGraphUtil::pipelineLayoutId = this->pipelineLayoutId;
+    
+    //vkCmdBindPipeline(commandBufferObj, VK_PIPELINE_BIND_POINT_GRAPHICS, objectPipeline->GetObjectPipeline()); 
+    PipelineType type = PipelineType::GRAPHICS;
+    dcb->BindPipeline(&type, this->pipelineId);
+}
+
+void PipelineDrawNode::Exit()
+{
+
 }

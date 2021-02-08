@@ -1,8 +1,9 @@
 #include "PipelineStateWrappers.h"
 
-std::map<PipelineStates, uint32_t> stateToIdMap;
-std::vector<uint32_t> pipelineStateMeshList;
-std::vector<SetWrapper *>  setsPerPipeline;
+std::map<PipelineStates, uint32_t> PipelineUtil::stateToIdMap;
+std::vector<uint32_t> PipelineUtil::pipelineStateMeshList;
+std::vector<SetWrapper *>  PipelineUtil::setsPerPipeline;
+uint32_t PipelineUtil::pipelineLayoutId;
 
 uint32_t VertexInputWrapper::idCounter = 0;
 uint32_t InputAssemblyWrapper::idCounter = 0;

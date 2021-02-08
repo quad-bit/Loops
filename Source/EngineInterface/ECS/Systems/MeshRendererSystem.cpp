@@ -11,6 +11,8 @@
 #include "DrawGraphManager.h"
 #include "Graph.h"
 #include <plog/Log.h> 
+#include "DrawCommandBuffer.h"
+#include "DrawGraphNode.h"
 
 uint32_t MeshRendererSystem::GenerateId()
 {
@@ -101,8 +103,8 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     // Check if it can be fit into an existing buffer
     if (AllocationUtility::IsNewAllocationRequired(resourceSharingConfig))
     {
-        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(uniformSize, allocConfig, resourceSharingConfig);
         // True : Allocate new buffer
+        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(uniformSize, allocConfig, resourceSharingConfig);
         transformSetWrapper = UniformFactory::GetInstance()->AllocateResource(desc, &totalSize, 1, AllocationMethod::LAZY);
     }
     else
@@ -114,23 +116,49 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
 
     resDescriptionList.push_back(desc);
     resourceSharingConfig.allocatedUniformCount += 1;
+    
+    TransformUniform obj = {};
+    obj.modelMat = inputEvent->renderer->transform->globalModelMatrix;
 
+    //upload data to buffers
+    for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
+    {
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, &obj, desc->offsetsForEachDescriptor[i], false);
+    }
+    
+    // allocate descriptors
     UniformFactory::GetInstance()->AllocateDescriptors(transformSetWrapper, desc, 1, allocConfig.numDescriptors);
-
-    // Create transform descriptor node.
+    
     uint32_t meshId = inputEvent->renderer->geometry->componentId;
- 
+    
     DrawGraphNode * meshNode = new MeshNode;
-    //meshNode->setWrapper = nullptr;
-    meshNode->meshList.push_back(meshId);
+    {
+        meshNode->meshList.push_back(meshId);
+        uint32_t numVertBuffers = inputEvent->renderer->geometry->vertexBufferCount;
+        for (uint32_t i = 0; i < numVertBuffers; i++)
+            ((MeshNode*)meshNode)->bufferIds.push_back(inputEvent->renderer->geometry->vertexBuffersIds[i]);
+        ((MeshNode*)meshNode)->pOffsets.push_back(0);
+        ((MeshNode*)meshNode)->indexBufferId = inputEvent->renderer->geometry->indexBufferId;
+    }
 
     DrawGraphNode * trfnode = new TransformNode;
-    trfnode->setWrapperList.push_back(transformSetWrapper);
-    trfnode->meshList.push_back(meshId);
-    trfnode->setLevel = transformSetWrapper->setValue;
+    {
+        trfnode->setWrapperList.push_back(transformSetWrapper);
+        trfnode->meshList.push_back(meshId);
+        trfnode->setLevel = transformSetWrapper->setValue;
+        ((TransformNode*)trfnode)->descriptorSetIds = desc->descriptorIds;
+    }
 
-    DrawGraphNode * drawingnode = new DrawingNode;
-    drawingnode->meshList.push_back(meshId);
+    DrawGraphNode * drawingnode = new IndexedDrawNode;
+    {
+        drawingnode->meshList.push_back(meshId);
+
+        ((IndexedDrawNode*)drawingnode)->info.firstIndex = 0;
+        ((IndexedDrawNode*)drawingnode)->info.firstInstance = 0;
+        ((IndexedDrawNode*)drawingnode)->info.indexCount = inputEvent->renderer->geometry->indexCount;
+        ((IndexedDrawNode*)drawingnode)->info.instanceCount = 1;
+        ((IndexedDrawNode*)drawingnode)->info.vertexOffset = 0;
+    }
 
     GraphNode<DrawGraphNode> * transformGraphNode = new GraphNode<DrawGraphNode>(trfnode);
     GraphNode<DrawGraphNode> * meshGraphNode = new GraphNode<DrawGraphNode>(meshNode);
@@ -147,26 +175,52 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     DrawGraphManager::GetInstance()->CreateGraphEdges(transformGraphNode, drawingGraphNode);
 }
 
-void TransformNode::Execute()
+void TransformNode::Entry()
 {
-    for each(auto mesh in this->meshList)
-    {
-        //PLOGD << std::to_string(mesh) + " Transform ";
-    }
+    PipelineType bindPoint = PipelineType::GRAPHICS;
+
+    // Binding the descriptor set for transform
+    DescriptorSetBindingInfo info = {};
+    info.descriptorSetId = (this->descriptorSetIds[Settings::currentFrameInFlight]);
+    info.firstSet = DrawGraphUtil::setOffset;
+    info.dynamicOffsetCount = 0;
+    info.pDynamicOffsets = nullptr;
+    info.pipelineBindPoint = &bindPoint;
+    info.pipelineLayoutId = DrawGraphUtil::pipelineLayoutId;
+    
+    DrawGraphUtil::descriptorIdList.push_back(info.descriptorSetId);
+
+    info.descriptorSetIds = (DrawGraphUtil::descriptorIdList);
+    dcb->BindDescriptorSets(&info);
 }
 
-void MeshNode::Execute()
+void MeshNode::Entry()
 {
-    for each(auto mesh in this->meshList)
-    {
-        //PLOGD << std::to_string(mesh) + " Mesh ";
-    }
+    VertexBufferBindingInfo info = {};
+    info.bindingCount = 1;
+    info.firstBinding = 0;
+    info.bufferIds = this->bufferIds;
+    info.pOffsets = this->pOffsets;
+    dcb->BindVertexBuffers(&info);
+
+    IndexBufferBindingInfo indInfo = {};
+    indInfo.bufferId = this->indexBufferId;
+    indInfo.indexType = IndexType::INDEX_TYPE_UINT32;
+    indInfo.offset = 0;
+    dcb->BindIndexBuffer(&indInfo);
 }
 
-void DrawingNode::Execute()
+void MeshNode::Exit()
 {
-    for each(auto mesh in this->meshList)
-    {
-        //PLOGD << std::to_string(mesh) + " Drawing";
-    }
+
+}
+
+void IndexedDrawNode::Entry()
+{
+    dcb->DrawIndex(&this->info);
+}
+
+void IndexedDrawNode::Exit()
+{
+
 }

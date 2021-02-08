@@ -398,6 +398,27 @@ void VkShaderResourceManager::Init()
             perShaderResourceList.push_back(obj);
         }
     }
+
+    // Create filler set
+    VkDescriptorSetLayoutCreateInfo info = {};
+    info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+    info.bindingCount = 0;
+    info.pBindings = nullptr;
+
+    ErrorCheck(vkCreateDescriptorSetLayout(
+        *CoreObjects::logicalDeviceObj,
+        &info,
+        CoreObjects::pAllocator,
+        &fillerSetLayout
+    ));
+
+    VkDescriptorSetAllocateInfo allocInfo = {};
+    allocInfo.descriptorPool = *VkDescriptorPoolFactory::GetInstance()->GetDescriptorPool();
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &fillerSetLayout;
+
+    ErrorCheck(vkAllocateDescriptorSets(*CoreObjects::logicalDeviceObj, &allocInfo, &fillerSet));
 }
 
 void VkShaderResourceManager::DeInit()
@@ -411,6 +432,7 @@ void VkShaderResourceManager::DeInit()
 
     setWrapperList.clear();
     perShaderResourceList.clear();
+    pipelineLayoutIdToSetValuesMap.clear();
 
     for (uint32_t i = 0; i < (uint32_t)pipelineLayoutWrapperList.size(); i++)
     {
@@ -433,6 +455,8 @@ void VkShaderResourceManager::DeInit()
     }
 
     fillerSetLayouts.clear();
+    vkDestroyDescriptorSetLayout(*CoreObjects::logicalDeviceObj, fillerSetLayout, CoreObjects::pAllocator);
+
 }
 
 void VkShaderResourceManager::Update()
@@ -491,26 +515,8 @@ uint32_t VkShaderResourceManager::CreatePipelineLayout(SetWrapper ** setWrapperL
     pipelineLayoutWrapperObj.id = GetPipelineLayoutID();
     //pipelineLayoutWrapperObj.setLayoutList.resize(numSets);
 
-    GetSetLayouts(setWrapperList, (uint32_t)numSets, pipelineLayoutWrapperObj.setLayoutList);
+    GetSetLayouts(setWrapperList, (uint32_t)numSets, pipelineLayoutWrapperObj.setLayoutList, pipelineLayoutWrapperObj.setValuesInPipelineLayout);
     
-    /*PipelineLayoutWrapper pipelineLayoutWrapperObj = {};
-    pipelineLayoutWrapperObj.id = GetPipelineLayoutID();
-    pipelineLayoutWrapperObj.setLayoutList.resize(numSets);
-
-    for (uint32_t k = 0; k < (uint32_t)numSets; k++)
-    {
-        SetWrapper * setWrapper = setWrapperList[k];
-        
-        if (idToSetLayoutMap.find(setWrapper->descriptorSetLayoutId) == idToSetLayoutMap.end())
-        {
-            ASSERT_MSG(0, "Id mismatch");
-        }
-        else
-        {
-            pipelineLayoutWrapperObj.setLayoutList[k] = (*idToSetLayoutMap[setWrapper->descriptorSetLayoutId]);
-        }
-    }
-    */
     VkPipelineLayoutCreateInfo pipelineCreateInfo = {};
     pipelineCreateInfo.flags = 0;
     pipelineCreateInfo.pPushConstantRanges= nullptr;
@@ -525,6 +531,9 @@ uint32_t VkShaderResourceManager::CreatePipelineLayout(SetWrapper ** setWrapperL
 
     pipelineLayoutWrapperObj.pipelineLayout = pipelineLayout;
     pipelineLayoutWrapperList.push_back(pipelineLayoutWrapperObj);
+    
+    pipelineLayoutIdToSetValuesMap.insert(std::pair<uint32_t, std::vector<int>>(
+    { pipelineLayoutWrapperObj.id, pipelineLayoutWrapperObj.setValuesInPipelineLayout}));
 
     return pipelineLayoutWrapperObj.id;
 }
@@ -546,7 +555,7 @@ std::vector<SetWrapper*>* VkShaderResourceManager::GetSetWrapperList()
     return &setWrapperList;
 }
 
-void VkShaderResourceManager::GetSetLayouts(SetWrapper ** setWrapperList, const uint32_t & numSets, std::vector<VkDescriptorSetLayout> & layoutList)
+void VkShaderResourceManager::GetSetLayouts(SetWrapper ** setWrapperList, const uint32_t & numSets, std::vector<VkDescriptorSetLayout> & layoutList, std::vector<int> & setValueList)
 {
     // order of sets (descriptor types) should match order mentioned in shaders 
 
@@ -558,7 +567,57 @@ void VkShaderResourceManager::GetSetLayouts(SetWrapper ** setWrapperList, const 
     }
 
     std::sort(setValues.begin(), setValues.end());
+    std::vector<uint32_t> completeSet;
+    {
+        for (uint32_t i = setValues.front(); i <= setValues.back(); i++)
+        {
+            completeSet.push_back(i);
+        }
 
+        for each(auto obj in completeSet)
+        {
+            std::vector<uint32_t>::iterator it;
+            it = std::find_if(setValues.begin(), setValues.end(), [&](uint32_t e) {
+                return e == obj; });
+
+            // if the setvalue is present in setwrapper add the existing setlayout
+            if (it != setValues.end())
+            {
+                for (uint32_t i = 0; i < numSets; i++)
+                {
+                    SetWrapper * wrapper = setWrapperList[i];
+                    if (wrapper->setValue == obj)
+                    {
+                        layoutList.push_back(*idToSetLayoutMap[wrapper->descriptorSetLayoutId]);
+                        setValueList.push_back(obj);
+                        break;
+                    }
+                }
+            }
+            // if not create a dummy set layout and add it to the list
+            else
+            {
+                //VkDescriptorSetLayoutCreateInfo info = {};
+                //info.bindingCount = 0;
+                //info.pBindings = nullptr;
+                //info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+
+                //VkDescriptorSetLayout setLayout;
+                //ErrorCheck(vkCreateDescriptorSetLayout(
+                //    *CoreObjects::logicalDeviceObj,
+                //    &info,
+                //    CoreObjects::pAllocator,
+                //    &setLayout
+                //));
+                layoutList.push_back(fillerSetLayout);
+                //fillerSetLayouts.push_back(setLayout);
+                setValueList.push_back(-1);
+            }
+        }
+    }
+
+    return;
+    /*
     uint32_t setValue = 0; 
 
     for (uint32_t i = 0; i < (uint32_t)setValues.size(); i++)
@@ -612,7 +671,36 @@ void VkShaderResourceManager::GetSetLayouts(SetWrapper ** setWrapperList, const 
             setValue = setValues[i];
         }
     }
+    */
+}
 
+std::vector<VkDescriptorSet> VkShaderResourceManager::GetDescriptors(uint32_t * ids, const uint32_t & count, const uint32_t & pipelineLayoutId)
+{
+    std::vector<int> * setValues = &pipelineLayoutIdToSetValuesMap[pipelineLayoutId];
+    std::vector<VkDescriptorSet> list;
+
+    for (uint32_t i = 0, k = 0; i < setValues->size(); i++)
+    {
+        if (setValues->at(i) != -1)
+        {
+            VkDescriptorSet set = idToSetMap[ids[k]];
+            ASSERT_MSG(set != VK_NULL_HANDLE, "Set not found");
+            list.push_back(set);
+            k++;
+        }
+        else
+        {
+            list.push_back(fillerSet);
+        }
+    }
+
+    /*for (uint32_t i = 0; i < count; i++)
+    {
+        VkDescriptorSet set = idToSetMap[ids[i]];
+        ASSERT_MSG(set != VK_NULL_HANDLE, "Set not found");
+        list.push_back(set);
+    }*/
+    return list;
 }
 
 uint32_t * VkShaderResourceManager::AllocateDescriptors(SetWrapper * setwrapper, const uint32_t & numDescriptors)
@@ -696,4 +784,9 @@ void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription
     }
 
     vkUpdateDescriptorSets(*CoreObjects::logicalDeviceObj, (uint32_t)writeList.size(), writeList.data(), 0, nullptr);
+}
+
+const std::vector<int>* VkShaderResourceManager::GetSetValuesInPipelineLayout(const uint32_t & pipelineLayoutId)
+{
+    return &pipelineLayoutIdToSetValuesMap[pipelineLayoutId];
 }

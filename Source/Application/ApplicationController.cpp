@@ -22,5 +22,4 @@ void ApplicationController::DeInit()
     delete playerHandlerScript;
     playerHandlerScript = NULL;
     worldObj->DestroyEntity(scriptableParent);
-
 }

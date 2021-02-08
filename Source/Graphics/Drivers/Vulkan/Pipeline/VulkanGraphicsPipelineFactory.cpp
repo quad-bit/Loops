@@ -1062,6 +1062,14 @@ void VulkanGraphicsPipelineFactory::CreatePipeline(PipelineCreateInfo * info, co
     tempVectorToBeDeleted.push_back(list);
 }
 
+VkPipeline * VulkanGraphicsPipelineFactory::GetPipeline(const uint32_t & id) 
+{
+    VkPipeline * pipeline = idToPipelineMap[id];
+    ASSERT_MSG(pipeline != nullptr, "Id not found");
+
+    return pipeline;
+}
+
 /*
 void VulkanGraphicsPipelineFactory::InitPipelineCache()
 {
