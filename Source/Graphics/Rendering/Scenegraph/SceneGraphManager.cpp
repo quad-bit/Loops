@@ -27,7 +27,7 @@ void SceneGraphManager::DeInit()
     delete sceneTree;
 }
 
-void SceneGraphManager::Update(float dt)
+void SceneGraphManager::Update()
 {
     sceneTree->Traversal();
 }

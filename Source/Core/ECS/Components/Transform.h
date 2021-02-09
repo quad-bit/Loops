@@ -40,10 +40,12 @@ public:
     
     Transform * GetParent();
     void SetParent(Transform * transform);
-
+    void UpdateGlobalParams();
+    void UpdateLocalParams();
     const std::vector<Transform *> & GetChildren();
 
-    virtual void Execute() override;
+    virtual void Entry() override;
+    virtual void Exit() override;
 
     ~Transform()
     {

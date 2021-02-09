@@ -31,7 +31,7 @@ private:
 public:
     void Init(SceneNode * rootNode );
     void DeInit();
-    void Update(float dt);
+    void Update();
     static SceneGraphManager* GetInstance();
     ~SceneGraphManager();
 

@@ -329,17 +329,20 @@ template<class T>
 inline void Tree<T>::Traversal(TreeNode<T> * node)
 {
     if (node->data != NULL)
-        node->data->Execute();
+        node->data->Entry();
 
     if (node->child != NULL)
     {
-    	std::cout << std::endl;
+    	//std::cout << std::endl;
     	Traversal(node->child);
     }
+    
+    if (node->data != NULL)
+        node->data->Exit();
 
     if (node->next != NULL)
     {
-    	std::cout << " ";
+    	//std::cout << " ";
     	Traversal(node->next);
     }
 }
@@ -350,17 +353,18 @@ inline void Tree<T>::Traversal()
     TreeNode<T> * node = root;
 
     if (node->data != NULL)
-    	node->data->Execute();
+    	node->data->Entry();
 
     if (node->child != NULL)
     {
-    	std::cout << std::endl;
     	Traversal(node->child);
     }
 
+    if (node->data != NULL)
+        node->data->Exit();
+
     if (node->next != NULL)
     {
-    	std::cout << " ";
     	Traversal(node->next);
     }
 }

@@ -1,7 +1,9 @@
 #include "TransformSystem.h"
 #include "Transform.h"
 #include "World.h"
+#include "SceneGraphManager.h"
 
+// deprecated
 void TransformSystem::UpdateTransform(Transform * transform)
 {
     if (transform->GetParent() != nullptr)
@@ -14,8 +16,8 @@ void TransformSystem::UpdateTransform(Transform * transform)
         glm::mat4 rotZMat = glm::rotate(transform->localEulerAngle.z, glm::vec3(0, 0, 1));
 
         transform->rotationMat = rotZMat * rotYMat * rotXMat;
-        transform->localModelMatrix = transform->translationMat * transform->rotationMat * transform->scaleMat;
-        transform->globalModelMatrix = transform->localModelMatrix;
+        transform->globalModelMatrix = transform->translationMat * transform->rotationMat * transform->scaleMat;
+        transform->localModelMatrix = transform->globalModelMatrix;
     }
     else
     {
@@ -27,8 +29,8 @@ void TransformSystem::UpdateTransform(Transform * transform)
         glm::mat4 rotZMat = glm::rotate(transform->localEulerAngle.z, glm::vec3(0, 0, 1));
 
         transform->rotationMat = rotZMat * rotYMat * rotXMat;
-        transform->localModelMatrix = transform->translationMat * transform->rotationMat * transform->scaleMat;
-        transform->globalModelMatrix = transform->GetParent()->globalModelMatrix * transform->localModelMatrix;
+        transform->globalModelMatrix = transform->translationMat * transform->rotationMat * transform->scaleMat;
+        transform->localModelMatrix = transform->GetParent()->localModelMatrix * transform->globalModelMatrix;
     }
 }
 
@@ -42,38 +44,9 @@ void TransformSystem::DeInit()
 
 void TransformSystem::Update(float dt)
 {
-    /*
-	for (auto & entity : registeredEntities)
-	{
-		ComponentHandle<Transform> transformHandle;
-		worldObj->Unpack(entity, transformHandle);
-        
-        
-        if (transformHandle->GetParent() != nullptr)
-        {
-            if (transformHandle->GetParent()->isTransformUpdated)
-            {
-                // update your tranformations
-                UpdateTransform(transformHandle.GetComponent());
-                transformHandle->isTransformUpdated = true;
-            }
-            else
-            {
-                // update parent transformation
-                Transform * parent = transformHandle->GetParent();
-                do
-                {
-                    UpdateTransform(parent);
-                    parent->isTransformUpdated = true;
-                    parent = parent->GetParent();
-                }while (parent != nullptr);
-
-                // update your tranformations
-                UpdateTransform(transformHandle.GetComponent());
-                transformHandle->isTransformUpdated = true;
-            }
-        }
-	}*/
+    // Do the scene tree traversal
+    // Update the tranform wrt to the parent
+    SceneGraphManager::GetInstance()->Update();
 }
 
 TransformSystem::TransformSystem()

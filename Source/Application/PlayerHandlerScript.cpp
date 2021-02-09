@@ -17,6 +17,8 @@ PlayerHandlerScript::PlayerHandlerScript()
 
     camHandle0 = worldObj->CreateEntity();
     camHandle0->GetEntity()->entityName = "MainCamera";
+    camHandle0->GetTransform()->globalPosition = glm::vec3(0, 0, 10);
+
     Camera * camera = new Camera(&camHandle0->GetTransform()->globalPosition);
     camHandle0->AddComponent<Camera>(camera);
 
@@ -28,18 +30,21 @@ PlayerHandlerScript::PlayerHandlerScript()
     playerHandle = worldObj->CreateEntity();
     playerHandle->GetEntity()->entityName = "player";
     Transform * playerTrf = playerHandle->GetTransform();
+    //playerTrf->globalPosition = glm::vec3(-3, 0, 0);
     
     // TORSO
     torso = worldObj->CreateEntity();
     torso->GetEntity()->entityName = "torso";
     Transform * torsoTrf = torso->GetTransform();
+    torsoTrf->globalPosition = glm::vec3(3, 0, 0);
+
     torsoTrf->SetParent(playerTrf);
     {
         BitArray req(10);
         req.SetBit((unsigned int)ATTRIBUTES::POSITION);
         req.SetBit((unsigned int)ATTRIBUTES::COLOR);
 
-        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST };
+        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST};
         MeshInfo meshInfo{};
         meshInfo.attribMaskReq = req;
         meshInfo.bufferPerAttribRequired = false;
@@ -71,15 +76,14 @@ PlayerHandlerScript::PlayerHandlerScript()
     head->GetEntity()->entityName = "head";
     Transform * headTrf = head->GetTransform();
     headTrf->SetParent(torsoTrf);
-
-#if 0
-    //TESTING
+    headTrf->globalPosition = glm::vec3(-3, 0, 0);
+#if 1
     {
         BitArray req(10);
         req.SetBit((unsigned int)ATTRIBUTES::POSITION);
         req.SetBit((unsigned int)ATTRIBUTES::COLOR);
 
-        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_STRIP }; // TODO : Correct the topo
+        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_LINE_STRIP }; // TODO : Correct the topo
         MeshInfo meshInfo{};
         meshInfo.attribMaskReq = req;
         meshInfo.bufferPerAttribRequired = false;
@@ -102,10 +106,11 @@ PlayerHandlerScript::PlayerHandlerScript()
         head->AddComponent<Material>(mat);
         //MaterialFactory::GetInstance()->AddMeshIds(mat, headMesh->componentId);
 
-        headMeshRenderer = new MeshRenderer(headMesh, mat);
+        headMeshRenderer = new MeshRenderer(headMesh, mat, headTrf);
         head->AddComponent<MeshRenderer>(headMeshRenderer);
     }
 #endif
+
     //LEFT ARM
     leftArm = worldObj->CreateEntity();
     leftArm->GetEntity()->entityName = "leftArm";
@@ -155,7 +160,7 @@ PlayerHandlerScript::~PlayerHandlerScript()
     torsoMat.DestroyComponent();
 
     worldObj->DestroyEntity(torso);
-#if 0
+#if 1
     ComponentHandle<Mesh> headMesh = head->GetComponent<Mesh>();
     MeshFactory::GetInstance()->DestroyMesh(headMesh->componentId);
     headMesh.DestroyComponent();

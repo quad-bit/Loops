@@ -39,8 +39,8 @@ void EngineManager::Update()
 
     while (GraphicsManager::GetInstance()->IsWindowActive())
     {
-        CoreManager::GetInstance()->Update();
         InputManager::GetInstance()->Update();
+        CoreManager::GetInstance()->Update();
         ECS_Manager::GetInstance()->Update();
         GraphicsManager::GetInstance()->Update();
     }

@@ -10,5 +10,5 @@ DrawCommandBuffer<ApiInterface> * DrawGraphNode::dcb = nullptr;
 void DrawGraphNode::Exit()
 {
     DrawGraphUtil::descriptorIdList.pop_back();
-    DrawGraphUtil::setOffset = (uint32_t)DrawGraphUtil::descriptorIdList.size();
+    DrawGraphUtil::setOffset = (uint32_t)DrawGraphUtil::descriptorIdList.size() - 1;
 }

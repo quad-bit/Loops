@@ -381,6 +381,7 @@ inline void ForwardGraph<T>::Update(DrawCommandBuffer<T>* dcb)
     }
     */
     DrawGraphUtil::setOffset = 0;
+    DrawGraphUtil::descriptorIdList.clear();
     for each(auto cam in *cameraNodeList)
     {
         drawGraph->DepthFirstTraversal(cam->GetNodeId(), drawingNodeList->back()->GetNodeId());

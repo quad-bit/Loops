@@ -11,16 +11,7 @@ class SceneManager
 private:
     EntityHandle * sceneRootEntityHandle;
     Transform * sceneRootTransform;
-    /*EntityHandle* scriptableParent;
-    Scriptable* playerHandlerScript;
-    EntityHandle* Player;
-    EntityHandle* head;
-    EntityHandle* torso;
-    EntityHandle* leftArm;
-    EntityHandle* rightArm;
-    EntityHandle* rightLeg;
-    EntityHandle* leftLeg;
-*/
+    
 public:
     SceneManager();
     ~SceneManager();

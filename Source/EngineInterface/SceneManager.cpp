@@ -45,11 +45,12 @@ void SceneManager::HandleSceneControls(KeyInputEvent * inputEvent)
         }
     }
 
+    // Just for testing, TODO : need to be removed
     if (strcmp(inputEvent->keyname, "T") == 0)
     {
         if (inputEvent->keyState == KeyInputEvent::KEY_STATE::RELEASED)
         {
-            SceneGraphManager::GetInstance()->Update(0.0f);
+            
         }
     }
 }

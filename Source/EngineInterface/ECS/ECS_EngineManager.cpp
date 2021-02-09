@@ -65,7 +65,7 @@ void ECS_Manager::DeInit()
 void ECS_Manager::Update()
 {
     worldObj->Update(0.0f);
-    worldObj->Render();
+    //worldObj->Render();
 }
 
 ECS_Manager * ECS_Manager::GetInstance()

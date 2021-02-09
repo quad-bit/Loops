@@ -65,6 +65,15 @@ void MeshRendererSystem::Update(float dt)
         ComponentHandle<MeshRenderer> * renderer;
         ComponentHandle<Transform> * transform;
         worldObj->Unpack(entity, &renderer, &transform);
+        
+        Transform * transformObj = transform->GetComponent();
+        TransformUniform obj = {};
+        obj.modelMat = transformObj->localModelMatrix;
+
+        ShaderBindingDescription * desc = transformToBindDescMap[transformObj];
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, 
+            &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
+
     }
 }
 
@@ -117,8 +126,9 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     resDescriptionList.push_back(desc);
     resourceSharingConfig.allocatedUniformCount += 1;
     
+    Transform * transform = inputEvent->renderer->transform;
     TransformUniform obj = {};
-    obj.modelMat = inputEvent->renderer->transform->globalModelMatrix;
+    obj.modelMat = transform->localModelMatrix;
 
     //upload data to buffers
     for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
@@ -173,6 +183,9 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     
     DrawGraphManager::GetInstance()->CreateGraphEdges(meshGraphNode, transformGraphNode);
     DrawGraphManager::GetInstance()->CreateGraphEdges(transformGraphNode, drawingGraphNode);
+
+    transformToBindDescMap.insert(std::pair<Transform *, ShaderBindingDescription *>(
+    {transform, desc}));
 }
 
 void TransformNode::Entry()

@@ -4,7 +4,7 @@
 
 struct CubeIndexed
 {
-    glm::uvec4 color{ 0.5f, 0.5f, 0.5f, 0.5f };
+    glm::vec4 color = { 0.2, 0.5, 0.6, 0.8 };
     std::vector< glm::vec3 > positions = 
     {
         glm::vec3(-1, -1, -1),
@@ -15,6 +15,18 @@ struct CubeIndexed
         glm::vec3(1, -1, 1),
         glm::vec3(1, 1, 1),
         glm::vec3(-1, 1, 1)
+    };
+
+    std::vector< glm::vec4 > colors =
+    {
+        glm::vec4(0.2f, 0.99f, 0.2f, 1.0f),
+        glm::vec4(0.2f, 0.99f, 0.2f, 1.0f),
+        glm::vec4(0.2f, 0.99f, 0.2f, 1.0f),
+        glm::vec4(0.2f, 0.99f, 0.2f, 1.0f),
+        glm::vec4(0.7f, 0.4f, 0.7f, 1.0f),
+        glm::vec4(0.7f, 0.4f, 0.7f, 1.0f),
+        glm::vec4(0.9f, 0.2f, 0.5f, 1.0f),
+        glm::vec4(0.95f, 0.1f, 0.89f, 1.0f)
     };
 
     std::vector< glm::uvec2 > uv =

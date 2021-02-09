@@ -149,7 +149,7 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     DrawGraphManager::GetInstance()->Init(RendererType::Forward);
     this->apiInterface = apiInterface;
 
-    Settings::clearColorValue[0] = 164.0f / 256.0f; // Red
+    Settings::clearColorValue[0] = 34.0f / 256.0f; // Red
     Settings::clearColorValue[1] = 30.0f / 256.0f;  // Green
     Settings::clearColorValue[2] = 34.0f / 256.0f;  // Blue
     Settings::clearColorValue[3] = 1.0f;

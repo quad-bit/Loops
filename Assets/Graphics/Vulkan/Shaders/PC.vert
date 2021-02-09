@@ -22,6 +22,13 @@ layout (location = 0) out vec4 outColor;
 
 void main()
 {
+    mat4 clip = mat4(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, -1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.5f, 0.0f,
+        0.0f, 0.0f, 0.5f, 1.0f
+    );
+
    outColor = inColor;
-   gl_Position = view.projection * view.view * transform.model * vec4(pos.xyz, 1.0);
+   gl_Position = clip * view.projection * view.view * transform.model * vec4(pos.xyz, 1.0);
 }

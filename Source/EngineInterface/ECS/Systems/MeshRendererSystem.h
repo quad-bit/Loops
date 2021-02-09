@@ -7,6 +7,7 @@
 template <typename T>
 class GraphNode;
 
+class Transform;
 class MeshRenderer;
 class MeshRendererAdditionEvent;
 
@@ -66,6 +67,8 @@ private:
 
     SetWrapper * transformSetWrapper;
     std::vector<ShaderBindingDescription *> resDescriptionList;
+    std::map<Transform *, ShaderBindingDescription *> transformToBindDescMap;
+
     uint32_t numDescriptorsPerBinding;
     
     std::map<uint32_t, DrawGraphNode*> meshIdToGraphNode;

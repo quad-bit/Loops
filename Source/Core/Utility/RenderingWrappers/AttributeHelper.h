@@ -32,7 +32,7 @@ struct VertexMetaData
 struct PC
 {
     glm::vec3 position;
-    glm::uvec4 color;
+    glm::vec4 color;
 };
 
 struct AttribStructBase
@@ -119,6 +119,10 @@ inline void AttribPC::FillData(Mesh * mesh)
     {
         posColList[i].position = obj.positions[i];
         posColList[i].color = obj.color;
+        /*if(obj.colors.size() > 0)
+            posColList[i].color = obj.colors[i];
+        else*/
+
         mesh->positions[i] = &posColList[i].position;
         mesh->colors[i] = &posColList[i].color;
     }

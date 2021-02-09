@@ -10,6 +10,7 @@ class ComponentHandle;
 class TransformSystem :	public System
 {
 private:
+    // deprecated
     void UpdateTransform(Transform * transform);
 public:
     virtual void Init() override;
