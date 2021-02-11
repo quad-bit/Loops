@@ -12,8 +12,9 @@
 #include <MeshRenderer.h>
 #include <Timer.h>
 #include <glm\glm.hpp>
+#include "CameraController.h"
 
-PlayerHandlerScript::PlayerHandlerScript()
+PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
 {
     scriptName = typeid(this).raw_name();
 
@@ -24,6 +25,8 @@ PlayerHandlerScript::PlayerHandlerScript()
     Camera * camera = new Camera(&camHandle0->GetTransform()->GetLocalPosition());
     camHandle0->AddComponent<Camera>(camera);
 
+    cameraController = new CameraController();
+    camHandle0->AddComponent<Scriptable>(cameraController);
     //camHandle1 = worldObj->CreateEntity();
     //camHandle1->GetEntity()->entityName = "SecondCamera";
     //Camera * cam = new Camera(&camHandle1->GetTransform()->globalPosition);
@@ -68,7 +71,6 @@ PlayerHandlerScript::PlayerHandlerScript()
 
         colMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
         torso->AddComponent<Material>(colMat);
-        //MaterialFactory::GetInstance()->AddMeshIds(mat, torsoMesh->componentId);
 
         torsoMeshRenderer = new MeshRenderer(torsoMesh, colMat, torsoTrf);
         torso->AddComponent<MeshRenderer>(torsoMeshRenderer);
@@ -151,16 +153,17 @@ void PlayerHandlerScript::DeInit()
 PlayerHandlerScript::~PlayerHandlerScript()
 {
     worldObj->DestroyEntity(playerHandle);
+    {
+        ComponentHandle<Mesh> torsoMesh = torso->GetComponent<Mesh>();
+        MeshFactory::GetInstance()->DestroyMesh(torsoMesh->componentId);
+        torsoMesh.DestroyComponent();
+        //torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
+        //delete torsoMesh.GetComponent(); //TODO  fix this get component function
+        ComponentHandle<Material> torsoMat = torso->GetComponent<Material>();
+        torsoMat.DestroyComponent();
+        worldObj->DestroyEntity(torso);
+    }
 
-    ComponentHandle<Mesh> torsoMesh = torso->GetComponent<Mesh>();
-    MeshFactory::GetInstance()->DestroyMesh(torsoMesh->componentId);
-    torsoMesh.DestroyComponent();
-    //torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
-    //delete torsoMesh.GetComponent(); //TODO  fix this get component function
-    ComponentHandle<Material> torsoMat = torso->GetComponent<Material>();
-    torsoMat.DestroyComponent();
-
-    worldObj->DestroyEntity(torso);
 #if 1
     ComponentHandle<Mesh> headMesh = head->GetComponent<Mesh>();
     MeshFactory::GetInstance()->DestroyMesh(headMesh->componentId);
@@ -175,5 +178,7 @@ PlayerHandlerScript::~PlayerHandlerScript()
     worldObj->DestroyEntity(rightArm);
     worldObj->DestroyEntity(leftLeg);
     worldObj->DestroyEntity(rightLeg);
+    
+    delete cameraController;
     worldObj->DestroyEntity(camHandle0);
 }

@@ -59,7 +59,7 @@ void InputManager::EventNotification(KeyInputEvent * event)
     EventBus::GetInstance()->Publish(event);
 }
 
-KeyInputEvent * InputManager::FetchEvent()
+KeyInputEvent * InputManager::FetchKeyInputEvent()
 {
     KeyInputEvent * event = keyEventPool[eventCounter];
 

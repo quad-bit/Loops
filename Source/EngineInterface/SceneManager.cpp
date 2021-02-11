@@ -36,7 +36,7 @@ void SceneManager::HandleSceneControls(KeyInputEvent * inputEvent)
 {
     if (strcmp(inputEvent->keyname, "P") == 0)
     {
-        if (inputEvent->keyState == KeyInputEvent::KEY_STATE::RELEASED)
+        if (inputEvent->keyState == KeyState::RELEASED)
         {
             if (appState == APP_STATE::NONE || appState == APP_STATE::STOPPED)
                 appState = APP_STATE::STARTED;
@@ -48,7 +48,7 @@ void SceneManager::HandleSceneControls(KeyInputEvent * inputEvent)
     // Just for testing, TODO : need to be removed
     if (strcmp(inputEvent->keyname, "T") == 0)
     {
-        if (inputEvent->keyState == KeyInputEvent::KEY_STATE::RELEASED)
+        if (inputEvent->keyState == KeyState::RELEASED)
         {
             
         }

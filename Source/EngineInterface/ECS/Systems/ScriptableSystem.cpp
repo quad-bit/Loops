@@ -42,6 +42,13 @@ void ScriptableSystem::Update(float dt)
         break;
 
     case APP_STATE::PAUSED:
+        for (auto & entity : registeredEntities)
+        {
+            ComponentHandle<Scriptable> scriptableHandle;
+            worldObj->Unpack(entity, scriptableHandle);
+            if(scriptableHandle->runInEditMode)
+                scriptableHandle->Update(dt);
+        }
         break;
 
     case APP_STATE::STOPPED:
@@ -56,6 +63,13 @@ void ScriptableSystem::Update(float dt)
         break;
 
     case APP_STATE::NONE:
+        for (auto & entity : registeredEntities)
+        {
+            ComponentHandle<Scriptable> scriptableHandle;
+            worldObj->Unpack(entity, scriptableHandle);
+            if (scriptableHandle->runInEditMode)
+                scriptableHandle->Update(dt);
+        }
         break;
 
     default:

@@ -27,5 +27,5 @@ public:
 
     void EventNotification(KeyInputEvent * event);
 
-    KeyInputEvent * FetchEvent();
+    KeyInputEvent * FetchKeyInputEvent();
 };

@@ -54,6 +54,7 @@ public:
 #include "ComponentAdditionEvent.h"
 #include "EventBus.h"
 #include "MeshRenderer.h"
+#include "Scriptable.h"
 
 template<typename ComponentType>
 inline void EntityHandle::AddComponent(ComponentType * componentType)
@@ -79,6 +80,13 @@ inline void EntityHandle::AddComponent(MeshRenderer * componentType)
     MeshRendererAdditionEvent evt;
     evt.renderer = componentType;
     EventBus::GetInstance()->Publish(&evt);
+}
+
+template<>
+inline void EntityHandle::AddComponent(Scriptable * componentType)
+{
+    worldObj->AddComponent<Scriptable>(componentType, entityObj);
+    componentType->entity = entityObj;
 }
 
 template<typename ComponentType>

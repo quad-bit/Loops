@@ -16,6 +16,9 @@ void EventBus::DeInit()
 
     for (it = subscribers.begin(); it != subscribers.end(); it++)
     {
+        if (it->second == nullptr)
+            continue;
+
         HandlerList list = *it->second;
         auto listBegin = list.begin();
         uint32_t numHandlers = (uint32_t)list.size();

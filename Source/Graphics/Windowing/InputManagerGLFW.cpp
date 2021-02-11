@@ -2,6 +2,7 @@
 #include <Assertion.h>
 #include "WindowManager.h"
 #include "CorePrecompiled.h"
+#include "MouseInputManager.h"
 
 #if defined(GLFW_ENABLED)
 #define GLFW_INCLUDE_VULKAN
@@ -9,6 +10,13 @@
 #endif
 
 #if defined(GLFW_ENABLED)
+
+typedef struct
+{
+    GLFWwindow* window;
+    int number;
+    int closeable;
+} Slot;
 
 static const char* get_key_name(int key)
 {
@@ -157,25 +165,6 @@ static const char* get_action_name(int action)
     return "caused unknown action";
 }
 
-static const char* get_button_name(int button)
-{
-    switch (button)
-    {
-    case GLFW_MOUSE_BUTTON_LEFT:
-        return "left";
-    case GLFW_MOUSE_BUTTON_RIGHT:
-        return "right";
-    case GLFW_MOUSE_BUTTON_MIDDLE:
-        return "middle";
-    default:
-    {
-        static char name[16];
-        sprintf_s(name, "%i", button);
-        return name;
-    }
-    }
-}
-
 static const char* get_mods_name(int mods)
 {
     static char name[512];
@@ -197,6 +186,43 @@ static const char* get_mods_name(int mods)
     return name;
 }
 
+static const char* get_button_name(int button)
+{
+    switch (button)
+    {
+    case GLFW_MOUSE_BUTTON_LEFT:
+        return "left";
+    case GLFW_MOUSE_BUTTON_RIGHT:
+        return "right";
+    case GLFW_MOUSE_BUTTON_MIDDLE:
+        return "middle";
+    default:
+    {
+        static char name[16];
+        sprintf_s(name, "%i", button);
+        return name;
+    }
+    }
+}
+
+static void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
+{
+    //Slot* slot = (Slot*)glfwGetWindowUserPointer(window);
+    //printf("Mouse button %i (%s) (with%s) was %s\n",
+    //    button,
+    //    get_button_name(button),
+    //    get_mods_name(mods),
+    //    get_action_name(action));
+    MouseInputManager::GetInstance()->MouseButtonEventHandler(get_button_name(button), get_action_name(action));
+}
+
+static void CursorPositionCallback(GLFWwindow* window, double x, double y)
+{
+    //Slot* slot = (Slot*)glfwGetWindowUserPointer(window);
+    //printf("Cursor position: %f %f\n", x, y);
+    MouseInputManager::GetInstance()->MousePointerEventHandler(x, y);
+}
+
 static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
@@ -215,21 +241,21 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     const char* pressedAction = "pressed";
     const char* downAction = "repeated";
 
-    KeyInputEvent * keyEvent = InputManager::GetInstance()->FetchEvent();
+    KeyInputEvent * keyEvent = InputManager::GetInstance()->FetchKeyInputEvent();
     keyEvent->keyname = keyname;
     keyEvent->keyStateName = actionName;
 
     if (strcmp(actionName, upAction) == 0)
     {
-        keyEvent->keyState = KeyInputEvent::KEY_STATE::RELEASED;
+        keyEvent->keyState = KeyState::RELEASED;
     }
     else if (strcmp(actionName, downAction) == 0)
     {
-        keyEvent->keyState = KeyInputEvent::KEY_STATE::DOWN;
+        keyEvent->keyState = KeyState::DOWN;
     }
     else if (strcmp(actionName, pressedAction) == 0)
     {
-        keyEvent->keyState = KeyInputEvent::KEY_STATE::PRESSED;
+        keyEvent->keyState = KeyState::PRESSED;
     }
 
     InputManager::GetInstance()->EventNotification(keyEvent);
@@ -260,7 +286,10 @@ void InputManager::Init()
     PLOGD << "Input manager Init";
 
     glfwSetKeyCallback(WindowManager::GetInstance()->glfwWindow, key_callback);
+    glfwSetMouseButtonCallback(WindowManager::GetInstance()->glfwWindow, MouseButtonCallback);
+    glfwSetCursorPosCallback(WindowManager::GetInstance()->glfwWindow, CursorPositionCallback);
 }
+
 
 void InputManager::DeInit()
 {

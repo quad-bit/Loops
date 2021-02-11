@@ -4,6 +4,7 @@
 
 class EntityHandle;
 class MeshRenderer;
+class CameraController;
 
 class PlayerHandlerScript : public Scriptable
 {
@@ -25,10 +26,12 @@ private:
     MeshRenderer * rightLegMeshRenderer;
     MeshRenderer * leftLegMeshRenderer;
 
+    Scriptable * cameraController;
+
 public:
     PlayerHandlerScript();
     void Init() override;
     void Update(float dt) override;
     void DeInit() override;
-    ~PlayerHandlerScript();
+    virtual ~PlayerHandlerScript();
 };

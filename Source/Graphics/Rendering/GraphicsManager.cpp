@@ -6,6 +6,7 @@
 #include "RenderingWrapper.h"
 #include "RendererSettings.h"
 #include "InputManager.h"
+#include "MouseInputManager.h"
 #include <CorePrecompiled.h>
 
 GraphicsManager* GraphicsManager::instance = nullptr;
@@ -19,7 +20,7 @@ void GraphicsManager::Init(uint32_t winWidth, uint32_t winHeight, std::string wi
     Settings::windowName    = winName;
     WindowManager::GetInstance()->Init();
     InputManager::GetInstance()->Init();
-
+    MouseInputManager::GetInstance()->Init();
 #if (RENDERING_API == VULKAN)
     
     RendererSettings::queueRequirementCount = 4;
@@ -65,6 +66,9 @@ void GraphicsManager::DeInit()
     }
 
     delete[] RendererSettings::queueReq;
+
+    MouseInputManager::GetInstance()->DeInit();
+    delete MouseInputManager::GetInstance();
 
     InputManager::GetInstance()->DeInit();
     delete InputManager::GetInstance();
