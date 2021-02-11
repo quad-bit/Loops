@@ -68,7 +68,7 @@ void MeshRendererSystem::Update(float dt)
         
         Transform * transformObj = transform->GetComponent();
         TransformUniform obj = {};
-        obj.modelMat = transformObj->localModelMatrix;
+        obj.modelMat = transformObj->GetGlobalModelMatrix();
 
         ShaderBindingDescription * desc = transformToBindDescMap[transformObj];
         UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, 
@@ -127,8 +127,11 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     resourceSharingConfig.allocatedUniformCount += 1;
     
     Transform * transform = inputEvent->renderer->transform;
+    //transform->UpdateGlobalParams();
+    //transform->UpdateLocalParams();
+
     TransformUniform obj = {};
-    obj.modelMat = transform->localModelMatrix;
+    obj.modelMat = transform->GetGlobalModelMatrix();
 
     //upload data to buffers
     for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)

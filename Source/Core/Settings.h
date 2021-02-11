@@ -47,5 +47,6 @@ public:
     static float depthClearValue, stencilClearValue;
     static float clearColorValue[4];
     static uint32_t maxFramesInFlight, currentFrameInFlight;
+    static uint32_t maxFrameRate;
 };
 

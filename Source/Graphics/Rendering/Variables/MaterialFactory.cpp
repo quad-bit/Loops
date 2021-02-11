@@ -129,6 +129,11 @@ void MaterialFactory::AddMeshIds(Material * mat, const uint32_t & meshId)
 {
     ShaderFactory::GetInstance()->AddMeshToShader(meshId, mat->shaders, mat->numShaders);
     mat->meshList.push_back(meshId);
+
+    MeshAdditionEvent event;
+    event.meshId = meshId;
+    event.setWrapperList = mat->resourceLayoutList;
+    EventBus::GetInstance()->Publish(&event);
 }
 
 std::vector<uint32_t> MaterialFactory::GetMeshList(SetWrapper * setwrapper, const uint32_t & setWrapperCount)

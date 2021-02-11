@@ -10,6 +10,8 @@
 #include <MaterialFactory.h>
 #include <Camera.h>
 #include <MeshRenderer.h>
+#include <Timer.h>
+#include <glm\glm.hpp>
 
 PlayerHandlerScript::PlayerHandlerScript()
 {
@@ -17,9 +19,9 @@ PlayerHandlerScript::PlayerHandlerScript()
 
     camHandle0 = worldObj->CreateEntity();
     camHandle0->GetEntity()->entityName = "MainCamera";
-    camHandle0->GetTransform()->globalPosition = glm::vec3(0, 0, 10);
+    camHandle0->GetTransform()->SetLocalPosition( glm::vec3(0, 0, 10));
 
-    Camera * camera = new Camera(&camHandle0->GetTransform()->globalPosition);
+    Camera * camera = new Camera(&camHandle0->GetTransform()->GetLocalPosition());
     camHandle0->AddComponent<Camera>(camera);
 
     //camHandle1 = worldObj->CreateEntity();
@@ -30,14 +32,15 @@ PlayerHandlerScript::PlayerHandlerScript()
     playerHandle = worldObj->CreateEntity();
     playerHandle->GetEntity()->entityName = "player";
     Transform * playerTrf = playerHandle->GetTransform();
-    //playerTrf->globalPosition = glm::vec3(-3, 0, 0);
+    playerTrf->SetLocalPosition(glm ::vec3(0, 0, 0));
     
     // TORSO
     torso = worldObj->CreateEntity();
     torso->GetEntity()->entityName = "torso";
     Transform * torsoTrf = torso->GetTransform();
-    torsoTrf->globalPosition = glm::vec3(3, 0, 0);
+    torsoTrf->SetLocalPosition(glm::vec3(0, 0, 0));
 
+    Material * colMat;
     torsoTrf->SetParent(playerTrf);
     {
         BitArray req(10);
@@ -63,11 +66,11 @@ PlayerHandlerScript::PlayerHandlerScript()
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "Color.frag";
 
-        Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
-        torso->AddComponent<Material>(mat);
+        colMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
+        torso->AddComponent<Material>(colMat);
         //MaterialFactory::GetInstance()->AddMeshIds(mat, torsoMesh->componentId);
 
-        torsoMeshRenderer = new MeshRenderer(torsoMesh, mat, torsoTrf);
+        torsoMeshRenderer = new MeshRenderer(torsoMesh, colMat, torsoTrf);
         torso->AddComponent<MeshRenderer>(torsoMeshRenderer);
     }
 
@@ -76,14 +79,14 @@ PlayerHandlerScript::PlayerHandlerScript()
     head->GetEntity()->entityName = "head";
     Transform * headTrf = head->GetTransform();
     headTrf->SetParent(torsoTrf);
-    headTrf->globalPosition = glm::vec3(-3, 0, 0);
-#if 1
+    headTrf->SetLocalPosition( glm::vec3(0, 3, 0));
+
     {
         BitArray req(10);
         req.SetBit((unsigned int)ATTRIBUTES::POSITION);
         req.SetBit((unsigned int)ATTRIBUTES::COLOR);
 
-        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_LINE_STRIP }; // TODO : Correct the topo
+        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST }; 
         MeshInfo meshInfo{};
         meshInfo.attribMaskReq = req;
         meshInfo.bufferPerAttribRequired = false;
@@ -95,21 +98,12 @@ PlayerHandlerScript::PlayerHandlerScript()
         Mesh * headMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
         head->AddComponent<Mesh>(headMesh);
 
-        ShaderDescription shaders[2];
-        shaders[0].type = ShaderType::VERTEX;
-        shaders[0].shaderName = "PC.vert";
+        head->AddComponent<Material>(colMat);
+        MaterialFactory::GetInstance()->AddMeshIds(colMat, headMesh->componentId);
 
-        shaders[1].type = ShaderType::FRAGMENT;
-        shaders[1].shaderName = "Color.frag";
-
-        Material * mat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, headMesh->componentId);
-        head->AddComponent<Material>(mat);
-        //MaterialFactory::GetInstance()->AddMeshIds(mat, headMesh->componentId);
-
-        headMeshRenderer = new MeshRenderer(headMesh, mat, headTrf);
+        headMeshRenderer = new MeshRenderer(headMesh, colMat, headTrf);
         head->AddComponent<MeshRenderer>(headMeshRenderer);
     }
-#endif
 
     //LEFT ARM
     leftArm = worldObj->CreateEntity();
@@ -135,11 +129,18 @@ PlayerHandlerScript::PlayerHandlerScript()
 
 void PlayerHandlerScript::Init()
 {
-    int k = 4;
+    
 }
 
 void PlayerHandlerScript::Update(float dt)
 {
+    static uint32_t counter = 0;
+
+    // head rotation
+    {
+        Transform * headTrf = head->GetTransform();
+        headTrf->SetLocalEulerAngles(glm::vec3(0, glm::sin(counter++ / 100.0f), 0));
+    }
 }
 
 void PlayerHandlerScript::DeInit()

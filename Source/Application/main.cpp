@@ -16,5 +16,5 @@ void main()
     EngineManager::GetInstance()->DeInit();
     delete EngineManager::GetInstance();
 
-    getchar();
+    //getchar();
 }

@@ -62,10 +62,9 @@ void ECS_Manager::DeInit()
     delete worldObj;
 }
 
-void ECS_Manager::Update()
+void ECS_Manager::Update(float dt)
 {
-    worldObj->Update(0.0f);
-    //worldObj->Render();
+    worldObj->Update(dt);
 }
 
 ECS_Manager * ECS_Manager::GetInstance()

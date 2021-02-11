@@ -6,6 +6,8 @@
 // deprecated
 void TransformSystem::UpdateTransform(Transform * transform)
 {
+    DEPRECATED;
+    /*
     if (transform->GetParent() != nullptr)
     {
         transform->translationMat = glm::translate(transform->localPosition);
@@ -32,6 +34,7 @@ void TransformSystem::UpdateTransform(Transform * transform)
         transform->globalModelMatrix = transform->translationMat * transform->rotationMat * transform->scaleMat;
         transform->localModelMatrix = transform->GetParent()->localModelMatrix * transform->globalModelMatrix;
     }
+    */
 }
 
 void TransformSystem::Init()
