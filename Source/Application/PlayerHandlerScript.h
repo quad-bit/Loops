@@ -28,10 +28,13 @@ private:
 
     Scriptable * cameraController;
 
+    float prevAngle, currentAngle;
+
 public:
     PlayerHandlerScript();
     void Init() override;
     void Update(float dt) override;
+    void Render(float dt) override;
     void DeInit() override;
     virtual ~PlayerHandlerScript();
 };

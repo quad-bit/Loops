@@ -1,3 +1,4 @@
+#include "CorePrecompiled.h"
 #include "EngineManager.h"
 #include <CoreManager.h>
 #include <Settings.h>
@@ -46,25 +47,78 @@ void EngineManager::Update()
 
     typedef double precision;
 
-    precision msPerUpdate = 1.0f / (precision)Settings::maxFrameRate;
+    precision msPerUpdate = 1000.0f / (precision)Settings::maxFrameRate;
     precision lag = 0.0f;
+
+    Timer::GetInstance()->Reset();
     while (GraphicsManager::GetInstance()->IsWindowActive())
     {
-        //Timer::GetInstance()->Tick();
-        lag += Timer::GetInstance()->GetDeltaTime<precision>();
+        precision delta = Timer::GetInstance()->GetDeltaTime<precision>();
+        lag += delta;
+        //if (delta > msPerUpdate)
+            //delta = msPerUpdate;
+        //PLOGD << "delta : " << delta << "  lag : " << lag;
+        InputManager::GetInstance()->Update();
+        CoreManager::GetInstance()->Update();
+
+        uint16_t iterations = 0, maxIterations = 5;
+        while (lag >= msPerUpdate && iterations < maxIterations)
+        {
+            ECS_Manager::GetInstance()->Update((float)msPerUpdate);
+            lag -= msPerUpdate;
+            iterations++;
+            //PLOGD << "Test";
+        }
+
+        // to make it more smooth pass this(lag / MS_PER_UPDATE) to renderer, advance the render
+        ECS_Manager::GetInstance()->Update((float)(lag / msPerUpdate));
+        //lag = msPerUpdate;
+        GraphicsManager::GetInstance()->Update();
+    }
+
+    // After the update, will run just once
+    {
+        GraphicsManager::GetInstance()->PostUpdate();
+    }
+
+}
+
+
+
+/*
+void EngineManager::Update()
+{
+    // Before the update, will run just once
+    {
+        GraphicsManager::GetInstance()->PreUpdate();
+    }
+
+    typedef double precision;
+
+    precision msPerUpdate = 1000.0f / (precision)Settings::maxFrameRate;
+    precision lag = msPerUpdate;// 0.0f;
+
+    Timer::GetInstance()->Reset();
+    while (GraphicsManager::GetInstance()->IsWindowActive())
+    {
+        precision delta = Timer::GetInstance()->GetDeltaTime<precision>();
+        lag += delta;
+        //PLOGD << delta << "    " << lag;
 
         InputManager::GetInstance()->Update();
         CoreManager::GetInstance()->Update();
 
-        uint16_t iterations = 0, maxIterations = 6;
+        uint16_t iterations = 0, maxIterations = 5;
         while (lag >= msPerUpdate && iterations < maxIterations)
         {
-            ECS_Manager::GetInstance()->Update(0.0f);
+            ECS_Manager::GetInstance()->Update(1.0f);
             lag -= msPerUpdate;
             iterations++;
         }
-
         // to make it more smooth pass this(lag / MS_PER_UPDATE) to renderer, advance the render
+        ECS_Manager::GetInstance()->Render(lag / msPerUpdate);
+        lag = msPerUpdate;// 0.0f;
+
         GraphicsManager::GetInstance()->Update();
     }
 
@@ -73,7 +127,7 @@ void EngineManager::Update()
         GraphicsManager::GetInstance()->PostUpdate();
     }
 }
-
+*/
 EngineManager * EngineManager::GetInstance()
 {
     if (instance == nullptr)

@@ -3,12 +3,13 @@
 #include "SceneChangeEvent.h"
 #include "Entity.h"
 
-#define Vec4ToVec3(a) glm::vec3(a.x, a.y, a.z)
-#define Vec3ToVec4_1(a) glm::vec4(a.x, a.y, a.z, 1.0f)
-#define Vec3ToVec4_0(a) glm::vec4(a.x, a.y, a.z, 0.0f)
 
 void Transform::Init()
 {
+    up = glm::vec3(0, 1, 0);
+    right = glm::vec3(1, 0, 0);
+    forward = glm::vec3(0, 0, -1);
+
     localPosition = glm::vec3(0, 0, 0);
     localScale = glm::vec3(1, 1, 1);
     localEulerAngle = glm::vec3(0, 0, 0);
@@ -84,12 +85,40 @@ void Transform::UpdateLocalParams()
     glm::mat4 rotZMat = glm::rotate(this->localEulerAngle.z, glm::vec3(0, 0, 1));
 
     this->rotationMat = rotZMat * rotYMat * rotXMat;
+
+    glm::vec4 temp = rotXMat * Vec3ToVec4_0(forward);
+    //temp = glm::normalize(temp);
+    forward =  Vec4ToVec3(temp);
+
+    temp = rotationMat * Vec3ToVec4_0(right);
+    temp = glm::normalize(temp);
+    right = Vec4ToVec3(temp);
+
+    temp = rotationMat * Vec3ToVec4_0(up);
+    temp = glm::normalize(temp);
+    up = Vec4ToVec3(temp);
+
     this->localModelMatrix = this->translationMat * this->rotationMat * this->scaleMat;
 }
 
 const std::vector<Transform*>& Transform::GetChildren()
 {
     return childrenList;
+}
+
+glm::vec3 Transform::GetForward()
+{
+    return ( forward );
+}
+
+glm::vec3 Transform::GetUp()
+{
+    return up;
+}
+
+glm::vec3 Transform::GetRight()
+{
+    return right;
 }
 
 glm::vec3 Transform::GetLocalPosition()

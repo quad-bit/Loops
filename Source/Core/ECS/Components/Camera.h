@@ -1,11 +1,14 @@
 #pragma once
 
 #include <vector>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
 #include <Settings.h>
 #include "Assertion.h"
 #include <Component.h>
+#include <MathUtil.h>
+
+class Transform;
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 enum class Camera_Movement
@@ -40,12 +43,15 @@ class Camera : public Component<Camera>
 {
 private:
     // Camera Attributes
-    glm::vec3* position;
+    //glm::vec3* position;
+    //glm::vec3* eulerAngles;
+
+    Transform * transform;
 
     // Directions
-    glm::vec3 front;
-    glm::vec3 up;
-    glm::vec3 right;
+    //glm::vec3 front;
+    //glm::vec3 up;
+    //glm::vec3 right;
     glm::vec3 worldUp;
     glm::mat4 viewMat;
     glm::mat4 projectionMat;
@@ -64,90 +70,34 @@ private:
 
     void * cameraDataRaw;
 
+    Camera() = delete;
+
 public:
     // Constructor with vectors
-    Camera(glm::vec3 * position, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH, CameraType projectionType = CameraType::PERSPECTIVE) : front(glm::vec3(0.0f, 0.0f, -1.0f)), movementSpeed(SPEED), mouseSensitivity(SENSITIVTY), fov(FOV)
-    {
-        this->position = position;
-        this->worldUp = up;
-        this->yaw = yaw;
-        this->pitch = pitch;
-        this->aspect = (float)(Settings::windowWidth / Settings::windowHeight);
-        this->projectionType = projectionType;
-        //this->updateCameraVectors();
+    Camera::Camera(Transform * transform, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH, CameraType projectionType = CameraType::PERSPECTIVE);
 
-        type = COMPONENT_TYPE::CAMERA;
-    }
-
-    // Returns the view matrix calculated using Eular Angles and the LookAt Matrix
-    glm::mat4 GetViewMatrix()
-    {
-        viewMat = glm::lookAt(*this->position, *this->position + this->front, this->worldUp);
-        return viewMat;
-    }
-
-    glm::mat4 GetProjectionMat()
-    {
-        switch (projectionType)
-        {
-        case CameraType::ORTHOGONAL:
-            ASSERT_MSG(0, "Need the correct design");
-            break;
-
-        case CameraType::PERSPECTIVE:
-            projectionMat = glm::perspective(this->fov, this->aspect, this->zNear, this->zFar);
-            break;
-        }
-        return projectionMat;
-    }
-
-    const glm::vec3* GetPosition()
-    {
-        return this->position;
-    }
-
-    glm::vec3& GetFront()
-    {
-        return this->front;
-    }
-
-    glm::vec3& GetUp()
-    {
-        return this->up;
-    }
-
-    glm::vec3& GetRight()
-    {
-        return this->right;
-    }
-
-    glm::vec3& GetWorlUp()
-    {
-        return this->worldUp;
-    }
-
-    float& GetYaw()
-    {
-        return this->yaw;
-    }
-
-    float& GetPitch()
-    {
-        return this->pitch;
-    }
-
-    float& GetMovementSpeed()
-    {
-        return this->movementSpeed;
-    }
-
-    float& GetMouseSensitivity()
-    {
-        return this->mouseSensitivity;
-    }
-
-    float& GetFOV()
-    {
-        return this->fov;
-    }
+    // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
+    glm::mat4 GetViewMatrix();
+    
+    glm::mat4 GetProjectionMat();
+    
+    const glm::vec3* GetPosition();
+    
+    glm::vec3 GetFront();
+    
+    glm::vec3 GetUp();
+    
+    glm::vec3 GetRight();
+    
+    glm::vec3& GetWorlUp();
+    
+    float& GetYaw();
+    
+    float& GetPitch();
+    
+    float& GetMovementSpeed();
+    
+    float& GetMouseSensitivity();
+    
+    float& GetFOV();
 };

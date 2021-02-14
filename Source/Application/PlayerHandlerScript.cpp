@@ -1,3 +1,4 @@
+#include "CorePrecompiled.h"
 #include "PlayerHandlerScript.h"
 #include <ECS_Setting.h>
 #include <EntityHandle.h>
@@ -12,6 +13,7 @@
 #include <MeshRenderer.h>
 #include <Timer.h>
 #include <glm\glm.hpp>
+#include <MathUtil.h>
 #include "CameraController.h"
 
 PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
@@ -21,12 +23,17 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
     camHandle0 = worldObj->CreateEntity();
     camHandle0->GetEntity()->entityName = "MainCamera";
     camHandle0->GetTransform()->SetLocalPosition( glm::vec3(0, 0, 10));
+    camHandle0->GetTransform()->SetLocalEulerAngles(glm::vec3(0, 0, 0));
 
-    Camera * camera = new Camera(&camHandle0->GetTransform()->GetLocalPosition());
+    Camera * camera = new Camera(camHandle0->GetTransform());
     camHandle0->AddComponent<Camera>(camera);
+
+    ComponentHandle<Camera> test = camHandle0->GetComponent<Camera>();
 
     cameraController = new CameraController();
     camHandle0->AddComponent<Scriptable>(cameraController);
+
+
     //camHandle1 = worldObj->CreateEntity();
     //camHandle1->GetEntity()->entityName = "SecondCamera";
     //Camera * cam = new Camera(&camHandle1->GetTransform()->globalPosition);
@@ -134,15 +141,35 @@ void PlayerHandlerScript::Init()
     
 }
 
+static uint32_t counter = 0;
 void PlayerHandlerScript::Update(float dt)
 {
-    static uint32_t counter = 0;
-
     // head rotation
     {
         Transform * headTrf = head->GetTransform();
-        headTrf->SetLocalEulerAngles(glm::vec3(0, glm::sin(counter++ / 100.0f), 0));
+        
+        currentAngle = glm::sin(counter++ / 100.0f);
+
+        float angle = MathUtil::lerp(prevAngle, currentAngle, dt);
+        prevAngle = currentAngle;
+
+        headTrf->SetLocalEulerAngles(glm::vec3(0, angle, 0));
     }
+}
+
+// not getting used 
+void PlayerHandlerScript::Render(float dt)
+{
+    //// head rotation
+    //{
+    //    Transform * headTrf = head->GetTransform();
+
+    //    float angle = glm::sin(counter++ / 100.0f) * dt;
+    //    PLOGD << "Render " <<dt;
+
+    //    headTrf->SetLocalEulerAngles(glm::vec3(0, angle, 0));
+    //}
+
 }
 
 void PlayerHandlerScript::DeInit()

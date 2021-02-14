@@ -86,7 +86,8 @@ template<>
 inline void EntityHandle::AddComponent(Scriptable * componentType)
 {
     worldObj->AddComponent<Scriptable>(componentType, entityObj);
-    componentType->entity = entityObj;
+    componentType->entityHandle = this;
+    componentType->Activated();
 }
 
 template<typename ComponentType>
@@ -98,7 +99,7 @@ inline void EntityHandle::RemoveComponent(ComponentType * componentType)
 template<typename ComponentType>
 inline ComponentHandle<ComponentType> EntityHandle::GetComponent()
 {
-    ComponentHandle<ComponentType> componentHandle;  //TODO : Write UNPACK
+    ComponentHandle<ComponentType> componentHandle;  
     worldObj->Unpack(entityObj, componentHandle);
     return componentHandle;
 }

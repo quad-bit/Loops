@@ -31,7 +31,7 @@ public:
     virtual void Update(float dt) {};
 
     // Called every game render
-    virtual void Render() {};
+    virtual void Render(float dt) {};
 
     // Add a reference to the parent world
     void RegisterWorld(World * world);

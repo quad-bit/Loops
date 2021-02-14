@@ -48,12 +48,13 @@ void World::Update(float dt)
         system->Update(dt);
     }
 }
-
-void World::Render()
+//not getting used
+void World::Render(float dt)
 {
+    return;
     for (auto system : systemList)
     {
-        system->Render();
+        system->Render(dt);
     }
 }
 

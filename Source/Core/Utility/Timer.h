@@ -21,7 +21,7 @@ public:
     ~Timer();
 
     void Tick();
-    
+    void Reset();
     template <typename T>
     T GetDeltaTime();
 
@@ -32,8 +32,10 @@ template<typename T>
 inline T Timer::GetDeltaTime()
 {
     ASSERT_MSG(std::chrono::high_resolution_clock::is_steady, "Not a steady clock");
-    Tick();
-    std::chrono::duration<T> fs = currentTimeStamp - previousTimeStamp;
+    //Tick();
+    currentTimeStamp = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<T, std::milli> fs = currentTimeStamp - previousTimeStamp;
+    //auto fs = std::chrono::duration_cast<T, std::chrono::milliseconds>(currentTimeStamp - previousTimeStamp);
     previousTimeStamp = currentTimeStamp;
         
     return fs.count();

@@ -97,7 +97,7 @@ public:
 
     void Update(float dt);
 
-    void Render();
+    void Render(float dt);
 
     void DeInit();
 

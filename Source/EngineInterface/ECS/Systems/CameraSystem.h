@@ -58,6 +58,7 @@ private:
 
     std::vector<GraphNode<DrawGraphNode> *> cameraGraphNodeList;
     std::map<DrawGraphNode *, ShaderBindingDescription *> nodeToDescriptionMap;
+    std::map<Camera *, ShaderBindingDescription *> camToDescriptionMap;
 
 public:
     virtual void Init() override;

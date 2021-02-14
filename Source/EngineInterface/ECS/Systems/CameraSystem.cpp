@@ -50,6 +50,17 @@ void CameraSystem::Update(float dt)
 
         UpdateCameraVectors(camHandle->GetComponent());
 
+        CameraUniform obj = {};
+        obj.projectionMat = camHandle->GetComponent()->GetProjectionMat();
+        obj.viewMat = camHandle->GetComponent()->GetViewMatrix();
+
+        ShaderBindingDescription * desc = camToDescriptionMap[camHandle->GetComponent()];
+        //upload data to buffers
+        //for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
+        {
+            UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
+        }
+
         // TODO : write the uniform data of Camera to gpu memory via void*
     }
 }
@@ -101,6 +112,9 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     }
 
     UniformFactory::GetInstance()->AllocateDescriptors(cameraSetWrapper, desc, 1, allocConfig.numDescriptors);
+
+    camToDescriptionMap.insert(std::pair<Camera *, ShaderBindingDescription *>(
+    { inputEvent->cam , desc}));
 
     // draw graph node creation
     // top level node as its Set 0

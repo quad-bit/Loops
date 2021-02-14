@@ -67,6 +67,11 @@ void ECS_Manager::Update(float dt)
     worldObj->Update(dt);
 }
 
+void ECS_Manager::Render(float dt)
+{
+    worldObj->Render(dt);
+}
+
 ECS_Manager * ECS_Manager::GetInstance()
 {
     if (instance == nullptr)

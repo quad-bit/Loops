@@ -2,19 +2,21 @@
 #include "Component.h"
 #include <string>
 
-class Entity;
+class EntityHandle;
 class Scriptable : public Component<Scriptable>
 {
 private:
     Scriptable() = delete;
 
 public:
-    Entity * entity;
+    //Entity * entity;
+    EntityHandle * entityHandle;
     string scriptName;
     bool runInEditMode = false;
-
+    virtual void Activated() {};
     virtual void Init() {};
     virtual void Update(float dt) {};
+    virtual void Render(float dt) {};
     virtual void DeInit() {};
     Scriptable(bool runInEditMode = false) { this->runInEditMode = runInEditMode; }
     virtual ~Scriptable() {};

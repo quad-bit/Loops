@@ -1,10 +1,7 @@
 #include "Component.h"
 #include "SceneNode.h"
 
-#define GLM_ENABLE_EXPERIMENTAL
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
-#include <glm/gtx/transform.hpp>
+#include "MathUtil.h"
 
 struct TransformUniform
 {
@@ -32,6 +29,8 @@ private:
     glm::mat4 globalModelMatrix;
     glm::mat4 translationMat, scaleMat, rotationMat;
 
+    glm::vec3 forward, right, up;
+
 public:
 
     bool isTransformUpdated;
@@ -44,6 +43,10 @@ public:
     void UpdateLocalParams();
     const std::vector<Transform *> & GetChildren();
     
+    glm::vec3 GetForward();
+    glm::vec3 GetUp();
+    glm::vec3 GetRight();
+
     glm::vec3 GetLocalPosition();
     glm::vec3 GetLocalEulerAngles();
     glm::vec3 GetLocalScale();
@@ -54,6 +57,9 @@ public:
     glm::vec3 GetGlobalScale();
     glm::mat4 GetGlobalModelMatrix();
     
+    glm::vec3 * GetLocalPositionRef() { return &localPosition; }
+    glm::vec3 * GetLocalEulerAnglesRef() { return &localEulerAngle; }
+
     void SetLocalPosition(const glm::vec3 & pos);
     void SetLocalEulerAngles(const glm::vec3 & angle);
     void SetLocalScale(const glm::vec3 & scale);

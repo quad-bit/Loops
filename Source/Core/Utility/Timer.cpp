@@ -40,6 +40,12 @@ void Timer::Tick()
     currentTimeStamp = std::chrono::high_resolution_clock::now();
 }
 
+void Timer::Reset()
+{
+    currentTimeStamp = std::chrono::high_resolution_clock::now();
+    previousTimeStamp = std::chrono::high_resolution_clock::now();
+}
+
 uint32_t Timer::GetSeconds()
 {
     auto now = std::chrono::system_clock::now();

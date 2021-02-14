@@ -42,6 +42,7 @@ public:
     void Init();
     void DeInit();
     void Update(float dt);
+    void Render(float dt);
     static ECS_Manager* GetInstance();
     ~ECS_Manager();
 };
