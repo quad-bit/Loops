@@ -59,7 +59,7 @@ bool BitArray::operator[](unsigned int bit) const
 
 bool BitArray::operator==(const BitArray & obj) const
 {
-    ASSERT_MSG(this->totalBits != obj.totalBits, "Not comparable");
+    ASSERT_MSG_DEBUG(this->totalBits != obj.totalBits, "Not comparable");
     for (unsigned int i = 0; i < totalBits; i++)
     {
         if (At(i) != obj.At(i))
@@ -71,7 +71,7 @@ bool BitArray::operator==(const BitArray & obj) const
 
 bool BitArray::operator==(const BitArray * obj) const
 {
-    ASSERT_MSG(this->totalBits != obj->totalBits, "Not comparable");
+    ASSERT_MSG_DEBUG(this->totalBits != obj->totalBits, "Not comparable");
     for (unsigned int i = 0; i < totalBits; i++)
     {
         if (At(i) != obj->At(i))

@@ -100,7 +100,7 @@ int HashManager::FindShaderStateHash(Shader * shaders, const uint32_t & shaderCo
     std::size_t hash = 0UL;
     size_t shaderCountHash;
     size_t vertexShaderHash = 0UL, fragmentShaderHash = 0UL;
-    ASSERT_MSG(shaderCount <= 2, "More than two shaders, yet to be handled");
+    ASSERT_MSG_DEBUG(shaderCount <= 2, "More than two shaders, yet to be handled");
 
     shaderCountHash = std::hash<uint32_t>{}(shaderCount);
 

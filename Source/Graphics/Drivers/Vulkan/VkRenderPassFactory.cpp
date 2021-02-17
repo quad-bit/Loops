@@ -126,7 +126,7 @@ void VkRenderPassFactory::SetRenderPassBeginInfo(const VkRenderPassBeginInfo beg
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == renderpassId; });
 
-    ASSERT_MSG(it != renderpassList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != renderpassList.end(), "Image id not found");
 
     (*it)->beginInfo = beginInfo;
     (*it)->beginInfo.clearValueCount = (uint32_t)(*it)->clearValueCount;
@@ -138,7 +138,7 @@ void VkRenderPassFactory::DestroyRenderPass(const uint32_t & id)
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == id; });
 
-    ASSERT_MSG(it != renderpassList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != renderpassList.end(), "Image id not found");
 
     vkDestroyRenderPass(*CoreObjects::logicalDeviceObj, (*it)->renderPass, CoreObjects::pAllocator);
 }
@@ -148,7 +148,7 @@ VkRenderPass * VkRenderPassFactory::GetRenderPass(const uint32_t & id)
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == id; });
 
-    ASSERT_MSG(it != renderpassList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != renderpassList.end(), "Image id not found");
 
     return &(*it)->renderPass;
 }
@@ -158,7 +158,7 @@ VkClearValue * VkRenderPassFactory::GetClearValue(const uint32_t & renderpassId)
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == renderpassId; });
 
-    ASSERT_MSG(it != renderpassList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != renderpassList.end(), "Image id not found");
 
     return (*it)->clearValue;
 }
@@ -168,7 +168,7 @@ uint32_t VkRenderPassFactory::GetClearValueCount(const uint32_t & renderpassId)
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == renderpassId; });
 
-    ASSERT_MSG(it != renderpassList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != renderpassList.end(), "Image id not found");
 
     return (*it)->clearValueCount;
 }
@@ -178,7 +178,7 @@ void VkRenderPassFactory::SetClearColor(std::vector<VkClearValue> clearValue, co
     std::vector<RenderpassWrapper*>::iterator it;
     it = std::find_if(renderpassList.begin(), renderpassList.end(), [&](RenderpassWrapper * e) { return e->id == renderPassId; });
 
-    ASSERT_MSG(it != renderpassList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != renderpassList.end(), "Image id not found");
 
     (*it)->clearValue = clearValue.data();
     (*it)->clearValueCount = (uint32_t)clearValue.size();

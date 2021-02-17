@@ -15,6 +15,10 @@ private:
     float velocity = .07f;
     //ComponentHandle<Camera> camHandle;
 
+    bool dragStartred = false;
+    glm::vec2 currentMousePos, prevMousePos;
+    void RotateCamera(glm::vec2 mousePosition);
+
 public:
     void Activated() override;
     void Init() override;

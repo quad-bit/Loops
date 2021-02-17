@@ -2,6 +2,7 @@
 
 #include "VulkanMemoryManager.h"
 #include "VulkanUtility.h"
+#include "VkRenderingUnwrapper.h"
 #include <CorePrecompiled.h>
 
 VulkanMemoryManager * VulkanMemoryManager::memManagerInstance = nullptr;
@@ -82,6 +83,7 @@ uint32_t VulkanMemoryManager::GetId()
 
 void VulkanMemoryManager::AllocateImageMemory(VkImage * imageObj, VkMemoryPropertyFlags userReq, VkDeviceMemory * memoryObj)
 {
+    DEPRECATED;
 	// image memory allocation
 	// memory index..
 	VkMemoryRequirements imageMemoryRequirements{};
@@ -91,13 +93,14 @@ void VulkanMemoryManager::AllocateImageMemory(VkImage * imageObj, VkMemoryProper
 	// found memory index..
 
 	VkMemoryAllocateInfo allocateInfo{};
-	allocateInfo.allocationSize = imageMemoryRequirements.size;
+	allocateInfo.allocationSize =  imageMemoryRequirements.size ;
 	allocateInfo.memoryTypeIndex = memIndex;
 	allocateInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 
 	ErrorCheck(vkAllocateMemory(vulkanLogicalDevice, &allocateInfo, CoreObjects::pAllocator, memoryObj));
 	// allocated memory
 }
+
 // deprecated.
 VkMemoryRequirements VulkanMemoryManager::AllocateBufferMemory(VkBuffer * bufferObj, VkMemoryPropertyFlags userReq, VkDeviceMemory * memoryObj)
 {
@@ -118,8 +121,17 @@ VkMemoryRequirements VulkanMemoryManager::AllocateBufferMemory(VkBuffer * buffer
     return memoryReqObj;
 }
 
+VkMemoryRequirements VulkanMemoryManager::GetImageMemoryRequirement(VkImage * image)
+{
+    VkMemoryRequirements memoryReqObj{};
+    vkGetImageMemoryRequirements(vulkanLogicalDevice, *image, &memoryReqObj);
+
+    return memoryReqObj;
+}
+
 uint32_t VulkanMemoryManager::AllocateMemory(VkMemoryRequirements * memReq, VkMemoryPropertyFlags userReq, VkDeviceMemory * memoryObj)
 {
+
     uint32_t memIndex = VulkanMemoryManager::FindMemoryTypeIndex(&physicalDeviceMemoryPropertiesObj, memReq, userReq);
     // found memory index..
 
@@ -162,17 +174,87 @@ uint32_t VulkanMemoryManager::AllocateMemory(VkMemoryRequirements * memReq, VkMe
     return wrapper.id;
 }
 
+uint32_t VulkanMemoryManager::AllocateMemory(VkMemoryRequirements * memReq, VkMemoryPropertyFlags userReq)
+{
+    VkDeviceMemory * memoryObj = new VkDeviceMemory;
+    uint32_t memIndex = VulkanMemoryManager::FindMemoryTypeIndex(&physicalDeviceMemoryPropertiesObj, memReq, userReq);
+    // found memory index..
+
+    VkMemoryAllocateInfo allocateInfoObj{};
+    allocateInfoObj.allocationSize = memReq->size;
+    allocateInfoObj.memoryTypeIndex = memIndex;
+    allocateInfoObj.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+
+    ErrorCheck(vkAllocateMemory(vulkanLogicalDevice, &allocateInfoObj, CoreObjects::pAllocator, memoryObj));
+
+    VkMemoryWrapper wrapper = {};
+    wrapper.memory = memoryObj;
+    wrapper.memorySize = memReq->size;
+    wrapper.id = GetId();
+
+    memoryWrapperList.push_back(wrapper);
+
+    return wrapper.id;
+}
+
+uint32_t VulkanMemoryManager::AllocateMemory(VkMemoryRequirements * memReq, VkMemoryPropertyFlags userReq, VkDeviceSize allocationSize)
+{
+    VkDeviceMemory * memoryObj = new VkDeviceMemory;
+    uint32_t memIndex = VulkanMemoryManager::FindMemoryTypeIndex(&physicalDeviceMemoryPropertiesObj, memReq, userReq);
+    // found memory index..
+
+    VkMemoryAllocateInfo allocateInfoObj{};
+    allocateInfoObj.allocationSize = allocationSize;
+    allocateInfoObj.memoryTypeIndex = memIndex;
+    allocateInfoObj.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+
+    ErrorCheck(vkAllocateMemory(vulkanLogicalDevice, &allocateInfoObj, CoreObjects::pAllocator, memoryObj));
+
+    VkMemoryWrapper wrapper = {};
+    wrapper.memory = memoryObj;
+    wrapper.memorySize = allocationSize;
+    wrapper.id = GetId();
+
+    memoryWrapperList.push_back(wrapper);
+
+    return wrapper.id;
+}
+
+uint32_t VulkanMemoryManager::AllocateMemory(MemoryRequirementInfo * memReq, MemoryType * userReq, const size_t & allocationSize)
+{
+    VkMemoryRequirements req = VulkanUnwrap::UnwrapMemoryRequirements(memReq);
+    VkMemoryPropertyFlags propFlag = VulkanUnwrap::UnwrapMemoryProperty(userReq);
+    uint32_t id = AllocateMemory(&req, propFlag, allocationSize);
+    return id;
+}
+
+uint32_t VulkanMemoryManager::AllocateMemory(MemoryRequirementInfo * memReq, MemoryType * userReq)
+{
+    VkMemoryRequirements req = VulkanUnwrap::UnwrapMemoryRequirements(memReq);
+    VkMemoryPropertyFlags propFlag = VulkanUnwrap::UnwrapMemoryProperty(userReq);
+    uint32_t id = AllocateMemory(&req, propFlag);
+    return id;
+}
+
 void VulkanMemoryManager::FreeMemory(uint32_t id)
 {
     std::vector<VkMemoryWrapper>::iterator it;
     it = std::find_if(memoryWrapperList.begin(), memoryWrapperList.end(), [&](VkMemoryWrapper e) { return e.id == id; });
 
-    ASSERT_MSG(it != memoryWrapperList.end(), "Memory id not found");
+    ASSERT_MSG_DEBUG(it != memoryWrapperList.end(), "Memory id not found");
 
     vkFreeMemory(*CoreObjects::logicalDeviceObj, *it->memory, CoreObjects::pAllocator);
     delete it->memory;
 
     memoryWrapperList.erase(it);
+}
+
+VkDeviceMemory * VulkanMemoryManager::GetDeviceMemory(const uint32_t & memId)
+{
+    std::vector<VkMemoryWrapper>::iterator it;
+    it = std::find_if(memoryWrapperList.begin(), memoryWrapperList.end(), [&](VkMemoryWrapper e) { return e.id == memId; });
+
+    return it->memory;
 }
 
 VulkanMemoryManager::VulkanMemoryManager()

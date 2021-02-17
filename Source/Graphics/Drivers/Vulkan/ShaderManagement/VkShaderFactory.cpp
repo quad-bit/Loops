@@ -55,7 +55,7 @@ std::string VkShaderFactory::GetSpvName(const std::string & shaderName)
         return fileNameWithoutExt +".vert.spv";
     }
     
-    ASSERT_MSG(0, "Invalid shader name");
+    ASSERT_MSG_DEBUG(0, "Invalid shader name");
     return "NULL";
 }
 
@@ -139,7 +139,7 @@ void VkShaderFactory::GetShaderIds( char ** shaderName, ShaderType * type, uint3
             return ( wrapper->shaderName.find (spvName) != std::string::npos &&
                  *wrapper->shaderType == type[i]); });
 
-        ASSERT_MSG(it != shaderModuleList.end(), "Shader not found");
+        ASSERT_MSG_DEBUG(it != shaderModuleList.end(), "Shader not found");
         id[i] = (*it)->shaderId;
     }
 }
@@ -153,7 +153,7 @@ VkShaderModule * VkShaderFactory::GetShaderModule(const uint32_t & id)
             return (*it)->module;
     }
     
-    ASSERT_MSG(0, "shader not found");
+    ASSERT_MSG_DEBUG(0, "shader not found");
     return nullptr;
 }
 
@@ -166,6 +166,6 @@ VkShaderStageFlagBits VkShaderFactory::GetShaderStageFlag(const uint32_t & id)
             return (*it)->stageFlag;
     }
 
-    ASSERT_MSG(0, "shader not found");
+    ASSERT_MSG_DEBUG(0, "shader not found");
     return VkShaderStageFlagBits::VK_SHADER_STAGE_ALL;
 }

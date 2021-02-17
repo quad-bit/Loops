@@ -24,7 +24,7 @@ VkCommandPool * VkCommandBufferFactory::GetCommandPool(const uint32_t& poolId)
     std::vector<VkCommandPoolWrapper>::iterator it;
     it = std::find_if(poolList.begin(), poolList.end(), [&](VkCommandPoolWrapper e) { return e.poolId == poolId; });
 
-    ASSERT_MSG(it != poolList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != poolList.end(), "Image id not found");
 
     return it->pool;
 }
@@ -109,7 +109,7 @@ void VkCommandBufferFactory::CreateCommandPool(VkCommandPoolCreateFlagBits flags
         break;
 
     default:
-        ASSERT_MSG(0, "Command buffer for this queue not supported");
+        ASSERT_MSG_DEBUG(0, "Command buffer for this queue not supported");
     }
 
     VkCommandPoolWrapper wrapper;
@@ -184,7 +184,7 @@ void VkCommandBufferFactory::DestroyCommandPool(const uint32_t &  id)
     std::vector<VkCommandPoolWrapper>::iterator it;
     it = std::find_if(poolList.begin(), poolList.end(), [&](VkCommandPoolWrapper e) { return e.poolId == id; });
 
-    ASSERT_MSG(it != poolList.end(), "Pool id not found");
+    ASSERT_MSG_DEBUG(it != poolList.end(), "Pool id not found");
 
     vkDestroyCommandPool(*CoreObjects::logicalDeviceObj, *it->pool, CoreObjects::pAllocator);
 }
@@ -199,7 +199,7 @@ void VkCommandBufferFactory::ResetCommandBuffer(const uint32_t & id, const uint3
     std::vector<VkDrawCommandBuffer*>::iterator it;
     it = std::find_if(drawCommandBufferList.begin(), drawCommandBufferList.end(), [&](VkDrawCommandBuffer * e) { return e->id == id; });
 
-    ASSERT_MSG(it != drawCommandBufferList.end(), "Pool id not found");
+    ASSERT_MSG_DEBUG(it != drawCommandBufferList.end(), "Pool id not found");
 
     vkResetCommandBuffer(*(*it)->commandBuffer, VkCommandBufferResetFlagBits::VK_COMMAND_BUFFER_RESET_RELEASE_RESOURCES_BIT);
 
@@ -243,7 +243,7 @@ void VkCommandBufferFactory::DestroyCommandBuffer(const uint32_t & id)
     std::vector<VkDrawCommandBuffer*>::iterator it;
     it = std::find_if(drawCommandBufferList.begin(), drawCommandBufferList.end(), [&](VkDrawCommandBuffer * e) { return e->id == id; });
 
-    ASSERT_MSG(it != drawCommandBufferList.end(), "Pool id not found");
+    ASSERT_MSG_DEBUG(it != drawCommandBufferList.end(), "Pool id not found");
 
     vkFreeCommandBuffers(*CoreObjects::logicalDeviceObj, *(*it)->pool, 1, (*it)->commandBuffer);
 }
@@ -258,7 +258,7 @@ VkCommandBuffer * VkCommandBufferFactory::GetCommandBuffer(const uint32_t & id)
     std::vector<VkDrawCommandBuffer*>::iterator it;
     it = std::find_if(drawCommandBufferList.begin(), drawCommandBufferList.end(), [&](VkDrawCommandBuffer* e) { return e->id == id; });
 
-    ASSERT_MSG(it != drawCommandBufferList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != drawCommandBufferList.end(), "Image id not found");
 
     return (*it)->commandBuffer;
 }

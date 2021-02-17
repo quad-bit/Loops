@@ -292,7 +292,7 @@ inline void ForwardGraph<T>::CreateEdgesWithinPipeline(PerPipelineNodeData * dat
             return;
         }
 
-        ASSERT_MSG(0, "Case yet to be handled");
+        ASSERT_MSG_DEBUG(0, "Case yet to be handled");
 
         if (lowerSetLevel == ResourceSets::TRANSFORM)
         {
@@ -438,7 +438,7 @@ inline void ForwardGraph<T>::AddNode(GraphNode<DrawGraphNode> * node)
         // Check with existing pipeline nodes if this node belongs to any of them
         for each(auto data in pipelineNodeDataList)
         {
-            ASSERT_MSG(0, "Case yet to be handled");
+            ASSERT_MSG_DEBUG(0, "Case yet to be handled");
 
             bool isNodeInPipeline = CheckIfNodeBelongsToPipeline(data.pipelineNode, node, &data.setValues);
             // if yes add to the node list 

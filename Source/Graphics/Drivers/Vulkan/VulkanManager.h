@@ -1,6 +1,7 @@
 #pragma once
 #include <vulkan\vulkan.h>
 #include <GLFW\glfw3.h>
+#include "RenderingWrapper.h"
 
 struct QueueWrapper;
 class ValidationManager;
@@ -60,4 +61,9 @@ public:
 
     VkPhysicalDeviceFeatures&                       GetEnabledPhysicalDeviceFeatures() { return enabledPhysicalDeviceFeatures; }
     const VkPhysicalDeviceProperties&               GetPhysicalDeviceProps() { return physicalDeviceProps; }
+    
+    bool IsSampleRateShadingAvailable();
+    VkSampleCountFlagBits GetMaxUsableVKSampleCount();
+    Samples GetMaxUsableSampleCount();
+
 };

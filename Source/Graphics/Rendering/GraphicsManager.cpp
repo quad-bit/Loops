@@ -79,6 +79,7 @@ void GraphicsManager::DeInit()
 
 void GraphicsManager::Update()
 {
+    MouseInputManager::GetInstance()->Update();
     renderingInterfaceObj->Render();
 }
 

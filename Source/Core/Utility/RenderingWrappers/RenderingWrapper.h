@@ -5,6 +5,26 @@
 #include <string>
 #include <map>
 
+enum class ImageViewType
+{
+    IMAGE_VIEW_TYPE_1D = 0,
+    IMAGE_VIEW_TYPE_2D = 1,
+    IMAGE_VIEW_TYPE_3D = 2,
+    IMAGE_VIEW_TYPE_CUBE = 3,
+    IMAGE_VIEW_TYPE_1D_ARRAY = 4,
+    IMAGE_VIEW_TYPE_2D_ARRAY = 5,
+    IMAGE_VIEW_TYPE_CUBE_ARRAY = 6,
+    IMAGE_VIEW_TYPE_MAX_ENUM = 0x7FFFFFFF
+};
+
+enum class ImageType
+{
+    IMAGE_TYPE_1D = 0,
+    IMAGE_TYPE_2D = 1,
+    IMAGE_TYPE_3D = 2,
+    IMAGE_TYPE_MAX_ENUM = 0x7FFFFFFF
+};
+
 enum class Format
 {
     UNDEFINED,
@@ -30,6 +50,18 @@ enum class Dimensions
     Dim3
 };
 
+enum class ComponentSwizzle
+{
+    COMPONENT_SWIZZLE_IDENTITY = 0,
+    COMPONENT_SWIZZLE_ZERO = 1,
+    COMPONENT_SWIZZLE_ONE = 2,
+    COMPONENT_SWIZZLE_R = 3,
+    COMPONENT_SWIZZLE_G = 4,
+    COMPONENT_SWIZZLE_B = 5,
+    COMPONENT_SWIZZLE_A = 6,
+    COMPONENT_SWIZZLE_MAX_ENUM = 0x7FFFFFFF
+};
+
 enum class Usage
 {
     USAGE_TRANSFER_SRC_BIT = 0x00000001,
@@ -53,6 +85,22 @@ enum class Samples
     SAMPLE_COUNT_16_BIT = 0x00000010,
     SAMPLE_COUNT_32_BIT = 0x00000020,
     SAMPLE_COUNT_64_BIT = 0x00000040,
+};
+
+enum ImageAspectFlag
+{
+    IMAGE_ASPECT_COLOR_BIT = 0x00000001,
+    IMAGE_ASPECT_DEPTH_BIT = 0x00000002,
+    IMAGE_ASPECT_STENCIL_BIT = 0x00000004,
+    IMAGE_ASPECT_METADATA_BIT = 0x00000008,
+    IMAGE_ASPECT_PLANE_0_BIT = 0x00000010,
+    IMAGE_ASPECT_PLANE_1_BIT = 0x00000020,
+    IMAGE_ASPECT_PLANE_2_BIT = 0x00000040,
+    IMAGE_ASPECT_MEMORY_PLANE_0_BIT_EXT = 0x00000080,
+    IMAGE_ASPECT_MEMORY_PLANE_1_BIT_EXT = 0x00000100,
+    IMAGE_ASPECT_MEMORY_PLANE_2_BIT_EXT = 0x00000200,
+    IMAGE_ASPECT_MEMORY_PLANE_3_BIT_EXT = 0x00000400,
+    IMAGE_ASPECT_FLAG_BITS_MAX_ENUM = 0x7FFFFFFF
 };
 
 enum class ImageLayout
@@ -445,13 +493,36 @@ enum class ColorComponentFlagBits
 
     struct ImageInfo
     {
-        uint32_t width, height, mips, layers;
+        uint32_t width, height, depth, mips, layers;
         Format format;
-        Dimensions degree;
+        ImageViewType viewType;
+        ImageType imageType;
+        //Dimensions degree;
         ColorSpace colorSpace;
         Usage usage;
         Samples sampleCount;
         ImageLayout initialLayout;
+    };
+
+    struct ImageViewInfo
+    {
+        //VkImageViewCreateFlags     flags;// not required for now.
+        uint32_t                   imageId;
+        ImageViewType            viewType;
+        Format                   format;
+        ComponentSwizzle         components[4];
+        ImageAspectFlag       imageAspect;
+        uint32_t              baseMipLevel;
+        uint32_t              levelCount;
+        uint32_t              baseArrayLayer;
+        uint32_t              layerCount;
+    };
+
+    struct MemoryRequirementInfo
+    {
+        size_t    size;
+        size_t    alignment;
+        uint32_t  memoryTypeBits;
     };
 
     struct RenderPassAttachmentInfo

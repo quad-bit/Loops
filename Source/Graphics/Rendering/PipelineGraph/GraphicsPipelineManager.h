@@ -132,7 +132,7 @@ inline void GraphicsPipelineManager<T>::InsertToMeshList(const uint32_t & meshId
     auto it = meshToGraphNodeMap.find(meshId);
 
     if (it == meshToGraphNodeMap.end())
-        ASSERT_MSG(0, "mesh Id not found");
+        ASSERT_MSG_DEBUG(0, "mesh Id not found");
 
     it->second[(uint32_t)state] = node;
 }
@@ -166,7 +166,7 @@ inline void GraphicsPipelineManager<T>::CreateTessellationDefault()
 
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindTessellationStateHash(wrapper->tessellationState, wrapper->GetId());
-    ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+    ASSERT_MSG_DEBUG(test == -1, "Issue with hashing, should return -1");
 
     //Create graph node
     GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
@@ -193,7 +193,7 @@ inline void GraphicsPipelineManager<T>::CreateViewportDefault()
     
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindViewportStateHash(viewport, wrapper->GetId());
-    ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+    ASSERT_MSG_DEBUG(test == -1, "Issue with hashing, should return -1");
 
     //Create graph node
     GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
@@ -227,7 +227,7 @@ inline void GraphicsPipelineManager<T>::CreateRasterizationDefault()
 
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindRasterizationHash(raster, wrapper->GetId());
-    ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+    ASSERT_MSG_DEBUG(test == -1, "Issue with hashing, should return -1");
     
     //Create graph node
     GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
@@ -257,7 +257,7 @@ inline void GraphicsPipelineManager<T>::CreateMultiSampleDefault()
     
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindMultiSampleHash(multisample, wrapper->GetId());
-    ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+    ASSERT_MSG_DEBUG(test == -1, "Issue with hashing, should return -1");
 
     //Create graph node
     GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
@@ -298,7 +298,7 @@ inline void GraphicsPipelineManager<T>::CreateDepthStencilDefault()
 
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindDepthStencilHash(depthStencil, wrapper->GetId());
-    ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+    ASSERT_MSG_DEBUG(test == -1, "Issue with hashing, should return -1");
 
     //Create graph node
     GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
@@ -341,7 +341,7 @@ inline void GraphicsPipelineManager<T>::CreateColorblendDefault()
 
     // Find hash so that the hash manager stores the id of this state.
     int test = HashManager::GetInstance()->FindColorBlendHash(colorBlend, wrapper->GetId());
-    ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+    ASSERT_MSG_DEBUG(test == -1, "Issue with hashing, should return -1");
 
     //Create graph node
     GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
@@ -370,7 +370,7 @@ inline void GraphicsPipelineManager<T>::CreateDynamicStateDefault()
     // Find hash so that the hash manager stores the id of this state.
 
     int test = HashManager::GetInstance()->FindDynamicStateHash(dynamic, wrapper->GetId());
-    ASSERT_MSG(test == -1, "Issue with hashing, should return -1");
+    ASSERT_MSG_DEBUG(test == -1, "Issue with hashing, should return -1");
 
     //Create graph node
     GraphNode<StateWrapperBase> * node = CreateGraphNode(wrapper);
@@ -612,7 +612,7 @@ inline void GraphicsPipelineManager<T>::CreateGraphEdges(const uint32_t & meshId
     auto it = meshToGraphNodeMap.find(meshId);
     if (it == meshToGraphNodeMap.end())
     {
-        ASSERT_MSG(0, "id not found");
+        ASSERT_MSG_DEBUG(0, "id not found");
     }
 
     GraphNode<StateWrapperBase>* srcNode = it->second[(uint32_t)src];
@@ -620,7 +620,7 @@ inline void GraphicsPipelineManager<T>::CreateGraphEdges(const uint32_t & meshId
     {
         //ASSERT_MSG(0, "src node not found");
         int id = stateToDefaultNodeIndex[src];
-        ASSERT_MSG(id != -1, "default stage doesn't exist");
+        ASSERT_MSG_DEBUG(id != -1, "default stage doesn't exist");
         srcNode = stateToNodeMap[src].at(id);
     }
 
@@ -628,7 +628,7 @@ inline void GraphicsPipelineManager<T>::CreateGraphEdges(const uint32_t & meshId
     if (destNode == NULL)
     {
         int id = stateToDefaultNodeIndex[dest];
-        ASSERT_MSG(id != -1, "default stage doesn't exist");
+        ASSERT_MSG_DEBUG(id != -1, "default stage doesn't exist");
         destNode = stateToNodeMap[dest].at(id);
     }
 
@@ -642,7 +642,7 @@ inline void GraphicsPipelineManager<T>::CreateGraphEdges(GraphNode<StateWrapperB
     auto it = stateToNodeMap.find(src);
     if (it == stateToNodeMap.end())
     {
-        ASSERT_MSG(0, "node not found");
+        ASSERT_MSG_DEBUG(0, "node not found");
     }
 
     // Get all the node of the source state and connect it to destNode
@@ -658,7 +658,7 @@ inline void GraphicsPipelineManager<T>::CreateGraphEdges(GraphNode<StateWrapperB
 {
     if (srcNode->GetNodeData()->state == destNode->GetNodeData()->state)
     {
-        ASSERT_MSG(0, "Circular graph");
+        ASSERT_MSG_DEBUG(0, "Circular graph");
     }
 
     pipelineGraph->AttachDirectedEdge(srcNode, destNode);
@@ -670,7 +670,7 @@ inline GraphNode<StateWrapperBase>* GraphicsPipelineManager<T>::GetNode(Pipeline
     auto itt = stateToNodeMap.find(state);
     if (itt == stateToNodeMap.end())
     {
-        ASSERT_MSG(0, "state not found");
+        ASSERT_MSG_DEBUG(0, "state not found");
     }
 
     std::vector<GraphNode<StateWrapperBase>*> nodeList = itt->second;
@@ -679,7 +679,7 @@ inline GraphNode<StateWrapperBase>* GraphicsPipelineManager<T>::GetNode(Pipeline
     it = std::find_if(nodeList.begin(), nodeList.end(), [&](GraphNode<StateWrapperBase>* e) {
         return (e->GetNodeData()->state == state) && (e->GetNodeData()->GetId() == stateObj->GetId()); });
 
-    ASSERT_MSG(it != nodeList.end(), "Node not found");
+    ASSERT_MSG_DEBUG(it != nodeList.end(), "Node not found");
     return (*it);
 }
 
@@ -811,7 +811,7 @@ inline void GraphicsPipelineManager<T>::CreateVertexInputState(const uint32_t & 
         std::vector<VertexInputWrapper*>::iterator it;
         it = std::find_if(vertexInputStateWrapperList.begin(), vertexInputStateWrapperList.end(), [&](VertexInputWrapper * e) { return e->GetId() == id; });
 
-        ASSERT_MSG(it != vertexInputStateWrapperList.end(), "wrapper not found");
+        ASSERT_MSG_DEBUG(it != vertexInputStateWrapperList.end(), "wrapper not found");
         (*it)->meshIdList.push_back(meshId);
         node = GetNode((*it)->state, (*it));
     //    nodeList[(uint32_t)PipelineStates::VertexInputState] = GetNode((*it)->state, (*it));
@@ -858,7 +858,7 @@ inline void GraphicsPipelineManager<T>::CreateVertexAssemblyState(const uint32_t
         std::vector<InputAssemblyWrapper*>::iterator it;
         it = std::find_if(vertexInputAssemblyWrapperList.begin(), vertexInputAssemblyWrapperList.end(), [&](InputAssemblyWrapper * e) { return e->GetId() == id; });
 
-        ASSERT_MSG(it != vertexInputAssemblyWrapperList.end(), "wrapper not found");
+        ASSERT_MSG_DEBUG(it != vertexInputAssemblyWrapperList.end(), "wrapper not found");
 
         (*it)->meshIdList.push_back(meshId);
 
@@ -879,7 +879,7 @@ inline void GraphicsPipelineManager<T>::AssignDefaultState(const uint32_t & mesh
         break;
 
     default:
-        ASSERT_MSG(0, "Invalid state");
+        ASSERT_MSG_DEBUG(0, "Invalid state");
     }
 }
 
@@ -919,7 +919,7 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
         // add the mesh id to the existing wrapper obj in the list
         std::vector<ShaderStateWrapper*>::iterator it;
         it = std::find_if(shaderStateWrapperList.begin(), shaderStateWrapperList.end(), [&](ShaderStateWrapper* e) { return e->GetId() == id; });
-        ASSERT_MSG(it != shaderStateWrapperList.end(), "wrapper not found");
+        ASSERT_MSG_DEBUG(it != shaderStateWrapperList.end(), "wrapper not found");
         (*it)->meshIdList.push_back(meshId);
         
         node = GetNode((*it)->state, (*it));
@@ -980,7 +980,7 @@ inline std::vector<SetWrapper*> GraphicsPipelineManager<T>::CreatResourceLayoutS
         // add the mesh id to the existing wrapper obj in the list
         std::vector<ShaderResourceStateWrapper*>::iterator it;
         it = std::find_if(shaderResourceStateWrapperList.begin(), shaderResourceStateWrapperList.end(), [&](ShaderResourceStateWrapper* e) { return e->GetId() == id; });
-        ASSERT_MSG(it != shaderResourceStateWrapperList.end(), "wrapper not found");
+        ASSERT_MSG_DEBUG(it != shaderResourceStateWrapperList.end(), "wrapper not found");
         (*it)->meshIdList.push_back(meshId);
 
         node = GetNode((*it)->state, (*it));

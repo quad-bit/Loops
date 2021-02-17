@@ -75,7 +75,7 @@ void VkFrameBufferFactory::CreateFrameBuffer(uint32_t numFrameBuffers, VkImageVi
 
 void VkFrameBufferFactory::DestroyFrameBuffer(uint32_t id)
 {
-    ASSERT_MSG(0, "yet to be done");
+    ASSERT_MSG_DEBUG(0, "yet to be done");
 }
 
 void VkFrameBufferFactory::DestroyFrameBuffer(uint32_t * ids, uint32_t count)
@@ -85,7 +85,7 @@ void VkFrameBufferFactory::DestroyFrameBuffer(uint32_t * ids, uint32_t count)
         std::vector<FrameBufferWrapper*>::iterator it;
         it = std::find_if(fboList.begin(), fboList.end(), [&](FrameBufferWrapper * e) { return e->id == ids[i]; });
 
-        ASSERT_MSG(it != fboList.end(), "Image id not found");
+        ASSERT_MSG_DEBUG(it != fboList.end(), "Image id not found");
 
         vkDestroyFramebuffer(*CoreObjects::logicalDeviceObj, (*it)->fbo, CoreObjects::pAllocator);
     }
@@ -96,7 +96,7 @@ VkFramebuffer * VkFrameBufferFactory::GetFrameBuffer(uint32_t id)
     std::vector<FrameBufferWrapper*>::iterator it;
     it = std::find_if(fboList.begin(), fboList.end(), [&](FrameBufferWrapper * e) { return e->id == id; });
 
-    ASSERT_MSG(it != fboList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != fboList.end(), "Image id not found");
 
     return &(*it)->fbo;
 } 

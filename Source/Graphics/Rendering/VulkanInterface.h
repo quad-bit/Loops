@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <vector>
 #include <vulkan\vulkan.h>
+#include "RenderingWrapper.h"
 
 using namespace std;
 
@@ -54,13 +55,16 @@ private:
     VkSubpassDescription* UnwrapSubpassDesc(const SubpassInfo* subpassList, const uint32_t & subpassCount);
     VkSubpassDependency* UnwrapSubpassDependency(const SubpassDependency* dependencyList, const uint32_t & dependencyCount);
 
-    VkImageCreateInfo UnwrapImageInfo(ImageInfo * info);
-    VkImageViewCreateInfo UnwrapImageViewInfo(ImageInfo * info);
+    //VkImageCreateInfo UnwrapImageInfo(ImageInfo * info);
+    //VkImageViewCreateInfo UnwrapImageViewInfo(ImageInfo * info);
     VkCommandBufferUsageFlagBits UnwrapCommandBufferUsage(const CommandBufferUsage * info);
     VkSubmitInfo * UnwrapSubmitInfo(const SubmitInfo * info);
     VkPipelineStageFlags * UnwrapStageFlags(const PipelineStage * pipelineStage);
     VkMemoryPropertyFlags UnwrapMemoryProperty(const MemoryType * memType);
     VkBufferUsageFlags UnwrapBufferUsageFlags(const BufferType * type);
+
+    Format WrapFormat(VkFormat format);
+    ColorSpace WrapColorSpace(VkColorSpaceKHR space);
 
 public:
     VulkanInterface();
@@ -68,16 +72,28 @@ public:
 
     void Init();
     void DeInit();
-  
+    
+    Format GetWindowSurfaceFormat();
+    ColorSpace GetWindowColorSpace();
+
     uint32_t FindBestDepthFormat(Format * imageFormat, const uint32_t & count);
 
-    void CreateRenderTarget(ImageInfo * info, const uint32_t & count, bool defaultTarget,
-        std::vector<uint32_t>* ids);
+    void SetupPresentationEngine(ImageInfo info);
+    void CreateRenderTarget(ImageInfo * info, ImageViewInfo * viewInfo, uint32_t & count, bool defaultTarget,
+        uint32_t * ids);
+    void CreateDefaultRenderTarget(ImageInfo info, ImageViewInfo viewInfo, uint32_t & count, uint32_t * ids);
+    //deprecated.
     void DestroyRenderTarget(std::vector<uint32_t>* ids, bool defaultTarget);
     
-    void CreateDepthTarget(ImageInfo * info, const uint32_t & count, bool stencilRequired,
-        bool defaultTarget, std::vector<uint32_t>* ids);
+    void CreateDepthTarget(ImageInfo * info, const uint32_t & count, uint32_t * ids);
+    //deprecated.
     void DestroyDepthTarget(std::vector<uint32_t>* ids, bool defaultTarget);
+
+    void DestroyAttachment(uint32_t * ids, bool * destroyImageView, bool * freeImageMemory, const uint32_t & count);
+    void FreeAttachmentMemory(uint32_t * imageIds, const uint32_t & count);
+    void DestroySwapChainImageViews(uint32_t * ids, const uint32_t & count);
+
+    void CreateImageView(ImageViewInfo * viewInfo, uint32_t & count);
 
     void CreateRenderPass(
         const RenderPassAttachmentInfo* renderpassAttachmentList, const uint32_t & attachmentCount,
@@ -128,10 +144,13 @@ public:
     //uint32_t * CreateBuffer(BufferInfo * info, const uint32_t & count);
     uint32_t * CreateBuffers(BufferInfo * info, const uint32_t & count);
     uint32_t * AllocateBufferMemory(uint32_t * bufferId, const uint32_t & bufCount);
+    uint32_t AllocateMemory(MemoryRequirementInfo * memReq, MemoryType * userReq, const size_t & allocationSize);
+    MemoryRequirementInfo GetImageMemoryRequirement(const uint32_t & imageId);
     void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
     void DestroyBuffer(uint32_t * ids, const uint32_t & count);
     void FreeMemory(uint32_t * ids, const uint32_t & count);
     uint32_t * AllocateDescriptorsForASet(SetWrapper * set, const uint32_t & numDescriptors);
+    void BindImageMemory(const uint32_t & imageId, const uint32_t & memId, const size_t & offset);
 
     void GetShaderIds(char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount );
     void CreateVertexInputState(const VertexInputWrapper * vertexInputWrapper);
@@ -150,5 +169,8 @@ public:
     uint32_t CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets);
     std::vector<SetWrapper*> * GetSetWrapperList();
     void LinkSetBindingToResources(ShaderBindingDescription * desc);
+
+    bool IsSampleRateShadingAvailable();
+    Samples GetMaxUsableSampleCount();
 };
 

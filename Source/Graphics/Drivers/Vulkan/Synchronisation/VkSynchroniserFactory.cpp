@@ -78,7 +78,7 @@ VkFence * VkSynchroniserFactory::GetFence(uint32_t id)
     std::vector<FenceWrapper>::iterator it;
     it = std::find_if(fenceList.begin(), fenceList.end(), [&](FenceWrapper e) { return e.id == id; });
 
-    ASSERT_MSG(it != fenceList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != fenceList.end(), "Image id not found");
     return it->fence;
 }
 
@@ -113,7 +113,7 @@ VkSemaphore* VkSynchroniserFactory::GetSemaphore(uint32_t id)
     std::vector<SemaphoreWrapper>::iterator it;
     it = std::find_if(semaphoreList.begin(), semaphoreList.end(), [&](SemaphoreWrapper e) { return e.id == id; });
 
-    ASSERT_MSG(it != semaphoreList.end(), "Image id not found");
+    ASSERT_MSG_DEBUG(it != semaphoreList.end(), "Image id not found");
     return it->semaphore;
 }
 

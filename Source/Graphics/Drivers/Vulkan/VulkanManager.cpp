@@ -15,6 +15,7 @@
 #include "VkShaderFactory.h"
 #include "VkDescriptorPoolFactory.h"
 #include "VkShaderResourceManager.h"
+#include "VkRenderingUnwrapper.h"
 
 using namespace std;
 
@@ -51,6 +52,9 @@ void VulkanManager::CreateInstance()
 
 void VulkanManager::CreateLogicalDevice()
 {
+    if(IsSampleRateShadingAvailable())
+        enabledPhysicalDeviceFeatures.sampleRateShading = VK_TRUE;
+
     std::vector<VkDeviceQueueCreateInfo> deviceQueueCreateInfoList = VkQueueFactory::GetInstance()->FindQueue();
 
     VkDeviceCreateInfo vkDeviceCreateInfoObj{};
@@ -75,7 +79,7 @@ void VulkanManager::CreateSurface(GLFWwindow * glfwWindow)
     if (VK_SUCCESS != glfwCreateWindowSurface(vkInstanceObj, glfwWindow, nullptr, &surface)) 
     {
         glfwTerminate();
-        ASSERT_MSG(0, "GLFW could not create the window surface.");
+        ASSERT_MSG_DEBUG(0, "GLFW could not create the window surface.");
         std::exit(-1);
     }
 #else
@@ -89,7 +93,7 @@ void VulkanManager::CreateSurface(GLFWwindow * glfwWindow)
         surface, &WSI_supported);
     if (!WSI_supported) 
     {
-        ASSERT_MSG(0, "WSI not supported");
+        ASSERT_MSG_DEBUG(0, "WSI not supported");
         std::exit(-1);
     }
 
@@ -106,7 +110,7 @@ void VulkanManager::CreateSurface(GLFWwindow * glfwWindow)
         vkGetPhysicalDeviceSurfaceFormatsKHR(vkPhysicalDeviceObj, surface, &format_count, nullptr);
         if (format_count == 0) 
         {
-            ASSERT_MSG(0, "Surface formats missing.");
+            ASSERT_MSG_DEBUG(0, "Surface formats missing.");
             std::exit(-1);
         }
         std::vector<VkSurfaceFormatKHR> formats(format_count);
@@ -121,6 +125,43 @@ void VulkanManager::CreateSurface(GLFWwindow * glfwWindow)
             surfaceFormat = formats[0];
         }
     }
+}
+
+bool VulkanManager::IsSampleRateShadingAvailable()
+{
+    if (physicalDeviceFeatures.sampleRateShading)
+    {
+        return true;
+    }
+    
+    return false;
+}
+
+VkSampleCountFlagBits VulkanManager::GetMaxUsableVKSampleCount()
+{
+    VkSampleCountFlags counts = std::min(physicalDeviceProps.limits.framebufferColorSampleCounts, physicalDeviceProps.limits.framebufferDepthSampleCounts);
+    if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
+    if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
+    if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }
+    if (counts & VK_SAMPLE_COUNT_8_BIT) { return VK_SAMPLE_COUNT_8_BIT; }
+    if (counts & VK_SAMPLE_COUNT_4_BIT) { return VK_SAMPLE_COUNT_4_BIT; }
+    if (counts & VK_SAMPLE_COUNT_2_BIT) { return VK_SAMPLE_COUNT_2_BIT; }
+    return VK_SAMPLE_COUNT_1_BIT;
+}
+
+Samples VulkanManager::GetMaxUsableSampleCount()
+{
+    VkSampleCountFlags counts = GetMaxUsableVKSampleCount();
+    
+    if (physicalDeviceProps.limits.framebufferColorSampleCounts < counts ||
+        physicalDeviceProps.limits.framebufferDepthSampleCounts < counts )
+    {
+        ASSERT_MSG_DEBUG(0, "sample counts not valid");
+        counts = VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT;
+    }
+
+    Samples samples = VulkanUnwrap::UnWrapSampleCount(counts);
+    return samples;
 }
 
 void VulkanManager::GetPhysicalDevice()
@@ -166,7 +207,7 @@ void VulkanManager::GetPhysicalDevice()
 
     if (vkPhysicalDeviceObj == VK_NULL_HANDLE)
     {
-        ASSERT_MSG(0, "gpu required");
+        ASSERT_MSG_DEBUG(0, "gpu required");
         std::exit(-1);
     }
 

@@ -103,7 +103,7 @@ VkDescriptorPool * VkDescriptorPoolFactory::GetDescriptorPool(const uint32_t & i
 
     it = std::find_if(poolWrapperList.begin(), poolWrapperList.end(), [&](PoolWrapper e) { return e.poolId == id; });
 
-    ASSERT_MSG(it != poolWrapperList.end(), "Pool id not found");
+    ASSERT_MSG_DEBUG(it != poolWrapperList.end(), "Pool id not found");
     return it->pool;
 }
 

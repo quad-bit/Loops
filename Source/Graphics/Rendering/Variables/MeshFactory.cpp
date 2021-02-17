@@ -164,7 +164,7 @@ Mesh * MeshFactory::CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType)
         }
         else
         {
-            ASSERT_MSG(0, "individual buffers yet to be implemented.");
+            ASSERT_MSG_DEBUG(0, "individual buffers yet to be implemented.");
         }
 
         //index buffer
@@ -248,7 +248,7 @@ void MeshFactory::DestroyMesh(const uint32_t & meshId)
     it = std::find_if(meshToVertWrapperMap.begin(), meshToVertWrapperMap.end(), 
         [&](std::pair<Mesh *, AttribStructBase *> obj) { return obj.first->componentId == meshId; });
 
-    ASSERT_MSG(it != meshToVertWrapperMap.end(), "Mesh not found");
+    ASSERT_MSG_DEBUG(it != meshToVertWrapperMap.end(), "Mesh not found");
 
     apiInterface->DestroyBuffer((it)->first->vertexBuffersIds, (it)->first->vertexBufferCount);
     apiInterface->DestroyBuffer(&(it)->first->indexBufferId, 1);

@@ -20,7 +20,7 @@ Camera::Camera(Transform * transform, glm::vec3 up, float yaw, float pitch, Came
 glm::mat4 Camera::GetViewMatrix()
 {
     glm::vec3 localForward = transform->GetForward();
-    glm::vec3 localUp = glm::vec3(0, 1, 0);// transform->GetUp();
+    glm::vec3 localUp = transform->GetUp();
     viewMat = glm::lookAt(transform->GetLocalPosition(), 
         transform->GetLocalPosition() + localForward, 
         localUp );
@@ -38,7 +38,7 @@ glm::mat4 Camera::GetProjectionMat()
     switch (projectionType)
     {
     case CameraType::ORTHOGONAL:
-        ASSERT_MSG(0, "Need the correct design");
+        ASSERT_MSG_DEBUG(0, "Need the correct design");
         break;
 
     case CameraType::PERSPECTIVE:

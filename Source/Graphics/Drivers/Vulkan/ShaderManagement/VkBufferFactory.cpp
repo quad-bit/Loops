@@ -121,7 +121,7 @@ uint32_t * VkBufferFactory::AllocateBufferMemory(uint32_t * bufferId, const uint
     {
         std::vector<VkBufferWrapper>::iterator it;
         it = std::find_if(bufferWrapperList.begin(), bufferWrapperList.end(), [&](VkBufferWrapper e) { return e.id == bufferId[i]; });
-        ASSERT_MSG(it != bufferWrapperList.end(), "buffer id not found");
+        ASSERT_MSG_DEBUG(it != bufferWrapperList.end(), "buffer id not found");
 
         it->bufferMemory = new VkDeviceMemory;
         ids[i] = VulkanMemoryManager::GetSingleton()->AllocateMemory(&it->bufMemReq, it->memFlags, it->bufferMemory);
@@ -138,7 +138,7 @@ uint32_t * VkBufferFactory::AllocateBufferMemory(uint32_t * bufferId, const uint
 // TODO : Needs to be tested
 uint32_t VkBufferFactory::AllocateSharedMemory(uint32_t * bufferId, const uint32_t & bufCount)
 {
-    ASSERT_MSG(0, "Needs testing");
+    ASSERT_MSG_DEBUG(0, "Needs testing");
 
     uint32_t id;
 
@@ -150,7 +150,7 @@ uint32_t VkBufferFactory::AllocateSharedMemory(uint32_t * bufferId, const uint32
     for (uint32_t i = 0; i < bufCount; i++)
     {
         it = std::find_if(bufferWrapperList.begin(), bufferWrapperList.end(), [&](VkBufferWrapper e) { return e.id == bufferId[i]; });
-        ASSERT_MSG(it != bufferWrapperList.end(), "buffer id not found");
+        ASSERT_MSG_DEBUG(it != bufferWrapperList.end(), "buffer id not found");
 
         it->isBufferSharingMemory = true;
         it->memoryOffset = allocationSize;
@@ -162,7 +162,7 @@ uint32_t VkBufferFactory::AllocateSharedMemory(uint32_t * bufferId, const uint32
         }
         else
         {
-            ASSERT_MSG(req.alignment == it->bufMemReq.alignment && req.memoryTypeBits == it->bufMemReq.memoryTypeBits && req.size == it->bufMemReq.size,
+            ASSERT_MSG_DEBUG(req.alignment == it->bufMemReq.alignment && req.memoryTypeBits == it->bufMemReq.memoryTypeBits && req.size == it->bufMemReq.size,
                 "Buffer mem req mismatch");
         }
     }
@@ -184,7 +184,7 @@ void VkBufferFactory::CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSiz
 {
     std::vector<VkBufferWrapper>::iterator it;
     it = std::find_if(bufferWrapperList.begin(), bufferWrapperList.end(), [&](VkBufferWrapper e) { return e.id == bufId; });
-    ASSERT_MSG(it != bufferWrapperList.end(), "buffer id not found");
+    ASSERT_MSG_DEBUG(it != bufferWrapperList.end(), "buffer id not found");
 
     void * gpuMem;
     ErrorCheck(vkMapMemory(*CoreObjects::logicalDeviceObj, *it->bufferMemory, memoryMapOffset,
@@ -217,7 +217,7 @@ VkBuffer * VkBufferFactory::GetBuffer(const uint32_t & id)
     std::vector<VkBufferWrapper>::iterator it;
     it = std::find_if(bufferWrapperList.begin(), bufferWrapperList.end(), [&](VkBufferWrapper e) { return e.id == id; });
 
-    ASSERT_MSG(it != bufferWrapperList.end(), "Buffer not found");
+    ASSERT_MSG_DEBUG(it != bufferWrapperList.end(), "Buffer not found");
     
     return it->buffer;
 }

@@ -2,15 +2,18 @@
 
 #include <iostream>
 
+#define ASSERT_MSG(Expr, Msg) \
+        AssertWithMsg(#Expr, Expr, __FILE__, __LINE__, Msg)
+
 #ifndef NDEBUG
-    #define ASSERT_MSG(Expr, Msg) \
+    #define ASSERT_MSG_DEBUG(Expr, Msg) \
         AssertWithMsg(#Expr, Expr, __FILE__, __LINE__, Msg)
 
     #define ASSERT(Expr) \
         Assert(#Expr, Expr, __FILE__, __LINE__)
 
-    #define DEPRECATED ASSERT_MSG(0, "Deprecated") 
-
+    #define DEPRECATED ASSERT_MSG_DEBUG(0, "Deprecated") 
+    
 #else
     #define ASSERT_MSG(Expr, Msg) ;
     #define ASSERT(Expr);

@@ -2,19 +2,19 @@
 #include "VkFrameBufferFactory.h"
 #include "VkRenderPassFactory.h"
 
-VkColorSpaceKHR UnWrapColorSpace(ColorSpace colorSpace)
+VkColorSpaceKHR VulkanUnwrap::UnWrapColorSpace(ColorSpace colorSpace)
 {
     switch (colorSpace)
     {
     case ColorSpace::COLOR_SPACE_SRGB_NONLINEAR_KHR:
         return VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
     default:
-        ASSERT_MSG(0, "colorspace converter not found ");
+        ASSERT_MSG_DEBUG(0, "colorspace converter not found ");
         std::exit(-1);
     }
 }
-
-VkImageViewType  UnWrapImageViewDegree(Dimensions degree)
+/*
+VkImageViewType  VulkanUnwrap::UnWrapImageViewDegree(Dimensions degree)
 {
     switch (degree)
     {
@@ -25,12 +25,12 @@ VkImageViewType  UnWrapImageViewDegree(Dimensions degree)
         return VK_IMAGE_VIEW_TYPE_2D;
         break;
     default:
-        ASSERT_MSG(0, "Converter not found ");
+        ASSERT_MSG_DEBUG(0, "Converter not found ");
         std::exit(-1);
     }
 }
 
-VkImageType  UnWrapImageDegree(Dimensions degree)
+VkImageType  VulkanUnwrap::UnWrapImageDegree(Dimensions degree)
 {
     switch (degree)
     {
@@ -41,12 +41,12 @@ VkImageType  UnWrapImageDegree(Dimensions degree)
         return VK_IMAGE_TYPE_2D;
         break;
     default:
-        ASSERT_MSG(0, "Converter not found ");
+        ASSERT_MSG_DEBUG(0, "Converter not found ");
         std::exit(-1);
     }
 }
-
-VkFormat UnWrapFormat(Format format)
+*/
+VkFormat VulkanUnwrap::UnWrapFormat(Format format)
 {
     switch (format)
     {
@@ -87,12 +87,12 @@ VkFormat UnWrapFormat(Format format)
         break;
 
     default:
-        ASSERT_MSG(0, "Converter not found ");
+        ASSERT_MSG_DEBUG(0, "Converter not found ");
         std::exit(-1);
     }
 }
 
-VkImageLayout UnWrapImageLayout(ImageLayout layout)
+VkImageLayout VulkanUnwrap::UnWrapImageLayout(ImageLayout layout)
 {
     switch (layout)
     {
@@ -130,12 +130,12 @@ VkImageLayout UnWrapImageLayout(ImageLayout layout)
         return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
     default:
-        ASSERT_MSG(0, "Layout converter not found ");
+        ASSERT_MSG_DEBUG(0, "Layout converter not found ");
         std::exit(-1);
     }
 }
 
-VkAttachmentLoadOp UnWrapLoadOp(LoadOperation op)
+VkAttachmentLoadOp VulkanUnwrap::UnWrapLoadOp(LoadOperation op)
 {
     switch (op)
     {
@@ -146,12 +146,12 @@ VkAttachmentLoadOp UnWrapLoadOp(LoadOperation op)
     case   LoadOperation::LOAD_OP_DONT_CARE:
         return VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     default:
-        ASSERT_MSG(0, "loadop converter not found ");
+        ASSERT_MSG_DEBUG(0, "loadop converter not found ");
         std::exit(-1);
     }
 }
 
-VkAttachmentStoreOp UnWrapStoreOp(StoreOperation op)
+VkAttachmentStoreOp VulkanUnwrap::UnWrapStoreOp(StoreOperation op)
 {
     switch (op)
     {
@@ -160,12 +160,12 @@ VkAttachmentStoreOp UnWrapStoreOp(StoreOperation op)
     case   StoreOperation::STORE_OP_DONT_CARE:
         return VK_ATTACHMENT_STORE_OP_DONT_CARE;
     default:
-        ASSERT_MSG(0, "Store op converter not found ");
+        ASSERT_MSG_DEBUG(0, "Store op converter not found ");
         std::exit(-1);
     }
 }
 
-VkAttachmentReference UnWrapAttachmentRef(AttachmentRef ref)
+VkAttachmentReference VulkanUnwrap::UnWrapAttachmentRef(AttachmentRef ref)
 {
     VkAttachmentReference obj = {};
     obj.attachment = ref.index;
@@ -174,7 +174,7 @@ VkAttachmentReference UnWrapAttachmentRef(AttachmentRef ref)
     return obj;
 }
 
-VkSampleCountFlagBits UnWrapSampleCount(Samples sampleCount)
+VkSampleCountFlagBits VulkanUnwrap::UnWrapSampleCount(Samples sampleCount)
 {
     switch (sampleCount)
     {
@@ -200,12 +200,66 @@ VkSampleCountFlagBits UnWrapSampleCount(Samples sampleCount)
         return VK_SAMPLE_COUNT_64_BIT;
 
     default:
-        ASSERT_MSG(0, "Sample converter not found ");
+        ASSERT_MSG_DEBUG(0, "Sample converter not found ");
         std::exit(-1);
     }
 }
 
-VkImageUsageFlagBits UnwrapUsage(Usage usage)
+Samples VulkanUnwrap::UnWrapSampleCount(VkSampleCountFlags vkSampleCount)
+{
+    switch (vkSampleCount)
+    {
+    case  VK_SAMPLE_COUNT_1_BIT:
+        return Samples::SAMPLE_COUNT_1_BIT;
+
+    case  VK_SAMPLE_COUNT_2_BIT:
+        return Samples::SAMPLE_COUNT_2_BIT ;
+
+    case  VK_SAMPLE_COUNT_4_BIT:
+        return Samples::SAMPLE_COUNT_4_BIT ;
+
+    case  VK_SAMPLE_COUNT_8_BIT:
+        return Samples::SAMPLE_COUNT_8_BIT ;
+
+    case  VK_SAMPLE_COUNT_16_BIT:
+        return Samples::SAMPLE_COUNT_16_BIT ;
+
+    case  VK_SAMPLE_COUNT_32_BIT:
+        return Samples::SAMPLE_COUNT_32_BIT ;
+
+    case  VK_SAMPLE_COUNT_64_BIT:
+        return Samples::SAMPLE_COUNT_64_BIT ;
+
+    default:
+        ASSERT_MSG_DEBUG(0, "Sample converter not found ");
+        std::exit(-1);
+    }
+
+    return Samples();
+}
+
+VkImageType VulkanUnwrap::UnWrapImageType(ImageType type)
+{
+    switch (type)
+    {
+    case ImageType::IMAGE_TYPE_1D:
+        return VkImageType::VK_IMAGE_TYPE_1D;
+
+    case ImageType::IMAGE_TYPE_2D:
+        return VkImageType::VK_IMAGE_TYPE_2D;
+
+    case ImageType::IMAGE_TYPE_3D:
+        return VkImageType::VK_IMAGE_TYPE_3D;
+
+    default:
+        ASSERT_MSG_DEBUG(0, "Sample converter not found ");
+        std::exit(-1);
+
+    }
+    return VkImageType::VK_IMAGE_TYPE_1D;
+}
+
+VkImageUsageFlagBits VulkanUnwrap::UnwrapUsage(Usage usage)
 {
     switch (usage)
     {
@@ -237,12 +291,12 @@ VkImageUsageFlagBits UnwrapUsage(Usage usage)
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
 
     default:
-        ASSERT_MSG(0, "Usage converter not found ");
+        ASSERT_MSG_DEBUG(0, "Usage converter not found ");
         std::exit(-1);
     }
 }
 
-VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo beginInfo)
+VkRenderPassBeginInfo VulkanUnwrap::UnwrapRenderPassBeginInfo(RenderPassBeginInfo beginInfo)
 {
     VkRenderPassBeginInfo vkBeginInfo = {};
     vkBeginInfo.framebuffer = *VkFrameBufferFactory::GetInstance()->GetFrameBuffer(beginInfo.frameBufferId);
@@ -276,7 +330,7 @@ VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo beginInfo)
     return vkBeginInfo;
 }
 
-VkShaderStageFlags UnwrapShaderStage(ShaderType type)
+VkShaderStageFlags VulkanUnwrap::UnwrapShaderStage(ShaderType type)
 {
     VkShaderStageFlags shaderFlag;
 
@@ -287,7 +341,7 @@ VkShaderStageFlags UnwrapShaderStage(ShaderType type)
         break;
     
     case    ShaderType::TESSELLATION:
-        ASSERT_MSG(0, "Yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
         break;
 
     case    ShaderType::GEOMETRY:
@@ -306,7 +360,7 @@ VkShaderStageFlags UnwrapShaderStage(ShaderType type)
     return shaderFlag;
 }
 
-VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count)
+VkShaderStageFlags VulkanUnwrap::UnwrapShaderStage(ShaderType * type, const uint32_t & count)
 {
     VkShaderStageFlags shaderFlag;
     //shaderflag needs to be filled with something to be OR-ED with subsequent stages
@@ -317,7 +371,7 @@ VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count)
         break;
 
     case    ShaderType::TESSELLATION:
-        ASSERT_MSG(0, "Yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
         break;
 
     case    ShaderType::GEOMETRY:
@@ -342,7 +396,7 @@ VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count)
         break;
 
     case    ShaderType::TESSELLATION:
-        ASSERT_MSG(0, "Yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
         break;
 
     case    ShaderType::GEOMETRY:
@@ -359,4 +413,172 @@ VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count)
     }
 
     return shaderFlag;
+}
+
+VkImageViewCreateInfo VulkanUnwrap::UnWrapImageViewCreateInfo(ImageViewInfo * info)
+{
+    VkImageViewCreateInfo vkInfo = {};
+    vkInfo.components.a = UnWrapSwizzle(info->components[0]);
+    vkInfo.components.b = UnWrapSwizzle(info->components[1]);
+    vkInfo.components.g = UnWrapSwizzle(info->components[2]);
+    vkInfo.components.r = UnWrapSwizzle(info->components[3]);
+    vkInfo.format = UnWrapFormat(info->format) ;
+    vkInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    vkInfo.viewType = UnwrapImageViewType(info->viewType);
+    vkInfo.subresourceRange.aspectMask = UnwrapAspectMask(info->imageAspect);
+    vkInfo.subresourceRange.baseArrayLayer = info->baseArrayLayer;
+    vkInfo.subresourceRange.baseMipLevel = info->baseMipLevel;
+    vkInfo.subresourceRange.layerCount = info->layerCount;
+    vkInfo.subresourceRange.levelCount = info->levelCount;
+
+    return vkInfo;
+}
+
+VkImageCreateInfo VulkanUnwrap::UnWrapImageCreateInfo(ImageInfo * info)
+{
+    VkImageCreateInfo vkInfo = {};
+    vkInfo.arrayLayers = info->layers;
+    vkInfo.extent.width = info->width;
+    vkInfo.extent.height = info->height;
+    vkInfo.extent.depth = info->depth;
+    vkInfo.format = UnWrapFormat(info->format);
+    vkInfo.imageType = UnWrapImageType(info->imageType) ;
+    vkInfo.initialLayout = UnWrapImageLayout(info->initialLayout);
+    vkInfo.mipLevels = info->mips;
+    vkInfo.pQueueFamilyIndices = nullptr ;
+    vkInfo.queueFamilyIndexCount = 0;
+    vkInfo.samples = UnWrapSampleCount(info->sampleCount);
+    vkInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    vkInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+    vkInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
+    vkInfo.usage = UnwrapUsage(info->usage);
+
+    return vkInfo;
+}
+
+VkComponentSwizzle VulkanUnwrap::UnWrapSwizzle(ComponentSwizzle obj)
+{
+    switch (obj)
+    {
+    case ComponentSwizzle::COMPONENT_SWIZZLE_A:
+        return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_A;
+
+    case ComponentSwizzle::COMPONENT_SWIZZLE_B:
+        return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_B;
+
+    case ComponentSwizzle::COMPONENT_SWIZZLE_G:
+        return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_G;
+
+    case ComponentSwizzle::COMPONENT_SWIZZLE_IDENTITY:
+        return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
+
+    case ComponentSwizzle::COMPONENT_SWIZZLE_ONE:
+        return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_ONE;
+
+    case ComponentSwizzle::COMPONENT_SWIZZLE_R:
+        return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_R;
+
+    case ComponentSwizzle::COMPONENT_SWIZZLE_ZERO:
+        return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_ZERO;
+    
+    default: ASSERT_MSG(0, "invalid option");
+    }
+
+    return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_A;
+}
+
+VkImageViewType VulkanUnwrap::UnwrapImageViewType(ImageViewType type)
+{
+    switch (type)
+    {
+    
+    case ImageViewType::IMAGE_VIEW_TYPE_1D:
+        return VkImageViewType::VK_IMAGE_VIEW_TYPE_1D;
+
+    case ImageViewType::IMAGE_VIEW_TYPE_1D_ARRAY:
+        return VkImageViewType::VK_IMAGE_VIEW_TYPE_1D_ARRAY;
+
+    case ImageViewType::IMAGE_VIEW_TYPE_2D:
+        return VkImageViewType::VK_IMAGE_VIEW_TYPE_2D;
+
+    case ImageViewType::IMAGE_VIEW_TYPE_2D_ARRAY:
+        return VkImageViewType::VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+
+    case ImageViewType::IMAGE_VIEW_TYPE_3D:
+        return VkImageViewType::VK_IMAGE_VIEW_TYPE_3D;
+
+    case ImageViewType::IMAGE_VIEW_TYPE_CUBE:
+        return VkImageViewType::VK_IMAGE_VIEW_TYPE_CUBE;
+
+    case ImageViewType::IMAGE_VIEW_TYPE_CUBE_ARRAY:
+        return VkImageViewType::VK_IMAGE_VIEW_TYPE_CUBE_ARRAY;
+
+    default: ASSERT_MSG(0, "invalid option");
+
+    }
+
+    return VkImageViewType::VK_IMAGE_VIEW_TYPE_1D;
+}
+
+VkImageAspectFlags VulkanUnwrap::UnwrapAspectMask(ImageAspectFlag flag)
+{
+    switch (flag)
+    {
+    case ImageAspectFlag::IMAGE_ASPECT_COLOR_BIT:
+        return VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+
+    case ImageAspectFlag::IMAGE_ASPECT_DEPTH_BIT:
+        return VkImageAspectFlagBits::VK_IMAGE_ASPECT_DEPTH_BIT;
+
+    case ImageAspectFlag::IMAGE_ASPECT_STENCIL_BIT:
+        return VkImageAspectFlagBits::VK_IMAGE_ASPECT_STENCIL_BIT;
+
+    default: ASSERT_MSG(0, "Case not implemented");
+
+    }
+    return VkImageAspectFlagBits::VK_IMAGE_ASPECT_COLOR_BIT;
+}
+
+VkMemoryRequirements VulkanUnwrap::UnwrapMemoryRequirements(MemoryRequirementInfo * info)
+{
+    VkMemoryRequirements req = {};
+    req.alignment = info->alignment;
+    req.memoryTypeBits = info->memoryTypeBits;
+    req.size = info->size;
+
+    return req;
+}
+
+VkMemoryPropertyFlags VulkanUnwrap::UnwrapMemoryProperty(const MemoryType * memType)
+{
+    VkMemoryPropertyFlags memProp;
+
+    switch (*memType)
+    {
+    case MemoryType::DEVICE_LOCAL_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+        break;
+
+    case MemoryType::HOST_VISIBLE_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+        break;
+
+    case MemoryType::HOST_COHERENT_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+        break;
+
+    case MemoryType::HOST_CACHED_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+        break;
+
+    case MemoryType::LAZILY_ALLOCATED_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
+        break;
+
+    case MemoryType::PROTECTED_BIT:
+        memProp = VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_PROTECTED_BIT;
+        break;
+    }
+
+    return memProp;
 }

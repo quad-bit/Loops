@@ -83,7 +83,7 @@ SetWrapper * UniformFactory::AllocateResource(ShaderBindingDescription * desc, s
         return (e->setValue == desc->set && numBindings == e->bindingWrapperList.size());
     });
 
-    ASSERT_MSG(it != setWrapperList->end(), "Set not found");
+    ASSERT_MSG_DEBUG(it != setWrapperList->end(), "Set not found");
 
     for (uint32_t i = 0; i < numBindings; i++)
     {
@@ -120,7 +120,7 @@ SetWrapper * UniformFactory::AllocateResource(ShaderBindingDescription * desc, s
         }
         else
         {
-            ASSERT_MSG(0, "Binding not found");
+            ASSERT_MSG_DEBUG(0, "Binding not found");
         }
     }
 

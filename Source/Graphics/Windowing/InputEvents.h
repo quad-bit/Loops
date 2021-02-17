@@ -32,5 +32,6 @@ struct MousePointerEvent : public Event
 
 struct MouseDragEvent : public Event
 {
+    KeyState keyState = KeyState::NONE;
     double x, y;
 };

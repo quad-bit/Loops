@@ -55,7 +55,7 @@ uint32_t Timer::GetSeconds()
     ss << std::put_time(std::localtime(&in_time_t), "%Y-%m-%d %X");
 
     PLOGD << ss.str();
-    ASSERT_MSG(0, "Not working");
+    ASSERT_MSG_DEBUG(0, "Not working");
     return 0;
 }
 

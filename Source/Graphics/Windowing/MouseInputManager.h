@@ -35,7 +35,7 @@ private:
     MouseButtons currentMouseButtonDown;
     double mouseX, mouseY;
 
-    void CreateMouseDragEvent();
+    void CreateMouseDragEvent(KeyState state);
     MouseButtonEvent * FetchMouseButtonEvent();
     MousePointerEvent * FetchMousePointerEvent();
     MouseDragEvent * FetchMouseDragEvent();

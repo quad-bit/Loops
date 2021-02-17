@@ -5,6 +5,7 @@
 #include <Assertion.h>
 #include <vector>
 #include <CorePrecompiled.h>
+#include "VkRenderingUnwrapper.h"
 
 using namespace std;
 
@@ -47,6 +48,35 @@ void PresentationEngine::Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * sur
     Settings::swapBufferCount = swapChainImageCount;
 }
 
+void PresentationEngine::CreateSwapChain(VkSwapchainCreateInfoKHR swapChainCreateInfo)
+{
+    ErrorCheck(vkCreateSwapchainKHR(*CoreObjects::logicalDeviceObj, &swapChainCreateInfo, CoreObjects::pAllocator, &swapchainObj));
+}
+
+void PresentationEngine::CreateSwapChain(ImageInfo info)
+{
+    VkSwapchainCreateInfoKHR swapChainCreateInfo{};
+    swapChainCreateInfo.clipped = VK_TRUE; // dont render parts of swapchain image that are out of the frustrum
+    swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+    swapChainCreateInfo.imageArrayLayers = 1; // 2 meant for sterescopic rendering
+    swapChainCreateInfo.imageColorSpace = VulkanUnwrap::UnWrapColorSpace(info.colorSpace);
+    swapChainCreateInfo.imageExtent.height = info.height;
+    swapChainCreateInfo.imageExtent.width = info.width;
+    swapChainCreateInfo.imageFormat = VulkanUnwrap::UnWrapFormat(info.format);
+    swapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    swapChainCreateInfo.imageUsage = VulkanUnwrap::UnwrapUsage(info.usage);
+    swapChainCreateInfo.minImageCount = Settings::swapBufferCount;
+    swapChainCreateInfo.preTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+    swapChainCreateInfo.presentMode = presentMode;
+    swapChainCreateInfo.oldSwapchain = VK_NULL_HANDLE; // useful when resizing the window
+    swapChainCreateInfo.queueFamilyIndexCount = 0; // as its not shared between multiple queues
+    swapChainCreateInfo.pQueueFamilyIndices = nullptr;
+    swapChainCreateInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+    swapChainCreateInfo.surface = *surfaceObj;
+
+    CreateSwapChain(swapChainCreateInfo);
+}
+
 vector<VkImage>* PresentationEngine::CreateSwapchainImage(AttachmentInfo * info, uint32_t count)
 {
     VkSwapchainCreateInfoKHR swapChainCreateInfo{};
@@ -71,7 +101,7 @@ vector<VkImage>* PresentationEngine::CreateSwapchainImage(AttachmentInfo * info,
 
     ErrorCheck(vkGetSwapchainImagesKHR(*CoreObjects::logicalDeviceObj, swapchainObj, &swapChainImageCount, nullptr));
 
-    ASSERT_MSG(count == swapChainImageCount, "Swapchain count mis match");
+    ASSERT_MSG_DEBUG(count == swapChainImageCount, "Swapchain count mis match");
 
     swapChainImageList.resize(swapChainImageCount);
     swapChainImageViewList.resize(swapChainImageCount);
@@ -103,14 +133,50 @@ vector<VkImageView>* PresentationEngine::CreateSwapchainImageViews(AttachmentInf
     return &swapChainImageViewList;
 }
 
+vector<VkImage> PresentationEngine::CreateSwapchainImages(const VkImageCreateInfo & info, uint32_t count)
+{
+    std::vector<VkImage> imageList;
+
+    ErrorCheck(vkGetSwapchainImagesKHR(*CoreObjects::logicalDeviceObj, swapchainObj, &count, nullptr));
+
+    imageList.resize(count);
+
+    ErrorCheck(vkGetSwapchainImagesKHR(*CoreObjects::logicalDeviceObj, swapchainObj, &count, imageList.data()));
+
+    for each(auto image in imageList)
+    {
+        swapChainImageList.push_back(image);
+    }
+
+    return imageList;
+}
+
+vector<VkImageView> PresentationEngine::CreateSwapchainImageViews(VkImageViewCreateInfo info, VkImage * images, uint32_t count)
+{
+    std::vector<VkImageView> imageviewList;
+    imageviewList.resize(count);
+
+    for (uint32_t i = 0; i <count; i++)
+    {
+        info.image = images[i];
+        ErrorCheck(vkCreateImageView(*CoreObjects::logicalDeviceObj, &info, CoreObjects::pAllocator, 
+            &imageviewList[i]));
+        swapChainImageViewList.push_back(imageviewList[i]);
+    }
+
+    return imageviewList;
+}
+
 void PresentationEngine::DestroySwapChain()
 {
     vkDestroySwapchainKHR(*CoreObjects::logicalDeviceObj, swapchainObj, CoreObjects::pAllocator);
     swapChainImageList.clear();
+    swapChainImageViewList.clear();
 }
-
+//deprecated.
 void PresentationEngine::DestroySwapChainImageView()
 {
+    DEPRECATED;
     for (uint32_t i = 0; i <swapChainImageCount; i++)
     {
         vkDestroyImageView(*CoreObjects::logicalDeviceObj, swapChainImageViewList[i], CoreObjects::pAllocator);
@@ -121,6 +187,7 @@ void PresentationEngine::DestroySwapChainImageView()
 void PresentationEngine::DeInit()
 {
     PLOGD << "PresentationEngine DeInit";
+    DestroySwapChain();
 }
 
 void PresentationEngine::Update()

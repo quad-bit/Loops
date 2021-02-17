@@ -27,7 +27,7 @@ DescriptorType StringToDescType(const char* str)
     if (!strcmp(str, "COMBINED_IMAGE_SAMPLER")) return DescriptorType::COMBINED_IMAGE_SAMPLER;
     if (!strcmp(str, "SAMPLED_IMAGE")) return DescriptorType::SAMPLED_IMAGE;
 
-    ASSERT_MSG(0 , "trying to convert an invalid string to input type");
+    ASSERT_MSG_DEBUG(0 , "trying to convert an invalid string to input type");
     return DescriptorType::NUM_TYPES;
 }
 
@@ -75,7 +75,7 @@ void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWr
 
         if (it == setWrapperList.end())
         {
-            ASSERT_MSG(0, "Id mismatch");
+            ASSERT_MSG_DEBUG(0, "Id mismatch");
         }
 
         (*it)->shaderNames.push_back(glslShader);
@@ -149,7 +149,7 @@ VkDescriptorSetLayout * VkShaderResourceManager::UnwrapSetwrapper(SetWrapper * s
        bindingList[i].binding = obj.binding;
        bindingList[i].descriptorCount = obj.descriptorCount;
        bindingList[i].descriptorType = UnwrapDescriptorType(obj.descriptorType);
-       bindingList[i].stageFlags = UnwrapShaderStage(obj.stageFlags.data(), (uint32_t)obj.stageFlags.size());
+       bindingList[i].stageFlags = VulkanUnwrap::UnwrapShaderStage(obj.stageFlags.data(), (uint32_t)obj.stageFlags.size());
        bindingList[i].pImmutableSamplers = nullptr;
     }
 
@@ -252,7 +252,7 @@ void VkShaderResourceManager::Init()
         Document reflDoc;
         reflDoc.Parse(reflString, fileLength);
         if (reflDoc.HasParseError())
-            ASSERT_MSG(0, "Error parsing material file");
+            ASSERT_MSG_DEBUG(0, "Error parsing material file");
         free((void*)reflString);
 
         //TODO : Include push constants 
@@ -268,7 +268,7 @@ void VkShaderResourceManager::Init()
             {
                 const Value& element = elements[elem];
                 if (element["name"].GetStringLength() > 31)
-                    ASSERT_MSG(0, "opaque block member names must be less than 32 characters");
+                    ASSERT_MSG_DEBUG(0, "opaque block member names must be less than 32 characters");
 
                 UniformStructMember mem;
                 snprintf(mem.name, sizeof(mem.name), "%s", element["name"].GetString());
@@ -488,7 +488,7 @@ std::vector<SetWrapper*> VkShaderResourceManager::GetSetsForShaders(const std::v
 
         if (it == perShaderResourceList.end())
         {
-            ASSERT_MSG(0, "shader name mismatch");
+            ASSERT_MSG_DEBUG(0, "shader name mismatch");
         }
         else if (it->setWrappers.size() == 0)
             continue;
@@ -545,7 +545,7 @@ VkPipelineLayout * VkShaderResourceManager::GetPipelineLayout(const uint32_t & i
     it = std::find_if(pipelineLayoutWrapperList.begin(), pipelineLayoutWrapperList.end(), [&](PipelineLayoutWrapper e) {
         return e.id == id; });
     
-    ASSERT_MSG(it != pipelineLayoutWrapperList.end(), "id not found");
+    ASSERT_MSG_DEBUG(it != pipelineLayoutWrapperList.end(), "id not found");
     
     return (it)->pipelineLayout;
 }
@@ -684,7 +684,7 @@ std::vector<VkDescriptorSet> VkShaderResourceManager::GetDescriptors(uint32_t * 
         if (setValues->at(i) != -1)
         {
             VkDescriptorSet set = idToSetMap[ids[k]];
-            ASSERT_MSG(set != VK_NULL_HANDLE, "Set not found");
+            ASSERT_MSG_DEBUG(set != VK_NULL_HANDLE, "Set not found");
             list.push_back(set);
             k++;
         }
@@ -757,15 +757,15 @@ void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription
         break;
 
     case VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-        ASSERT_MSG(0, "Yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
         break;
 
     case VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER:
-        ASSERT_MSG(0, "Yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
         break;
 
     default:
-        ASSERT_MSG(0, "Yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     }
 
     std::vector<VkWriteDescriptorSet> writeList;

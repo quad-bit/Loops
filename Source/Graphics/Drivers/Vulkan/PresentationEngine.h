@@ -1,6 +1,7 @@
 #pragma once
 #include <vulkan\vulkan.h>
 #include <vector>
+#include "RenderingWrapper.h"
 
 using namespace std;
 
@@ -25,13 +26,24 @@ private:
     vector<VkImage> swapChainImageList;
     vector<VkImageView> swapChainImageViewList;
 
+    //vector<VkImage *> swapChainImageList;
+    //vector<VkImageView *> swapChainImageViewList;
+
     uint32_t activeSwapchainImageID;
 
 public:
     void Init(VkSurfaceKHR* surfaceObj, VkSurfaceFormatKHR * surfaceFormat);
+    void CreateSwapChain(VkSwapchainCreateInfoKHR swapChainCreateInfo);
+    void CreateSwapChain(ImageInfo swapChainCreateInfo);
+
     vector<VkImage> * CreateSwapchainImage(AttachmentInfo* info, uint32_t count);
     vector<VkImageView> * CreateSwapchainImageViews(AttachmentInfo* info, uint32_t count);
+    
+    vector<VkImage> CreateSwapchainImages(const VkImageCreateInfo & info, uint32_t count);
+    vector<VkImageView> CreateSwapchainImageViews(VkImageViewCreateInfo info, VkImage * images, uint32_t count);
+
     void DestroySwapChain();
+    //deprecated.
     void DestroySwapChainImageView();
 
     void DeInit();

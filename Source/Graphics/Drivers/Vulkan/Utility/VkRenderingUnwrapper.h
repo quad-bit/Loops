@@ -5,29 +5,43 @@
 #include <Assertion.h>
 #include <vulkan\vulkan.h>
 
-VkColorSpaceKHR UnWrapColorSpace(ColorSpace colorSpace);
+namespace VulkanUnwrap
+{
 
-VkImageViewType  UnWrapImageViewDegree(Dimensions degree);
+    VkColorSpaceKHR UnWrapColorSpace(ColorSpace colorSpace);
 
-VkImageType  UnWrapImageDegree(Dimensions degree);
+    //VkImageViewType  UnWrapImageViewDegree(Dimensions degree);
 
-VkFormat UnWrapFormat(Format format);
+    //VkImageType  UnWrapImageDegree(Dimensions degree);
 
-VkImageLayout UnWrapImageLayout(ImageLayout layout);
+    VkFormat UnWrapFormat(Format format);
 
-VkAttachmentLoadOp UnWrapLoadOp(LoadOperation op);
+    VkImageLayout UnWrapImageLayout(ImageLayout layout);
 
-VkAttachmentStoreOp UnWrapStoreOp(StoreOperation op);
+    VkAttachmentLoadOp UnWrapLoadOp(LoadOperation op);
 
-VkAttachmentReference UnWrapAttachmentRef(AttachmentRef ref);
+    VkAttachmentStoreOp UnWrapStoreOp(StoreOperation op);
 
-VkSampleCountFlagBits UnWrapSampleCount(Samples sampleCount);
+    VkAttachmentReference UnWrapAttachmentRef(AttachmentRef ref);
 
-VkImageUsageFlagBits UnwrapUsage(Usage usage);
+    VkSampleCountFlagBits UnWrapSampleCount(Samples sampleCount);
+    Samples UnWrapSampleCount(VkSampleCountFlags vkSampleCount);
+    VkImageType UnWrapImageType(ImageType type);
+    VkImageUsageFlagBits UnwrapUsage(Usage usage);
 
-VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo info);
+    VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo info);
 
-VkShaderStageFlags UnwrapShaderStage(ShaderType type);
-VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count);
+    VkShaderStageFlags UnwrapShaderStage(ShaderType type);
+    VkShaderStageFlags UnwrapShaderStage(ShaderType * type, const uint32_t & count);
+
+    VkImageViewCreateInfo UnWrapImageViewCreateInfo(ImageViewInfo * info);
+    VkImageCreateInfo UnWrapImageCreateInfo(ImageInfo * info);
+    VkComponentSwizzle UnWrapSwizzle(ComponentSwizzle obj);
+    VkImageViewType UnwrapImageViewType(ImageViewType type);
+    VkImageAspectFlags UnwrapAspectMask(ImageAspectFlag flag);
+    VkMemoryRequirements UnwrapMemoryRequirements(MemoryRequirementInfo * info);
+    VkMemoryPropertyFlags UnwrapMemoryProperty(const MemoryType * memType);
+
+}
 
 #endif RenderingUnwrapper_H

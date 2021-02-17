@@ -6,6 +6,11 @@
 #include "glm\glm.hpp"
 #include "EntityHandle.h"
 #include "Camera.h"
+#include <CorePrecompiled.h>
+
+void CameraController::RotateCamera(glm::vec2 mousePosition)
+{
+}
 
 void CameraController::Activated()
 {
@@ -37,7 +42,20 @@ CameraController::~CameraController()
 
 void CameraController::MouseDragEventHandler(MouseDragEvent * evt)
 {
-    int k = 0;
+    switch (evt->keyState)
+    {
+    case KeyState::PRESSED:
+        PLOGD << "Pressed";
+        break;
+
+    case KeyState::DOWN:
+        PLOGD << "Down";
+        break;
+
+    case KeyState::RELEASED:
+        PLOGD << "Released";
+        break;
+    }
 }
 
 void CameraController::KeyBoardEventHandler(KeyInputEvent * evt)
@@ -53,30 +71,30 @@ void CameraController::KeyBoardEventHandler(KeyInputEvent * evt)
     {
     case KeyState::DOWN:
     case KeyState::PRESSED:
-    {
-        Transform * trf = entityHandle->GetTransform();
-        //move the camera
-        if (strcmp(w, evt->keyname) == 0)
         {
-            glm::vec3 pos = cam->GetFront() * velocity + trf->GetLocalPosition();// trf->GetLocalPosition() + glm::vec3(0, 0, 1);
-            trf->SetLocalPosition(pos);
+            Transform * trf = entityHandle->GetTransform();
+            //move the camera
+            if (strcmp(w, evt->keyname) == 0)
+            {
+                glm::vec3 pos = cam->GetFront() * velocity + trf->GetLocalPosition();
+                trf->SetLocalPosition(pos);
+            }
+            else if (strcmp(a, evt->keyname) == 0)
+            {
+                glm::vec3 pos = -cam->GetRight() * velocity + trf->GetLocalPosition();
+                trf->SetLocalPosition(pos);
+            }
+            else if (strcmp(s, evt->keyname) == 0)
+            {
+                glm::vec3 pos = -cam->GetFront() * velocity + trf->GetLocalPosition();
+                trf->SetLocalPosition(pos);
+            }
+            else if (strcmp(d, evt->keyname) == 0)
+            {
+                glm::vec3 pos = cam->GetRight() * velocity + trf->GetLocalPosition();
+                trf->SetLocalPosition(pos);
+            }
         }
-        else if (strcmp(a, evt->keyname) == 0)
-        {
-            glm::vec3 pos = -cam->GetRight() * velocity + trf->GetLocalPosition();// trf->GetLocalPosition() + glm::vec3(0, 0, 1);
-            trf->SetLocalPosition(pos);
-        }
-        else if (strcmp(s, evt->keyname) == 0)
-        {
-            glm::vec3 pos = -cam->GetFront() * velocity + trf->GetLocalPosition();// trf->GetLocalPosition() + glm::vec3(0, 0, 1);
-            trf->SetLocalPosition(pos);
-        }
-        else if (strcmp(d, evt->keyname) == 0)
-        {
-            glm::vec3 pos = cam->GetRight() * velocity + trf->GetLocalPosition();// trf->GetLocalPosition() + glm::vec3(0, 0, 1);
-            trf->SetLocalPosition(pos);
-        }
-    }
         break;
     }
 }

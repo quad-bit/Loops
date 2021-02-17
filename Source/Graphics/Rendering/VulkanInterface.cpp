@@ -18,6 +18,7 @@
 #include <CorePrecompiled.h>
 #include <VkShaderResourceManager.h>
 #include <VulkanMemoryManager.h>
+#include <VkRenderingUnwrapper.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
 {
@@ -26,14 +27,14 @@ VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPass
     for (uint32_t i = 0; i < attachmentCount; i++)
     {
         const RenderPassAttachmentInfo* obj = renderpassAttachmentList + i;
-        attachmentDescriptions[i].initialLayout = UnWrapImageLayout(obj->initialLayout);
-        attachmentDescriptions[i].finalLayout = UnWrapImageLayout(obj->finalLayout);
-        attachmentDescriptions[i].format = UnWrapFormat(obj->format);
-        attachmentDescriptions[i].loadOp = UnWrapLoadOp(obj->loadOp);
-        attachmentDescriptions[i].storeOp = UnWrapStoreOp(obj->storeOp);
-        attachmentDescriptions[i].stencilLoadOp = UnWrapLoadOp(obj->stencilLoadOp);
-        attachmentDescriptions[i].stencilStoreOp = UnWrapStoreOp(obj->stencilLStoreOp);
-        attachmentDescriptions[i].samples = UnWrapSampleCount(obj->sampleCount);
+        attachmentDescriptions[i].initialLayout = VulkanUnwrap::UnWrapImageLayout(obj->initialLayout);
+        attachmentDescriptions[i].finalLayout = VulkanUnwrap::UnWrapImageLayout(obj->finalLayout);
+        attachmentDescriptions[i].format = VulkanUnwrap::UnWrapFormat(obj->format);
+        attachmentDescriptions[i].loadOp = VulkanUnwrap::UnWrapLoadOp(obj->loadOp);
+        attachmentDescriptions[i].storeOp = VulkanUnwrap::UnWrapStoreOp(obj->storeOp);
+        attachmentDescriptions[i].stencilLoadOp = VulkanUnwrap::UnWrapLoadOp(obj->stencilLoadOp);
+        attachmentDescriptions[i].stencilStoreOp = VulkanUnwrap::UnWrapStoreOp(obj->stencilLStoreOp);
+        attachmentDescriptions[i].samples = VulkanUnwrap::UnWrapSampleCount(obj->sampleCount);
         attachmentDescriptions[i].flags = 0;
     }
 
@@ -57,7 +58,7 @@ VkSubpassDescription * VulkanInterface::UnwrapSubpassDesc(const SubpassInfo * su
             for (uint32_t j = 0; j < subpassDescriptions[i].colorAttachmentCount; j++)
             {
                 AttachmentRef * aref = obj->pColorAttachments + j;
-                refCol[i] = UnWrapAttachmentRef(*aref);
+                refCol[i] = VulkanUnwrap::UnWrapAttachmentRef(*aref);
                 //refs.push_back(ref);
             }
             subpassDescriptions[i].pColorAttachments = refCol;
@@ -78,7 +79,7 @@ VkSubpassDescription * VulkanInterface::UnwrapSubpassDesc(const SubpassInfo * su
             for (uint32_t j = 0; j < subpassDescriptions[i].inputAttachmentCount; j++)
             {
                 AttachmentRef * aref = obj->pInputAttachments + j;
-                refInp[i] = UnWrapAttachmentRef(*aref);
+                refInp[i] = VulkanUnwrap::UnWrapAttachmentRef(*aref);
             }
             subpassDescriptions[i].pInputAttachments = refInp;
             //refCounter += obj->inputAttachmentCount;
@@ -93,7 +94,7 @@ VkSubpassDescription * VulkanInterface::UnwrapSubpassDesc(const SubpassInfo * su
         if (obj->pDepthStencilAttachment != nullptr)
         {
             VkAttachmentReference *refDepth = new VkAttachmentReference;
-            *refDepth = UnWrapAttachmentRef(*obj->pDepthStencilAttachment);
+            *refDepth = VulkanUnwrap::UnWrapAttachmentRef(*obj->pDepthStencilAttachment);
 
             subpassDescriptions[i].pDepthStencilAttachment = refDepth;
         }
@@ -118,6 +119,7 @@ VkSubpassDependency * VulkanInterface::UnwrapSubpassDependency(const SubpassDepe
     return nullptr;
 }
 
+/*
 VkImageCreateInfo VulkanInterface::UnwrapImageInfo(ImageInfo * info)
 {
     VkImageCreateInfo createInfo = {};// new VkImageCreateInfo();
@@ -156,6 +158,8 @@ VkImageViewCreateInfo VulkanInterface::UnwrapImageViewInfo(ImageInfo * info)
 
     return viewCreateInfo;
 }
+*/
+
 
 VkCommandBufferUsageFlagBits VulkanInterface::UnwrapCommandBufferUsage(const CommandBufferUsage * info)
 {
@@ -174,7 +178,7 @@ VkCommandBufferUsageFlagBits VulkanInterface::UnwrapCommandBufferUsage(const Com
         break;
 
     default:
-        ASSERT_MSG(0, "No usage found.");
+        ASSERT_MSG_DEBUG(0, "No usage found.");
     }
 
     return VkCommandBufferUsageFlagBits::VK_COMMAND_BUFFER_USAGE_FLAG_BITS_MAX_ENUM;
@@ -366,6 +370,67 @@ VkBufferUsageFlags VulkanInterface::UnwrapBufferUsageFlags(const BufferType * ty
     return bufferUsage;
 }
 
+ColorSpace VulkanInterface::WrapColorSpace(VkColorSpaceKHR space)
+{
+    switch (space)
+    {
+    case VkColorSpaceKHR::VK_COLOR_SPACE_SRGB_NONLINEAR_KHR :
+        return ColorSpace::COLOR_SPACE_SRGB_NONLINEAR_KHR;
+    default:
+        ASSERT_MSG_DEBUG(0, "colorspace converter not found ");
+        std::exit(-1);
+    }
+    return ColorSpace();
+}
+
+Format VulkanInterface::WrapFormat(VkFormat format)
+{
+    switch (format)
+    {
+    case VkFormat::VK_FORMAT_UNDEFINED :
+        return Format::UNDEFINED;
+        break;
+
+    case VkFormat::VK_FORMAT_B8G8R8A8_UNORM :
+        return Format::B8G8R8A8_UNORM;
+        break;
+
+    case VkFormat::VK_FORMAT_D16_UNORM :
+        return Format::D16_UNORM;
+        break;
+
+    case VkFormat::VK_FORMAT_D16_UNORM_S8_UINT :
+        return Format::D16_UNORM_S8_UINT;
+        break;
+
+    case VkFormat::VK_FORMAT_D24_UNORM_S8_UINT :
+        return Format::D24_UNORM_S8_UINT;
+        break;
+
+    case VkFormat::VK_FORMAT_D32_SFLOAT :
+        return Format::D32_SFLOAT;
+        break;
+
+    case VkFormat::VK_FORMAT_D32_SFLOAT_S8_UINT :
+        return Format::D32_SFLOAT_S8_UINT;
+        break;
+
+    case VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT :
+        return Format::R32G32B32A32_SFLOAT;
+        break;
+
+    case VkFormat::VK_FORMAT_R32G32B32_SFLOAT :
+        return Format::R32G32B32_SFLOAT;
+        break;
+
+    default:
+        ASSERT_MSG_DEBUG(0, "Converter not found ");
+        std::exit(-1);
+    }
+
+    return Format();
+}
+
 VulkanInterface::VulkanInterface()
 {
 }
@@ -419,14 +484,41 @@ void VulkanInterface::DeInit()
     delete VulkanManager::GetInstance();
 }
 
+Format VulkanInterface::GetWindowSurfaceFormat()
+{
+    VkSurfaceFormatKHR * vkFormat = VulkanManager::GetInstance()->GetSurfaceFormat();
+    Format format = WrapFormat(vkFormat->format);
+    return format;
+}
+
+ColorSpace VulkanInterface::GetWindowColorSpace()
+{
+    VkSurfaceFormatKHR * vkFormat = VulkanManager::GetInstance()->GetSurfaceFormat();
+    return WrapColorSpace(vkFormat->colorSpace);
+}
+
 uint32_t VulkanInterface::FindBestDepthFormat(Format * imageFormat, const uint32_t & count)
 {
     return VkAttachmentFactory::GetInstance()->FindBestDepthFormat(imageFormat, count);
 }
 
-void VulkanInterface::CreateRenderTarget(ImageInfo * info, const uint32_t & count, bool defaultTarget, vector<uint32_t>* ids)
+void VulkanInterface::SetupPresentationEngine(ImageInfo info)
 {
-    VkAttachmentFactory::GetInstance()->CreateColorAttachment(info, count, defaultTarget, ids);
+    PresentationEngine::GetInstance()->CreateSwapChain(info);
+}
+
+void VulkanInterface::CreateRenderTarget(ImageInfo * info, ImageViewInfo * viewInfo, uint32_t & count, bool defaultTarget,
+    uint32_t * ids)
+{
+    //VkAttachmentFactory::GetInstance()->CreateColorAttachment(info, count, defaultTarget, ids);
+}
+
+void VulkanInterface::CreateDefaultRenderTarget(ImageInfo info, ImageViewInfo viewInfo, uint32_t & count, uint32_t * ids)
+{
+    VkImageCreateInfo vkImageCreateInfo = VulkanUnwrap::UnWrapImageCreateInfo(&info);
+    VkImageViewCreateInfo vkImageViewCreateInfo = VulkanUnwrap::UnWrapImageViewCreateInfo(&viewInfo);
+
+    VkAttachmentFactory::GetInstance()->CreateSwapChainImage(vkImageCreateInfo, vkImageViewCreateInfo, count, ids);
 }
 
 void VulkanInterface::DestroyRenderTarget(std::vector<uint32_t>* ids, bool defaultTarget)
@@ -434,28 +526,53 @@ void VulkanInterface::DestroyRenderTarget(std::vector<uint32_t>* ids, bool defau
     VkAttachmentFactory::GetInstance()->DestroyAttachment(*ids, defaultTarget);
 }
 
-void VulkanInterface::CreateDepthTarget(ImageInfo * info, const uint32_t & count, bool stencilRequired, 
-    bool defaultTarget, std::vector<uint32_t>* ids)
+void VulkanInterface::CreateDepthTarget(ImageInfo * info, const uint32_t & count, uint32_t * ids)
 {
-    VkImageCreateInfo * imageCreateInfo = new VkImageCreateInfo[count];
+    /*VkImageCreateInfo * imageCreateInfo = new VkImageCreateInfo[count];
     VkImageViewCreateInfo * viewCreateInfo = new VkImageViewCreateInfo[count];
 
     for (uint32_t i = 0; i < count; i++)
     {
-        imageCreateInfo[i] = UnwrapImageInfo(info);
-        viewCreateInfo[i]  = UnwrapImageViewInfo(info);
+        imageCreateInfo[i] = VulkanUnwrap::UnWrapImageCreateInfo(info);
+        viewCreateInfo[i]  = VulkanUnwrap::UnWrapImageViewCreateInfo(viewInfo);
     }
 
     VkAttachmentFactory::GetInstance()->CreateDepthAttachment(imageCreateInfo, count, viewCreateInfo,
-        stencilRequired, defaultTarget, ids);
+        stencilRequired, ids);
 
     delete[] imageCreateInfo;
     delete[] viewCreateInfo;
+*/
+    std::vector<VkImageCreateInfo> vkInfo;
+    for(uint32_t i = 0 ;i < count;i++)
+       vkInfo.push_back(VulkanUnwrap::UnWrapImageCreateInfo(info));
+
+    VkAttachmentFactory::GetInstance()->CreateDepthAttachment(vkInfo.data(), count, ids);
 }
 
 void VulkanInterface::DestroyDepthTarget(std::vector<uint32_t>* ids, bool defaultTarget)
 {
     VkAttachmentFactory::GetInstance()->DestroyAttachment(*ids, defaultTarget);
+}
+
+void VulkanInterface::DestroyAttachment(uint32_t * ids, bool * destroyImageView, bool * freeImageMemory, const uint32_t & count)
+{
+    VkAttachmentFactory::GetInstance()->DestroyAttachment(ids, destroyImageView, freeImageMemory, count);
+}
+
+void VulkanInterface::FreeAttachmentMemory(uint32_t * imageIds, const uint32_t & count)
+{
+    VkAttachmentFactory::GetInstance()->FreeAttachmentMemory(imageIds, count);
+}
+
+void VulkanInterface::DestroySwapChainImageViews(uint32_t * ids, const uint32_t & count)
+{
+    VkAttachmentFactory::GetInstance()->DestroySwapChainImageViews(ids, count);
+}
+
+void VulkanInterface::CreateImageView(ImageViewInfo * viewInfo, uint32_t & count)
+{
+    VkAttachmentFactory::GetInstance()->CreateImageView(viewInfo, count);
 }
 
 void VulkanInterface::CreateRenderPass(
@@ -507,16 +624,16 @@ void VulkanInterface::CreateFrameBuffer(uint32_t numFrameBuffers, uint32_t * ima
 {
     VkRenderPass * renderPass = VkRenderPassFactory::GetInstance()->GetRenderPass(renderPassId);
 
-    VkImageView * viewList = new VkImageView[numFrameBuffers * viewsPerFB];
+    std::vector<VkImageView> viewList(numFrameBuffers * viewsPerFB);// = new VkImageView[numFrameBuffers * viewsPerFB];
     for (uint32_t i = 0; i < numFrameBuffers * viewsPerFB; i++)
     {
-        viewList[i] = *VkAttachmentFactory::GetInstance()->GetImageView(imageViewId[i]);
+        viewList[i]= VkAttachmentFactory::GetInstance()->GetImageView(imageViewId[i]);
     }
 
-    VkFrameBufferFactory::GetInstance()->CreateFrameBuffer(numFrameBuffers, viewList, 
+    VkFrameBufferFactory::GetInstance()->CreateFrameBuffer(numFrameBuffers, viewList.data(), 
         viewsPerFB, renderPass, width, height, ids);
         
-    delete [] viewList;
+    //delete [] viewList;
 }
 
 void VulkanInterface::DestroyFrameBuffer(uint32_t * pid, const uint32_t & count)
@@ -686,6 +803,27 @@ uint32_t * VulkanInterface::AllocateDescriptorsForASet(SetWrapper * set, const u
     return VkShaderResourceManager::GetInstance()->AllocateDescriptors(set, numDescriptors);
 }
 
+void VulkanInterface::BindImageMemory(const uint32_t & imageId, const uint32_t & memId, const size_t & offset)
+{
+    VkAttachmentFactory::GetInstance()->BindImageMemory(imageId, memId, offset);
+}
+
+uint32_t VulkanInterface::AllocateMemory(MemoryRequirementInfo * memReq, MemoryType * userReq, const size_t & allocationSize)
+{
+    VkMemoryRequirements req = VulkanUnwrap::UnwrapMemoryRequirements(memReq);
+    VkMemoryPropertyFlags flags = VulkanUnwrap::UnwrapMemoryProperty(userReq);
+
+    uint32_t memId = VulkanMemoryManager::GetSingleton()->AllocateMemory(&req, flags, allocationSize);
+
+    return memId;
+}
+
+MemoryRequirementInfo VulkanInterface::GetImageMemoryRequirement(const uint32_t & imageId)
+{
+    MemoryRequirementInfo req = VkAttachmentFactory::GetInstance()->GetImageMemoryRequirement(imageId);
+    return req;
+}
+
 //
 //void VulkanInterface::InitiateGraphicsPipelineCreation(const uint32_t & meshId, VertexInputAttributeInfo * attribInfo, const uint32_t & attribCount, VertexInputBindingInfo * bindingInfo, const uint32_t & bindingCount )
 //{
@@ -777,6 +915,16 @@ void VulkanInterface::LinkSetBindingToResources(ShaderBindingDescription * desc)
     VkShaderResourceManager::GetInstance()->LinkSetBindingToResources(desc);
 }
 
+bool VulkanInterface::IsSampleRateShadingAvailable()
+{
+    return VulkanManager::GetInstance()->IsSampleRateShadingAvailable();
+}
+
+Samples VulkanInterface::GetMaxUsableSampleCount()
+{
+    return VulkanManager::GetInstance()->GetMaxUsableSampleCount();
+}
+
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)
 {
     uint32_t poolId = 0;
@@ -797,7 +945,7 @@ uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, Command
         break;
 
     default:
-        ASSERT_MSG(0, "Queue/pipeline type not found");
+        ASSERT_MSG_DEBUG(0, "Queue/pipeline type not found");
     }
 
     VkCommandPoolCreateFlagBits poolCreateFlag;
@@ -817,7 +965,7 @@ uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, Command
         break;
 
     default:
-        ASSERT_MSG(0, "Queue/pipeline type not found");
+        ASSERT_MSG_DEBUG(0, "Queue/pipeline type not found");
     }
 
     VkCommandBufferFactory::GetInstance()->CreateCommandPool(poolCreateFlag, queueFlag, poolId);
@@ -852,7 +1000,7 @@ void VulkanInterface::DestroySemaphore(const uint32_t & id)
 
 void VulkanInterface::SetRenderpassBeginInfo(RenderPassBeginInfo * beginInfo, const uint32_t & renderPassId)
 {
-    VkRenderPassBeginInfo info = UnwrapRenderPassBeginInfo(*beginInfo);
+    VkRenderPassBeginInfo info = VulkanUnwrap::UnwrapRenderPassBeginInfo(*beginInfo);
     VkRenderPassFactory::GetInstance()->SetRenderPassBeginInfo(info, renderPassId);
 }
 
@@ -883,7 +1031,7 @@ VkDrawCommandBuffer * VulkanInterface::CreateCommandBuffer(const uint32_t & pool
         break;
 
     default:
-        ASSERT_MSG(0, "Wrong command level");
+        ASSERT_MSG_DEBUG(0, "Wrong command level");
     }
     return VkCommandBufferFactory::GetInstance()->CreateCommandBuffer(poolId, level, bufferType, cmdBufferId);
 }

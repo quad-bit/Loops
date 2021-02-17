@@ -116,7 +116,7 @@ inline void TreeNode<T>::DetachChild(TreeNode<T>* child)
 {
     if (child->nodeParent->nodeId == treeRoot->nodeId)
     {
-        ASSERT_MSG(0, "Only node deletion possible, if nodeParent is root");
+        ASSERT_MSG_DEBUG(0, "Only node deletion possible, if nodeParent is root");
         return;
     }
 

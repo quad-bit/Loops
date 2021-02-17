@@ -210,7 +210,7 @@ static void MouseButtonCallback(GLFWwindow* window, int button, int action, int 
     //Slot* slot = (Slot*)glfwGetWindowUserPointer(window);
     //printf("Mouse button %i (%s) (with%s) was %s\n",
     //    button,
-    //    get_button_name(button),
+    //   get_button_name(button),
     //    get_mods_name(mods),
     //    get_action_name(action));
     MouseInputManager::GetInstance()->MouseButtonEventHandler(get_button_name(button), get_action_name(action));
@@ -240,7 +240,7 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     const char* upAction = "released";
     const char* pressedAction = "pressed";
     const char* downAction = "repeated";
-
+    
     KeyInputEvent * keyEvent = InputManager::GetInstance()->FetchKeyInputEvent();
     keyEvent->keyname = keyname;
     keyEvent->keyStateName = actionName;

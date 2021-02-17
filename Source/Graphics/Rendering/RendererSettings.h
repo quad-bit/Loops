@@ -12,4 +12,6 @@ struct RendererSettings
 
     static QueueWrapper * queueReq;
     static uint32_t queueRequirementCount;
+
+    static bool MSAA_Enabled;
 };

@@ -75,7 +75,7 @@ void SceneGraphManager::TreeModificationEventHandler(TreeModificationEvent * eve
         break;
 
     default:
-        ASSERT_MSG(0, "yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "yet to be implemented");
         break;
     }
 }

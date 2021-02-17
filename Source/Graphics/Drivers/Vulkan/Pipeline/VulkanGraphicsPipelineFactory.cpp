@@ -51,7 +51,7 @@ VkPrimitiveTopology VulkanGraphicsPipelineFactory::UnwrapPrimitiveInfo(PrimtiveT
         return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
     }
 
-    ASSERT_MSG(0, "invalid primitive");
+    ASSERT_MSG_DEBUG(0, "invalid primitive");
     return VkPrimitiveTopology::VK_PRIMITIVE_TOPOLOGY_MAX_ENUM;
 }
 
@@ -82,7 +82,7 @@ VkCullModeFlags VulkanGraphicsPipelineFactory::UnwrapCullMode(CullMode mode)
         break;
 
     default : 
-        ASSERT_MSG(0, "Cull mode not found");
+        ASSERT_MSG_DEBUG(0, "Cull mode not found");
     }
 
     return vkmode;
@@ -105,7 +105,7 @@ VkFrontFace VulkanGraphicsPipelineFactory::UnwrapFrontFace(FrontFace face)
         vkFace = VkFrontFace::VK_FRONT_FACE_MAX_ENUM;
         break;
 
-    default: ASSERT_MSG(0, "Face not found");
+    default: ASSERT_MSG_DEBUG(0, "Face not found");
     }
 
     return vkFace;
@@ -133,7 +133,7 @@ VkPolygonMode VulkanGraphicsPipelineFactory::UnwrapPolygonMode(PolygonMode mode)
         vkMode = VkPolygonMode::VK_POLYGON_MODE_POINT;
         break;
     
-    default: ASSERT_MSG(0, "Mode not found");
+    default: ASSERT_MSG_DEBUG(0, "Mode not found");
 
     }
 
@@ -195,7 +195,7 @@ VkCompareOp VulkanGraphicsPipelineFactory::UnwrapCompareOp(CompareOp op)
         vkOp = VkCompareOp::VK_COMPARE_OP_NOT_EQUAL;
         break;
 
-    default: ASSERT_MSG(0, "Mode not found");
+    default: ASSERT_MSG_DEBUG(0, "Mode not found");
 
     }
     return vkOp;
@@ -243,7 +243,7 @@ VkStencilOp VulkanGraphicsPipelineFactory::UnwrapStencilOp(StencilOp op)
         vkOp = VkStencilOp::VK_STENCIL_OP_ZERO;
         break;
 
-    default: ASSERT_MSG(0, "Mode not found");
+    default: ASSERT_MSG_DEBUG(0, "Mode not found");
     }
 
     return vkOp;
@@ -342,7 +342,7 @@ VkLogicOp VulkanGraphicsPipelineFactory::UnwrapLogicOp(LogicOp op)
         vkOp = VkLogicOp::VK_LOGIC_OP_XOR;
         break;
 
-    default: ASSERT_MSG(0, "op not found");
+    default: ASSERT_MSG_DEBUG(0, "op not found");
     }
 
     return vkOp;
@@ -378,7 +378,7 @@ VkBlendOp VulkanGraphicsPipelineFactory::UwrapBlendOp(BlendOp op)
         vkOp = VkBlendOp::VK_BLEND_OP_SUBTRACT;
         break;
 
-    default: ASSERT_MSG(0, "Op not found");
+    default: ASSERT_MSG_DEBUG(0, "Op not found");
     }
 
     return vkOp;
@@ -414,7 +414,7 @@ VkColorComponentFlags VulkanGraphicsPipelineFactory::UnwrapColorComponents(Color
         vkFlags = 0xf;
         break;
 
-    default: ASSERT_MSG(0, "flag not found");
+    default: ASSERT_MSG_DEBUG(0, "flag not found");
     }
 
     return vkFlags;
@@ -506,7 +506,7 @@ VkBlendFactor VulkanGraphicsPipelineFactory::UnwrapBlendFactor(BlendFactor blend
         vkFactor = VkBlendFactor::VK_BLEND_FACTOR_ZERO;
         break;
 
-    default: ASSERT_MSG(0, "flag not found");
+    default: ASSERT_MSG_DEBUG(0, "flag not found");
     }
 
     return vkFactor;
@@ -560,7 +560,7 @@ VkDynamicState * VulkanGraphicsPipelineFactory::UnwrapDynamicList(const DynamicS
             states[i] = VkDynamicState::VK_DYNAMIC_STATE_VIEWPORT;
             break;
 
-        default: ASSERT_MSG(0, "State not found");
+        default: ASSERT_MSG_DEBUG(0, "State not found");
         }
         
     }
@@ -707,7 +707,7 @@ VkVertexInputAttributeDescription VulkanGraphicsPipelineFactory::UnwrapVertexInp
     obj.binding = info->binding;
     obj.location = info->location;
     obj.offset = info->offset;
-    obj.format = UnWrapFormat(info->format);
+    obj.format = VulkanUnwrap::UnWrapFormat(info->format);
 
     return obj;
 }
@@ -720,7 +720,7 @@ VkVertexInputAttributeDescription * VulkanGraphicsPipelineFactory::UnwrapVertexI
         inputAttributeDesc[i].binding = info[i].binding;
         inputAttributeDesc[i].location = info[i].location;
         inputAttributeDesc[i].offset = info[i].offset;
-        inputAttributeDesc[i].format = UnWrapFormat(info[i].format);
+        inputAttributeDesc[i].format = VulkanUnwrap::UnWrapFormat(info[i].format);
     }
     return inputAttributeDesc;
 }
@@ -737,7 +737,7 @@ VkVertexInputBindingDescription VulkanGraphicsPipelineFactory::UnwrapVertexInput
     else if (info->inputRate == VertexIputRate::PerInstance)
         obj.inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
     else
-        ASSERT_MSG(0, "Vertex input rate incorrect");
+        ASSERT_MSG_DEBUG(0, "Vertex input rate incorrect");
 
     return obj;
 }
@@ -755,7 +755,7 @@ VkVertexInputBindingDescription * VulkanGraphicsPipelineFactory::UnwrapVertexInp
         else if (info->inputRate == VertexIputRate::PerInstance)
             inputBindingDesc[i].inputRate = VkVertexInputRate::VK_VERTEX_INPUT_RATE_VERTEX;
         else
-            ASSERT_MSG(0, "Vertex input rate incorrect");
+            ASSERT_MSG_DEBUG(0, "Vertex input rate incorrect");
     }
 
     return inputBindingDesc;
@@ -893,14 +893,14 @@ void VulkanGraphicsPipelineFactory::CreateViewportState(const ViewPortStateWrapp
         info->pScissors = nullptr;
     else
     {
-        ASSERT_MSG(0, "Yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     }
 
     if (wrapper->viewportState->pViewports == nullptr)
         info->pViewports = nullptr;
     else
     {
-        ASSERT_MSG(0, "Yet to be implemented");
+        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     }
     
     idToViewportMap.insert(std::pair<uint32_t, VkPipelineViewportStateCreateInfo *>({wrapper->GetId(), info}));
@@ -980,7 +980,7 @@ void VulkanGraphicsPipelineFactory::CreateMultiSampleState(const MultiSampleStat
     vkinfo->minSampleShading = info->minSampleShading;
     vkinfo->pNext = nullptr;
     vkinfo->pSampleMask = NULL;
-    vkinfo->rasterizationSamples = UnWrapSampleCount( info->sampleCount);
+    vkinfo->rasterizationSamples = VulkanUnwrap::UnWrapSampleCount( info->sampleCount);
     vkinfo->sampleShadingEnable = info->sampleShadingEnable;
     vkinfo->sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 
@@ -1015,7 +1015,7 @@ void VulkanGraphicsPipelineFactory::CreatePipeline(PipelineCreateInfo * info, co
         it = std::find_if(shaderStageWrapperList.begin(), shaderStageWrapperList.end(), [&](VkShaderStageWrapper * e) {
             return e->id == info[i].statesToIdMap[PipelineStates::ShaderStage]; });
 
-        ASSERT_MSG(it != shaderStageWrapperList.end(), "Shader stage id not found");
+        ASSERT_MSG_DEBUG(it != shaderStageWrapperList.end(), "Shader stage id not found");
 
         VkPipelineLayout layout = *VkShaderResourceManager::GetInstance()->GetPipelineLayout(info[i].statesToIdMap[PipelineStates::ShaderResourcesLayout]);
         VkRenderPass renderpass = *VkRenderPassFactory::GetInstance()->GetRenderPass(info[i].renderPassId);
@@ -1065,7 +1065,7 @@ void VulkanGraphicsPipelineFactory::CreatePipeline(PipelineCreateInfo * info, co
 VkPipeline * VulkanGraphicsPipelineFactory::GetPipeline(const uint32_t & id) 
 {
     VkPipeline * pipeline = idToPipelineMap[id];
-    ASSERT_MSG(pipeline != nullptr, "Id not found");
+    ASSERT_MSG_DEBUG(pipeline != nullptr, "Id not found");
 
     return pipeline;
 }

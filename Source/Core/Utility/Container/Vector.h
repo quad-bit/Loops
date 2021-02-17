@@ -91,7 +91,7 @@ inline T & Vector<T>::operator[](int index)
 		ASSERT(array != NULL);
 		ASSERT(index < numElements);
 		//assert(numElements >= 0);
-		ASSERT_MSG(numElements <= 0,"test");
+		ASSERT_MSG_DEBUG(numElements <= 0,"test");
 
 		for (int i = 0; i < numElements; i++)
 		{
@@ -103,8 +103,8 @@ inline T & Vector<T>::operator[](int index)
 	}
 	else if (structureType == STRUCTURE_TYPE::DYNAMIC)
 	{
-		ASSERT_MSG(list.GetSize() > 0, "vector empty");
-		ASSERT_MSG((int)list.GetSize() > index, "out of bounds");
+		ASSERT_MSG_DEBUG(list.GetSize() > 0, "vector empty");
+		ASSERT_MSG_DEBUG((int)list.GetSize() > index, "out of bounds");
 
 		LinkIterator<T> it;
 		it = list.Begin();
@@ -118,7 +118,7 @@ inline T & Vector<T>::operator[](int index)
 		}
 	}
     
-    ASSERT_MSG(0, "invalid vector type");
+    ASSERT_MSG_DEBUG(0, "invalid vector type");
     //return T();
 }
 

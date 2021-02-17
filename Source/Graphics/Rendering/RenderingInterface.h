@@ -158,6 +158,8 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     Settings::stencilClearValue = 0.0f;
 
     Settings::currentFrameInFlight = currentFrameIndex;
+    
+    RendererSettings::MSAA_Enabled = false;
 }
 
 template<typename T>

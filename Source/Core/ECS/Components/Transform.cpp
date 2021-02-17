@@ -86,15 +86,18 @@ void Transform::UpdateLocalParams()
 
     this->rotationMat = rotZMat * rotYMat * rotXMat;
 
-    glm::vec4 temp = rotXMat * Vec3ToVec4_0(forward);
+    glm::vec3 globalForward = glm::vec3(0, 0, -1);
+    glm::vec4 temp = this->rotationMat * Vec3ToVec4_0(globalForward);
     //temp = glm::normalize(temp);
-    forward =  Vec4ToVec3(temp);
+    forward = glm::normalize(Vec4ToVec3(temp));
 
-    temp = rotationMat * Vec3ToVec4_0(right);
+    glm::vec3 globalRight = glm::vec3(1, 0, 0);
+    temp = rotationMat * Vec3ToVec4_0(globalRight);
     temp = glm::normalize(temp);
     right = Vec4ToVec3(temp);
 
-    temp = rotationMat * Vec3ToVec4_0(up);
+    glm::vec3 globalUp = glm::vec3(0, 1, 0);
+    temp = rotationMat * Vec3ToVec4_0(globalUp);
     temp = glm::normalize(temp);
     up = Vec4ToVec3(temp);
 
@@ -143,19 +146,19 @@ glm::mat4 Transform::GetLocalModelMatrix()
 
 glm::vec3 Transform::GetGlobalPosition()
 {
-    ASSERT_MSG(0, "Yet to be implemented");
+    ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     return globalPosition;
 }
 
 glm::vec3 Transform::GetGlobalEulerAngles()
 {
-    ASSERT_MSG(0, "Yet to be implemented");
+    ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     return globalEulerAngle;
 }
 
 glm::vec3 Transform::GetGlobalScale()
 {
-    ASSERT_MSG(0, "Yet to be implemented");
+    ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     return globalScale;
 }
 
@@ -190,19 +193,19 @@ void Transform::SetLocalModelMatrix(const glm::mat4 & mat)
 
 void Transform::SetGlobalPosition(const glm::vec3 & pos)
 {
-    ASSERT_MSG(0, "Yet to be implemented");
+    ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     globalPosition = pos;
 }
 
 void Transform::SetGlobalEulerAngles(const glm::vec3 & angle)
 {
-    ASSERT_MSG(0, "Yet to be implemented");
+    ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     globalEulerAngle = angle;
 }
 
 void Transform::SetGlobalScale(const glm::vec3 & scale)
 {
-    ASSERT_MSG(0, "Yet to be implemented");
+    ASSERT_MSG_DEBUG(0, "Yet to be implemented");
     globalScale = scale;
 }
 

@@ -1,16 +1,17 @@
 #include "MouseInputManager.h"
 #include "Assertion.h"
 #include "EventBus.h"
-
+#include "CorePrecompiled.h"
 MouseInputManager* MouseInputManager::instance = nullptr;
 
-void MouseInputManager::CreateMouseDragEvent()
+void MouseInputManager::CreateMouseDragEvent(KeyState state)
 {
     if (currentMouseButtonDown == MouseButtons::Left)
     {
         MouseDragEvent * evt = FetchMouseDragEvent();
         evt->x = mouseX;
         evt->y = mouseY;
+        evt->keyState = currentMouseButtonState;
 
         EventBus::GetInstance()->Publish(evt);
     }
@@ -57,7 +58,10 @@ void MouseInputManager::DeInit()
 
 void MouseInputManager::Update()
 {
-
+    if (currentMouseButtonDown != MouseButtons::None && currentMouseButtonState == KeyState::PRESSED )
+    {
+        CreateMouseDragEvent(KeyState::PRESSED);
+    }
 }
 
 MouseInputManager * MouseInputManager::GetInstance()
@@ -120,45 +124,35 @@ void MouseInputManager::MouseButtonEventHandler(const char * buttonName, const c
     // publish the event when needed
     const char* upAction = "released";
     const char* pressedAction = "pressed";
-    const char* downAction = "repeated";
+
+    //PLOGD << buttonEvent;
 
     MouseButtonEvent * keyEvent = FetchMouseButtonEvent();
     keyEvent->keyname = buttonName;
-
+    
     if (strcmp(buttonEvent, upAction) == 0)
     {
         keyEvent->keyState = KeyState::RELEASED;
-    }
-    else if (strcmp(buttonEvent, downAction) == 0)
-    {
-        keyEvent->keyState = KeyState::DOWN;
+        currentMouseButtonDown = MouseButtons::None;
     }
     else if (strcmp(buttonEvent, pressedAction) == 0)
     {
         keyEvent->keyState = KeyState::PRESSED;
+    
+        const char* right = "right";
+        const char* left = "left";
+
+        currentMouseButtonDown = MouseButtons::None;
+        if (strcmp(buttonName, right) == 0)
+        {
+            currentMouseButtonDown = MouseButtons::Right;
+        }
+        else if (strcmp(buttonName, left) == 0)
+        {
+            currentMouseButtonDown = MouseButtons::Left;
+        }
     }
+
     currentMouseButtonState = keyEvent->keyState;
 
-    const char* right = "right";
-    const char* left = "left";
-
-    currentMouseButtonDown = MouseButtons::None;
-    if (strcmp(buttonName, right) == 0)
-    {
-        currentMouseButtonDown = MouseButtons::Right;
-    }
-    else if (strcmp(buttonName, left) == 0)
-    {
-        currentMouseButtonDown = MouseButtons::Left;
-    }
-    else 
-    {
-        ASSERT_MSG(0, "Invalid button");
-    }
-
-    if (currentMouseButtonDown != MouseButtons::None && 
-        keyEvent->keyState == KeyState::DOWN || keyEvent->keyState == KeyState::PRESSED)
-    {
-        CreateMouseDragEvent();
-    }
 }

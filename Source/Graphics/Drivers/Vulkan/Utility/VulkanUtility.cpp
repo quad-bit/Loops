@@ -73,7 +73,7 @@ void ErrorCheck(VkResult result)
             break;
         }
 
-        ASSERT_MSG(0, "Vulkan runtime error.");
+        ASSERT_MSG_DEBUG(0, "Vulkan runtime error.");
     }
 #endif
 }

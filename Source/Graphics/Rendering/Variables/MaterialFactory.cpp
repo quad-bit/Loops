@@ -109,7 +109,7 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
         }
         else
         {
-            ASSERT_MSG(0, "Mat not found");
+            ASSERT_MSG_DEBUG(0, "Mat not found");
         }
 
         DecrementMatCounter();

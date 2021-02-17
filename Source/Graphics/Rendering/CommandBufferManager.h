@@ -93,7 +93,7 @@ template<typename T>
 inline DrawCommandBuffer<T> * CommandBufferManager<T>::CreateDrawCommandBuffer(CommandBufferLevel* level, const uint32_t & poolId)
 {
     //create draw command buffer
-    ASSERT_MSG(drawCB_Counter <= MAX_COMMANDBUFFERS, "Command buffers exhausted");
+    ASSERT_MSG_DEBUG(drawCB_Counter <= MAX_COMMANDBUFFERS, "Command buffers exhausted");
     
     drawCommandBufferList[drawCB_Counter].Init(apiInterface, level, poolId);
 
@@ -156,7 +156,7 @@ inline DrawCommandBuffer<T>* CommandBufferManager<T>::GetCommandBuffer(uint32_t 
     std::vector<DrawCommandBuffer<T>*>::iterator it;
     it = std::find_if(drawCommandBufferList.begin(), drawCommandBufferList.end(), [&](DrawCommandBuffer<T> * e) { return e->id == id; });
 
-    ASSERT_MSG(it != drawCommandBufferList.end(), "Pool id not found");
+    ASSERT_MSG_DEBUG(it != drawCommandBufferList.end(), "Pool id not found");
 
     return it;
 }

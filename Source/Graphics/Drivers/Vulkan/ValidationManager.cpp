@@ -111,7 +111,7 @@ void ValidationManager::InitDebug(VkInstance * vulkanInstance, VkAllocationCallb
 
     if (vkDestroyDebugReportCallbackEXTObj == nullptr || vkCreateDebugReportCallbackEXTObj == nullptr)
     {
-        ASSERT_MSG(0, "Extension issue ");
+        ASSERT_MSG_DEBUG(0, "Extension issue ");
         std::exit(-1);
     }
 

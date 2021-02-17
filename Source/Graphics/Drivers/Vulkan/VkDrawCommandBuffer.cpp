@@ -28,7 +28,7 @@ void VkDrawCommandBuffer::SetScissor(const float & width, const float & height, 
 
 void VkDrawCommandBuffer::BeginRenderPass(RenderPassBeginInfo * renderPassBeginInfo, SubpassContentStatus * subpassContentStatus)
 {
-    VkRenderPassBeginInfo vkRenderPassBeginInfo = UnwrapRenderPassBeginInfo(*renderPassBeginInfo);
+    VkRenderPassBeginInfo vkRenderPassBeginInfo = VulkanUnwrap::UnwrapRenderPassBeginInfo(*renderPassBeginInfo);
     
     VkSubpassContents subpassContent;
     switch (*subpassContentStatus)
@@ -67,7 +67,7 @@ void VkDrawCommandBuffer::BindPipeline(PipelineType * type, const uint32_t & pip
         break;
 
     default:
-        ASSERT_MSG(0, "Invalid option");
+        ASSERT_MSG_DEBUG(0, "Invalid option");
     }
 
     vkCmdBindPipeline(*commandBuffer, bindPoint, *VulkanGraphicsPipelineFactory::GetInstance()->GetPipeline(pipelineId));
@@ -87,7 +87,7 @@ void VkDrawCommandBuffer::BindDescriptorSet(DescriptorSetBindingInfo * info)
         break;
 
     default:
-        ASSERT_MSG(0, "Invalid option");
+        ASSERT_MSG_DEBUG(0, "Invalid option");
     }
     
     VkPipelineLayout* layout = VkShaderResourceManager::GetInstance()->GetPipelineLayout(info->pipelineLayoutId);
@@ -124,7 +124,7 @@ void VkDrawCommandBuffer::BindIndexBuffers(IndexBufferBindingInfo * info)
     case IndexType::INDEX_TYPE_UINT32:
         indexType = VK_INDEX_TYPE_UINT32;
         break;
-    default: ASSERT_MSG(0, "index type invalid");
+    default: ASSERT_MSG_DEBUG(0, "index type invalid");
     }
 
     VkBuffer indBuf = *VkBufferFactory::GetInstance()->GetBuffer(info->bufferId);
