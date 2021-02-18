@@ -44,6 +44,8 @@ private:
     T * apiInterface;
 
     DrawCommandBuffer<T> * activeDrawCommandBuffer;
+    void CheckForMSAA();
+    Samples desiredSampleCountForMSAA = Samples::SAMPLE_COUNT_8_BIT;
 
 public:
     void Init(T * apiInterface);
@@ -133,6 +135,49 @@ inline void RenderingInterface<T>::RenderLoop()
 }
 
 template<typename T>
+inline void RenderingInterface<T>::CheckForMSAA()
+{
+    //Samples sampleCount;
+
+    RendererSettings::sampleCount = new Samples;
+    if (RendererSettings::MSAA_Enabled)
+    {
+        *RendererSettings::sampleCount = apiInterface->GetMaxUsableSampleCount();
+
+        ASSERT_MSG_DEBUG(*RendererSettings::sampleCount != Samples::SAMPLE_COUNT_1_BIT, "MSAA not available");
+
+
+        if (*RendererSettings::sampleCount != Samples::SAMPLE_COUNT_1_BIT)
+        {
+            if (apiInterface->IsSampleRateShadingAvailable())
+            {
+                RendererSettings::sampleRateShadingEnabled = true;
+            }
+
+            RendererSettings::multiSamplingAvailable= true;
+            if (*RendererSettings::sampleCount < desiredSampleCountForMSAA)
+            {
+
+            }
+            else if (*RendererSettings::sampleCount > desiredSampleCountForMSAA)
+            {
+                *RendererSettings::sampleCount = desiredSampleCountForMSAA;
+            }
+        }
+        else
+        {
+            RendererSettings::multiSamplingAvailable = false;
+        }
+    }
+    else
+    {
+        RendererSettings::multiSamplingAvailable = false;
+        RendererSettings::multiSamplingAvailable = false;
+        *RendererSettings::sampleCount = Samples::SAMPLE_COUNT_1_BIT;
+    }
+}
+
+template<typename T>
 inline void RenderingInterface<T>::Init(T * apiInterface)
 {
     PLOGD << "Rendering interface Init";
@@ -140,6 +185,9 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
     forwardRenderer = new ForwardRendering<T>();
     forwardRenderer->Init(apiInterface);
     
+    RendererSettings::MSAA_Enabled = true;
+    CheckForMSAA();
+
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);
     MeshFactory::GetInstance()->Init(apiInterface);
     GraphicsPipelineManager<T>::GetInstance()->Init(apiInterface);
@@ -159,7 +207,6 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
 
     Settings::currentFrameInFlight = currentFrameIndex;
     
-    RendererSettings::MSAA_Enabled = false;
 }
 
 template<typename T>

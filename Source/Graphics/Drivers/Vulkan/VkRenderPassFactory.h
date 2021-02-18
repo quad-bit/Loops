@@ -49,6 +49,7 @@ public:
         uint32_t& renderPassId
     );
 
+    // deprecated.
     void CreateRenderPass(
         const VkAttachmentDescription* renderpassAttachmentList, const uint32_t & attachmentCount,
         const VkSubpassDescription* subpassList, const uint32_t & subpassCount,

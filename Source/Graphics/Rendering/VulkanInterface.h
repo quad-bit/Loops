@@ -76,7 +76,7 @@ public:
     Format GetWindowSurfaceFormat();
     ColorSpace GetWindowColorSpace();
 
-    uint32_t FindBestDepthFormat(Format * imageFormat, const uint32_t & count);
+    int FindBestDepthFormat(Format * imageFormat, const uint32_t & count);
 
     void SetupPresentationEngine(ImageInfo info);
     void CreateRenderTarget(ImageInfo * info, ImageViewInfo * viewInfo, uint32_t & count, bool defaultTarget,
@@ -85,7 +85,7 @@ public:
     //deprecated.
     void DestroyRenderTarget(std::vector<uint32_t>* ids, bool defaultTarget);
     
-    void CreateDepthTarget(ImageInfo * info, const uint32_t & count, uint32_t * ids);
+    void CreateAttachment(ImageInfo * info, const uint32_t & count, uint32_t * ids);
     //deprecated.
     void DestroyDepthTarget(std::vector<uint32_t>* ids, bool defaultTarget);
 

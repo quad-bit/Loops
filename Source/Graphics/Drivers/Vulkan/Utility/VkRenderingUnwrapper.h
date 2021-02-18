@@ -41,7 +41,9 @@ namespace VulkanUnwrap
     VkImageAspectFlags UnwrapAspectMask(ImageAspectFlag flag);
     VkMemoryRequirements UnwrapMemoryRequirements(MemoryRequirementInfo * info);
     VkMemoryPropertyFlags UnwrapMemoryProperty(const MemoryType * memType);
-
+    VkPipelineStageFlags const UnwrapPipelineStageFlags(const PipelineStage * stages, const uint32_t & count);
+    VkAccessFlags const UnwrapAccessFlags(const AccessFlagBits * stages, const uint32_t & count);
+    VkDependencyFlags const UnwrapDependencyFlags(const DependencyFlagBits * stages, const uint32_t & count);
 }
 
 #endif RenderingUnwrapper_H

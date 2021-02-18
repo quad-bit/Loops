@@ -26,15 +26,15 @@ VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPass
 
     for (uint32_t i = 0; i < attachmentCount; i++)
     {
-        const RenderPassAttachmentInfo* obj = renderpassAttachmentList + i;
-        attachmentDescriptions[i].initialLayout = VulkanUnwrap::UnWrapImageLayout(obj->initialLayout);
-        attachmentDescriptions[i].finalLayout = VulkanUnwrap::UnWrapImageLayout(obj->finalLayout);
-        attachmentDescriptions[i].format = VulkanUnwrap::UnWrapFormat(obj->format);
-        attachmentDescriptions[i].loadOp = VulkanUnwrap::UnWrapLoadOp(obj->loadOp);
-        attachmentDescriptions[i].storeOp = VulkanUnwrap::UnWrapStoreOp(obj->storeOp);
-        attachmentDescriptions[i].stencilLoadOp = VulkanUnwrap::UnWrapLoadOp(obj->stencilLoadOp);
-        attachmentDescriptions[i].stencilStoreOp = VulkanUnwrap::UnWrapStoreOp(obj->stencilLStoreOp);
-        attachmentDescriptions[i].samples = VulkanUnwrap::UnWrapSampleCount(obj->sampleCount);
+        const RenderPassAttachmentInfo obj = renderpassAttachmentList[i];
+        attachmentDescriptions[i].initialLayout = VulkanUnwrap::UnWrapImageLayout(obj.initialLayout);
+        attachmentDescriptions[i].finalLayout = VulkanUnwrap::UnWrapImageLayout(obj.finalLayout);
+        attachmentDescriptions[i].format = VulkanUnwrap::UnWrapFormat(obj.format);
+        attachmentDescriptions[i].loadOp = VulkanUnwrap::UnWrapLoadOp(obj.loadOp);
+        attachmentDescriptions[i].storeOp = VulkanUnwrap::UnWrapStoreOp(obj.storeOp);
+        attachmentDescriptions[i].stencilLoadOp = VulkanUnwrap::UnWrapLoadOp(obj.stencilLoadOp);
+        attachmentDescriptions[i].stencilStoreOp = VulkanUnwrap::UnWrapStoreOp(obj.stencilLStoreOp);
+        attachmentDescriptions[i].samples = VulkanUnwrap::UnWrapSampleCount(obj.sampleCount);
         attachmentDescriptions[i].flags = 0;
     }
 
@@ -102,8 +102,21 @@ VkSubpassDescription * VulkanInterface::UnwrapSubpassDesc(const SubpassInfo * su
         {
             subpassDescriptions[i].pDepthStencilAttachment = nullptr;
         }
-        //resolve, the count is missing.. might require another vector
-        subpassDescriptions[i].pResolveAttachments = nullptr;
+
+        //resolve, 
+        VkAttachmentReference *refResolve;
+        
+        if (obj->pResolveAttachments != nullptr)
+        {
+            refResolve = new VkAttachmentReference;
+            *refResolve = VulkanUnwrap::UnWrapAttachmentRef(*obj->pResolveAttachments);
+        }
+        else
+        {
+            refResolve = nullptr;
+        }
+
+        subpassDescriptions[i].pResolveAttachments = refResolve;
         subpassDescriptions[i].preserveAttachmentCount = 0;
         subpassDescriptions[i].pPreserveAttachments = nullptr;
 
@@ -116,50 +129,29 @@ VkSubpassDescription * VulkanInterface::UnwrapSubpassDesc(const SubpassInfo * su
 
 VkSubpassDependency * VulkanInterface::UnwrapSubpassDependency(const SubpassDependency * dependencyList, const uint32_t & dependencyCount)
 {
-    return nullptr;
-}
-
-/*
-VkImageCreateInfo VulkanInterface::UnwrapImageInfo(ImageInfo * info)
-{
-    VkImageCreateInfo createInfo = {};// new VkImageCreateInfo();
+    VkSubpassDependency * dependencies = new VkSubpassDependency[dependencyCount];
     
-    createInfo.arrayLayers = 1;
-    createInfo.extent.width = info->width;
-    createInfo.extent.height = info->height;
-    createInfo.extent.depth = 1;
-    createInfo.flags = 0;
-    createInfo.format = UnWrapFormat(info->format);
-    createInfo.imageType = UnWrapImageDegree(info->degree);
-    createInfo.initialLayout = UnWrapImageLayout( info->initialLayout);
-    createInfo.mipLevels = 1;
-    createInfo.pQueueFamilyIndices = nullptr;
-    createInfo.queueFamilyIndexCount = 0;
-    createInfo.samples = UnWrapSampleCount(info->sampleCount);
-    createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
-    createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-    createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
-    createInfo.usage = UnwrapUsage(info->usage);
+    for (uint32_t i = 0; i < dependencyCount; i++)
+    {
+        if (dependencyList[i].srcSubpass == -1)
+            dependencies[i].srcSubpass = VK_SUBPASS_EXTERNAL;
+        else
+            dependencies[i].srcSubpass = dependencyList[i].srcSubpass;
 
-    return createInfo;
+        if (dependencyList[i].dstSubpass == -1)
+            dependencies[i].dstSubpass = VK_SUBPASS_EXTERNAL;
+        else
+            dependencies[i].dstSubpass = dependencyList[i].dstSubpass;
+        
+        dependencies[i].srcStageMask = VulkanUnwrap::UnwrapPipelineStageFlags(dependencyList[i].srcStageMask.data(), (uint32_t)dependencyList[i].srcStageMask.size());
+        dependencies[i].dstStageMask = VulkanUnwrap::UnwrapPipelineStageFlags(dependencyList[i].dstStageMask.data(), (uint32_t)dependencyList[i].dstStageMask.size());
+        dependencies[i].srcAccessMask = VulkanUnwrap::UnwrapAccessFlags(dependencyList[i].srcAccessMask.data(), (uint32_t)dependencyList[i].srcAccessMask.size());
+        dependencies[i].dstAccessMask = VulkanUnwrap::UnwrapAccessFlags(dependencyList[i].dstAccessMask.data(), (uint32_t)dependencyList[i].dstAccessMask.size());
+        dependencies[i].dependencyFlags = VulkanUnwrap::UnwrapDependencyFlags(dependencyList[i].dependencyFlags.data(), (uint32_t)dependencyList[i].dependencyFlags.size());
+    }
+    
+    return dependencies;
 }
-
-VkImageViewCreateInfo VulkanInterface::UnwrapImageViewInfo(ImageInfo * info)
-{
-    VkImageViewCreateInfo viewCreateInfo = {};
-    viewCreateInfo.components = { VK_COMPONENT_SWIZZLE_IDENTITY,VK_COMPONENT_SWIZZLE_IDENTITY,VK_COMPONENT_SWIZZLE_IDENTITY,VK_COMPONENT_SWIZZLE_IDENTITY };
-    viewCreateInfo.format = UnWrapFormat(info->format);
-    viewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    viewCreateInfo.subresourceRange.baseArrayLayer = 0;
-    viewCreateInfo.subresourceRange.baseMipLevel = 0;
-    viewCreateInfo.subresourceRange.layerCount = 1;
-    viewCreateInfo.subresourceRange.levelCount = 1;
-    viewCreateInfo.viewType = UnWrapImageViewDegree( info->degree);
-
-    return viewCreateInfo;
-}
-*/
-
 
 VkCommandBufferUsageFlagBits VulkanInterface::UnwrapCommandBufferUsage(const CommandBufferUsage * info)
 {
@@ -497,7 +489,7 @@ ColorSpace VulkanInterface::GetWindowColorSpace()
     return WrapColorSpace(vkFormat->colorSpace);
 }
 
-uint32_t VulkanInterface::FindBestDepthFormat(Format * imageFormat, const uint32_t & count)
+int VulkanInterface::FindBestDepthFormat(Format * imageFormat, const uint32_t & count)
 {
     return VkAttachmentFactory::GetInstance()->FindBestDepthFormat(imageFormat, count);
 }
@@ -526,7 +518,7 @@ void VulkanInterface::DestroyRenderTarget(std::vector<uint32_t>* ids, bool defau
     VkAttachmentFactory::GetInstance()->DestroyAttachment(*ids, defaultTarget);
 }
 
-void VulkanInterface::CreateDepthTarget(ImageInfo * info, const uint32_t & count, uint32_t * ids)
+void VulkanInterface::CreateAttachment(ImageInfo * info, const uint32_t & count, uint32_t * ids)
 {
     /*VkImageCreateInfo * imageCreateInfo = new VkImageCreateInfo[count];
     VkImageViewCreateInfo * viewCreateInfo = new VkImageViewCreateInfo[count];
@@ -547,7 +539,7 @@ void VulkanInterface::CreateDepthTarget(ImageInfo * info, const uint32_t & count
     for(uint32_t i = 0 ;i < count;i++)
        vkInfo.push_back(VulkanUnwrap::UnWrapImageCreateInfo(info));
 
-    VkAttachmentFactory::GetInstance()->CreateDepthAttachment(vkInfo.data(), count, ids);
+    VkAttachmentFactory::GetInstance()->CreateAttachment(vkInfo.data(), count, ids);
 }
 
 void VulkanInterface::DestroyDepthTarget(std::vector<uint32_t>* ids, bool defaultTarget)
@@ -605,7 +597,7 @@ void VulkanInterface::CreateRenderPass(
         delete[] subpassDescList->pInputAttachments;
 
     if (subpassDescList->pResolveAttachments != nullptr)
-        delete[] subpassDescList->pResolveAttachments;
+        delete subpassDescList->pResolveAttachments;
 
     if (subpassDescList->pPreserveAttachments != nullptr)
         delete[] subpassDescList->pPreserveAttachments;

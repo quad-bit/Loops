@@ -61,7 +61,7 @@ VkAttachmentFactory::~VkAttachmentFactory()
 }
 
 
-uint32_t VkAttachmentFactory::FindBestDepthFormat(Format * imageFormat, uint32_t count)
+int VkAttachmentFactory::FindBestDepthFormat(Format * imageFormat, uint32_t count)
 {
     VkFormat * formatList = new VkFormat[count];
     VkFormatProperties props = {};
@@ -130,7 +130,7 @@ void VkAttachmentFactory::CreateSwapChainImage(VkImageCreateInfo imageCreateinfo
     }
 }
 
-void VkAttachmentFactory::CreateDepthAttachment(VkImageCreateInfo * info, uint32_t count, uint32_t * ids)
+void VkAttachmentFactory::CreateAttachment(VkImageCreateInfo * info, uint32_t count, uint32_t * ids)
 {
     if (info == nullptr)
     {

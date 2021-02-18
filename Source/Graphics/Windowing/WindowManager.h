@@ -3,7 +3,7 @@
 #include <Settings.h>
 #include <stdint.h>
 #include <string>
-
+#include <PlatformSettings.h>
 
 #if defined(GLFW_ENABLED)
     #define GLFW_INCLUDE_VULKAN

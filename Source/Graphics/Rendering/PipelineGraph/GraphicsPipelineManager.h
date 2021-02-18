@@ -5,6 +5,7 @@
 #include <Graph.h>
 #include <vector>
 #include "DrawGraphNode.h"
+#include "RendererSettings.h"
 
 class PipelineDrawNode : public DrawGraphNode
 {
@@ -247,10 +248,9 @@ inline void GraphicsPipelineManager<T>::CreateMultiSampleDefault()
     MultiSampleState * multisample = new MultiSampleState;
     multisample->alphaToCoverageEnable = false;
     multisample->alphaToOneEnable = false;
-    multisample->sampleShadingEnable = false;
-    multisample->sampleCount = Samples::SAMPLE_COUNT_1_BIT;
-    multisample->sampleShadingEnable = false;
-    
+    multisample->sampleCount = *RendererSettings::sampleCount;
+    multisample->sampleShadingEnable = RendererSettings::sampleRateShadingEnabled;
+    multisample->minSampleShading = 0.5f;
     wrapper->multiSampleState = multisample;
     
     multisampleStateWrapperList.push_back(wrapper);

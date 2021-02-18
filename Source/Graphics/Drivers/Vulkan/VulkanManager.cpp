@@ -7,6 +7,7 @@
 #include "VkSynchroniserFactory.h"
 #include "VulkanGraphicsPipelineFactory.h"
 #include <Settings.h>
+#include <PlatformSettings.h>
 #include <CorePrecompiled.h>
 #include "PresentationEngine.h"
 #include "VkFrameBufferFactory.h"

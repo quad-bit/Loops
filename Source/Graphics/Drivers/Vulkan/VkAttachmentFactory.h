@@ -70,13 +70,13 @@ public:
     static VkAttachmentFactory* GetInstance();
     ~VkAttachmentFactory();
 
-    uint32_t FindBestDepthFormat(Format * format, uint32_t count);
+    int FindBestDepthFormat(Format * format, uint32_t count);
     
     // deprecated.
     void CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids);
     void CreateSwapChainImage(VkImageCreateInfo imageCreateinfo, VkImageViewCreateInfo imageViewCreateinfo, const uint32_t & count, uint32_t * ids);
     
-    void CreateDepthAttachment(VkImageCreateInfo * info, uint32_t count, uint32_t * ids);
+    void CreateAttachment(VkImageCreateInfo * info, uint32_t count, uint32_t * ids);
 
     MemoryRequirementInfo GetImageMemoryRequirement(const uint32_t & id);
     //Needed here as imageViewInfo has image id 

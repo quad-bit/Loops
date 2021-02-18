@@ -3,6 +3,8 @@
 #include "VulkanUtility.h"
 #include <CorePrecompiled.h>
 #include <array>
+#include "Settings.h"
+#include "RendererSettings.h"
 
 VkRenderPassFactory* VkRenderPassFactory::instance = nullptr;
 uint32_t VkRenderPassFactory::renderpassIdCounter = 0;
@@ -62,7 +64,7 @@ void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * rende
     renderPassCreateInfo.attachmentCount = attachmentCount;
     renderPassCreateInfo.dependencyCount = dependencyCount;
     renderPassCreateInfo.pAttachments = renderpassAttachmentList;
-    renderPassCreateInfo.pDependencies = nullptr;
+    renderPassCreateInfo.pDependencies = dependencyList;
     renderPassCreateInfo.pSubpasses = subpassList;
     renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
     renderPassCreateInfo.subpassCount = subpassCount;
@@ -71,20 +73,47 @@ void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * rende
 
     renderpassList.push_back(info);
     renderpassIdCounter = info->id;
-
-    VkClearValue * clearValue = new VkClearValue[2];
-    clearValue[0].color.float32[0] = Settings::clearColorValue[0];
-    clearValue[0].color.float32[1] = Settings::clearColorValue[1];
-    clearValue[0].color.float32[2] = Settings::clearColorValue[2];
-    clearValue[0].color.float32[3] = Settings::clearColorValue[3];
     
-    clearValue[1].depthStencil.depth = Settings::depthClearValue;
-    clearValue[1].depthStencil.stencil = (uint32_t)Settings::stencilClearValue;
+    VkClearValue * clearValue;
+    if (RendererSettings::MSAA_Enabled && RendererSettings::multiSamplingAvailable)
+    {
+        clearValue = new VkClearValue[3];
+        clearValue[0].color.float32[0] = Settings::clearColorValue[0];
+        clearValue[0].color.float32[1] = Settings::clearColorValue[1];
+        clearValue[0].color.float32[2] = Settings::clearColorValue[2];
+        clearValue[0].color.float32[3] = Settings::clearColorValue[3];
 
-    // float32 is chosen because VK_FORMAT_B8G8R8A8_UNORM is preferred to be the format UNORM is unsigned normalised which is floating point
-    // the type float32 / int / uint should be selected based on the format
-    info->clearValue = clearValue;
-    info->clearValueCount = 2;
+        clearValue[1].color.float32[0] = Settings::clearColorValue[0];
+        clearValue[1].color.float32[1] = Settings::clearColorValue[1];
+        clearValue[1].color.float32[2] = Settings::clearColorValue[2];
+        clearValue[1].color.float32[3] = Settings::clearColorValue[3];
+
+        clearValue[2].depthStencil.depth = Settings::depthClearValue;
+        clearValue[2].depthStencil.stencil = (uint32_t)Settings::stencilClearValue;
+
+        // float32 is chosen because VK_FORMAT_B8G8R8A8_UNORM is preferred to be the format UNORM is unsigned normalised which is floating point
+        // the type float32 / int / uint should be selected based on the format
+        info->clearValue = clearValue;
+        info->clearValueCount = 3;
+    }
+    else
+    {
+        clearValue = new VkClearValue[2];
+
+        clearValue[0].color.float32[0] = Settings::clearColorValue[0];
+        clearValue[0].color.float32[1] = Settings::clearColorValue[1];
+        clearValue[0].color.float32[2] = Settings::clearColorValue[2];
+        clearValue[0].color.float32[3] = Settings::clearColorValue[3];
+
+        clearValue[1].depthStencil.depth = Settings::depthClearValue;
+        clearValue[1].depthStencil.stencil = (uint32_t)Settings::stencilClearValue;
+
+        // float32 is chosen because VK_FORMAT_B8G8R8A8_UNORM is preferred to be the format UNORM is unsigned normalised which is floating point
+        // the type float32 / int / uint should be selected based on the format
+        info->clearValue = clearValue;
+        info->clearValueCount = 2;
+    }
+    
 }
 
 void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * renderpassAttachmentList, 
@@ -92,6 +121,7 @@ void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * rende
     subpassCount, const VkSubpassDependency * dependencyList, 
     const uint32_t & dependencyCount, const VkRenderPassBeginInfo beginInfo, uint32_t & renderPassId)
 {
+    DEPRECATED;
     RenderpassWrapper * info = new RenderpassWrapper();
     info->id = GetId();
 

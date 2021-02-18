@@ -1,7 +1,7 @@
 #include "ValidationManager.h"
 #include "VulkanSettings.h"
 #include "Assertion.h"
-#include "Settings.h"
+#include "PlatformSettings.h"
 #include "VulkanUtility.h"
 
 

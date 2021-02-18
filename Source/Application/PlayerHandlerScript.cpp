@@ -148,7 +148,7 @@ void PlayerHandlerScript::Update(float dt)
     {
         Transform * headTrf = head->GetTransform();
         
-        currentAngle = glm::sin(counter++ / 100.0f);
+        currentAngle = glm::sin(counter++ / 300.0f);
 
         float angle = MathUtil::lerp(prevAngle, currentAngle, dt);
         prevAngle = currentAngle;

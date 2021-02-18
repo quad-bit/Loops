@@ -307,24 +307,30 @@ VkRenderPassBeginInfo VulkanUnwrap::UnwrapRenderPassBeginInfo(RenderPassBeginInf
     vkBeginInfo.renderPass = *VkRenderPassFactory::GetInstance()->GetRenderPass(beginInfo.renderPassId);
     vkBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     
-    if (beginInfo.clearColorValue[0] == -1.0f)
+    if (beginInfo.clearColorValue.size() == 0)
     {
         vkBeginInfo.pClearValues = VkRenderPassFactory::GetInstance()->GetClearValue(beginInfo.renderPassId);
         vkBeginInfo.clearValueCount = VkRenderPassFactory::GetInstance()->GetClearValueCount(beginInfo.renderPassId);
     }
     else
     {
-        VkClearValue * clearVal = new VkClearValue[2];
-        clearVal[0].color.float32[0] = beginInfo.clearColorValue[0];
-        clearVal[0].color.float32[1] = beginInfo.clearColorValue[1];
-        clearVal[0].color.float32[2] = beginInfo.clearColorValue[2];
-        clearVal[0].color.float32[3] = beginInfo.clearColorValue[3];
+        // color + 1 depthStencil
+        const uint32_t numClearVals = (uint32_t)beginInfo.clearColorValue.size() + 1;
+        VkClearValue * clearVal = new VkClearValue[numClearVals];
 
-        clearVal[1].depthStencil.depth = beginInfo.depthClearValue;
-        clearVal[1].depthStencil.stencil = (uint32_t)beginInfo.stencilClearValue;
+        for (uint32_t i = 0; i < numClearVals - 1; i++)
+        {
+            clearVal[i].color.float32[0] = beginInfo.clearColorValue[i].at(0);
+            clearVal[i].color.float32[1] = beginInfo.clearColorValue[i].at(1);
+            clearVal[i].color.float32[2] = beginInfo.clearColorValue[i].at(2);
+            clearVal[i].color.float32[3] = beginInfo.clearColorValue[i].at(3);
+        }
+
+        clearVal[numClearVals - 1].depthStencil.depth = beginInfo.depthClearValue;
+        clearVal[numClearVals - 1].depthStencil.stencil = (uint32_t)beginInfo.stencilClearValue;
 
         vkBeginInfo.pClearValues = clearVal;
-        vkBeginInfo.clearValueCount = 2;
+        vkBeginInfo.clearValueCount = numClearVals;
     }
 
     return vkBeginInfo;
@@ -366,7 +372,7 @@ VkShaderStageFlags VulkanUnwrap::UnwrapShaderStage(ShaderType * type, const uint
     //shaderflag needs to be filled with something to be OR-ED with subsequent stages
     switch (type[0])
     {
-    case    ShaderType::VERTEX:
+    case  ShaderType::VERTEX:
         shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
         break;
 
@@ -581,4 +587,177 @@ VkMemoryPropertyFlags VulkanUnwrap::UnwrapMemoryProperty(const MemoryType * memT
     }
 
     return memProp;
+}
+
+VkPipelineStageFlags const VulkanUnwrap::UnwrapPipelineStageFlags(const PipelineStage * stages, const uint32_t & count)
+{
+    VkPipelineStageFlags flags = 0;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        switch (stages[i])
+        {
+            case PipelineStage::ALL_COMMANDS_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+                break;
+
+            case PipelineStage::ALL_GRAPHICS_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+                break;
+
+            case PipelineStage::BOTTOM_OF_PIPE_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+                break;
+
+            case PipelineStage::COLOR_ATTACHMENT_OUTPUT_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+                break;
+
+            case PipelineStage::COMPUTE_SHADER_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+                break;
+
+            case PipelineStage::DRAW_INDIRECT_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
+                break;
+
+            case PipelineStage::EARLY_FRAGMENT_TESTS_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+                break;
+
+            case PipelineStage::FRAGMENT_SHADER_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+                break;
+
+            case PipelineStage::GEOMETRY_SHADER_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
+                break;
+
+            case PipelineStage::HOST_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_HOST_BIT;
+                break;
+
+            case PipelineStage::LATE_FRAGMENT_TESTS_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+                break;
+
+            case PipelineStage::TOP_OF_PIPE_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+                break;
+
+            case PipelineStage::VERTEX_INPUT_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
+                break;
+
+            case PipelineStage::VERTEX_SHADER_BIT:
+                flags |= VkPipelineStageFlagBits::VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
+                break;
+
+            default: ASSERT_MSG(0, "Type yet to be handled");
+        }
+    }
+
+    return flags;
+}
+
+VkAccessFlags const VulkanUnwrap::UnwrapAccessFlags(const AccessFlagBits * stages, const uint32_t & count)
+{
+    VkAccessFlags flags = 0;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        switch (stages[i])
+        {
+        case AccessFlagBits::ACCESS_COLOR_ATTACHMENT_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_COLOR_ATTACHMENT_WRITE_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_HOST_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_HOST_READ_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_HOST_WRITE_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_HOST_WRITE_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_INDEX_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_INDEX_READ_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_INPUT_ATTACHMENT_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_MEMORY_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_MEMORY_READ_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_MEMORY_WRITE_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_MEMORY_WRITE_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_SHADER_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_SHADER_READ_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_SHADER_WRITE_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_SHADER_WRITE_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_TRANSFER_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_TRANSFER_READ_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_TRANSFER_WRITE_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_TRANSFER_WRITE_BIT;
+            break;
+
+        case AccessFlagBits::ACCESS_UNIFORM_READ_BIT:
+            flags |= VkAccessFlagBits::VK_ACCESS_UNIFORM_READ_BIT;
+            break;
+
+        default: ASSERT_MSG(0, "Type not handled");
+        }
+    }
+
+    return flags;
+}
+
+VkDependencyFlags const VulkanUnwrap::UnwrapDependencyFlags(const DependencyFlagBits * stages, const uint32_t & count)
+{
+    VkDependencyFlags flags = 0;
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        switch (stages[i])
+        {
+        case DependencyFlagBits::DEPENDENCY_BY_REGION_BIT :
+            flags |= VkDependencyFlagBits::VK_DEPENDENCY_BY_REGION_BIT;
+            break;
+
+        case DependencyFlagBits::DEPENDENCY_DEVICE_GROUP_BIT:
+            flags |= VkDependencyFlagBits::VK_DEPENDENCY_DEVICE_GROUP_BIT;
+            break;
+
+        case DependencyFlagBits::DEPENDENCY_VIEW_LOCAL_BIT:
+            flags |= VkDependencyFlagBits::VK_DEPENDENCY_VIEW_LOCAL_BIT;
+            break;
+
+        default: ASSERT_MSG(0, "Type not handled");
+        }
+    }
+
+    return flags;
 }

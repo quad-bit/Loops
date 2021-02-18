@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 struct QueueWrapper;
+enum class Samples;
 
 struct RendererSettings
 {
@@ -14,4 +15,7 @@ struct RendererSettings
     static uint32_t queueRequirementCount;
 
     static bool MSAA_Enabled;
+    static bool sampleRateShadingEnabled;
+    static bool multiSamplingAvailable;
+    static Samples * sampleCount;
 };
