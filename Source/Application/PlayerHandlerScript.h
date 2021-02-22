@@ -9,8 +9,8 @@ class CameraController;
 class PlayerHandlerScript : public Scriptable
 {
 private:
-    EntityHandle* camHandle0;
-    EntityHandle* camHandle1;
+    /*EntityHandle* camHandle0;
+    EntityHandle* camHandle1;*/
     EntityHandle* playerHandle;
     EntityHandle* head;
     EntityHandle* torso;

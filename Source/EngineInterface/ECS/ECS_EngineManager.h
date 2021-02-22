@@ -8,6 +8,7 @@ class Mesh;
 class Material;
 class Camera;
 class MeshRenderer;
+class Light;
 
 template<typename T>
 class ComponentManager;
@@ -38,6 +39,9 @@ public:
 
     ComponentManager<MeshRenderer>* meshRendererManager;
     System* meshRendererSystem;
+
+    ComponentManager<Light>* lightManager;
+    System* lightSystem;
 
     void Init();
     void DeInit();

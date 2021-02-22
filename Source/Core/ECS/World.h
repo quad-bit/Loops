@@ -40,6 +40,8 @@ public:
     void DestroyEntity(EntityHandle* entityHandleObj);
     EntityHandle* CreateEntity();
 
+    EntityHandle * const FindEntity(const std::string & name);
+
     template<typename ComponentType>
     void AddComponent(ComponentType* componentType, Entity * entityObj);
 

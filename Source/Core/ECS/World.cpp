@@ -18,6 +18,11 @@ EntityHandle* World::CreateEntity()
     return handle;
 }
 
+EntityHandle * const World::FindEntity(const std::string & name)
+{
+    return EntityManager::GetSingleton()->FindEntity(name);
+}
+
 void World::UpdateEntityMask(Entity * entity, ComponentMask oldMask)
 {
     ComponentMask newMask = entityMasks[entity];

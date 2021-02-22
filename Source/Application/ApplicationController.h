@@ -6,8 +6,8 @@ class Scriptable;
 class ApplicationController
 {
 private:
-    EntityHandle* scriptableParent;
-    Scriptable* playerHandlerScript;
+    EntityHandle* mainObject;
+    Scriptable* sceneManagerScript;
 
 public:
     void Init();

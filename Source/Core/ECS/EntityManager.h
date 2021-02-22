@@ -10,7 +10,7 @@ class EntityManager
 public:
     Entity* CreateEntity();
     EntityHandle * CreateEntityHandle(Entity* obj, World * worldObj);
-
+    EntityHandle * const FindEntity(const std::string & name);
     void DestroyEntity(Entity* entity);
 
     static EntityManager* GetSingleton();
@@ -28,6 +28,7 @@ private:
     EntityManager const & operator= (EntityManager const &) {}
 
     static EntityManager* entityManagerInstance;
+
 
 };
 

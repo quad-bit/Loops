@@ -15,6 +15,7 @@ class Component
 {
 private:
     static int family;
+    bool isComponentActive = true;
 
 public:
     uint32_t componentId = UINT32_MAX;
@@ -26,6 +27,16 @@ public:
             family = ComponentCounter::counter++;
 
         return family;
+    }
+
+    bool GetActiveStatus()
+    {
+        return isComponentActive;
+    }
+
+    void SetActiveStatus(const bool & status)
+    {
+        isComponentActive = status;
     }
 };
 

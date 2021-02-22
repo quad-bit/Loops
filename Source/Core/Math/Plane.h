@@ -21,7 +21,7 @@ public:
 	Plane(float A, float B, float C, float D) : a(A), b(B), c(C), d(D) {}
 	void Create(vec3& p, vec3& q, vec3& r);
 	bool Intersect(const vec3& bbmin, const vec3& bbmax);// bounding box
-	bool Intersect(const vec3& center, float radius);// with sphere
+	bool Intersect(const vec3& center, float beamRadius);// with sphere
 	POINT_STATE ClassifyPoint(const vec3& point, float& dist);
 	float GetDistance(const vec3& point);
 };

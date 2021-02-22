@@ -13,6 +13,7 @@
 #include "CameraSystem.h"
 #include "MeshRenderer.h"
 #include "MeshRendererSystem.h"
+#include "LightSystem.h"
 
 ECS_Manager* ECS_Manager::instance = nullptr;
 World * worldObj;
@@ -42,6 +43,9 @@ void ECS_Manager::Init()
     meshRendererSystem = new MeshRendererSystem();
     worldObj->AddSystem(meshRendererSystem);
 
+    lightSystem = new LightSystem();
+    worldObj->AddSystem(lightSystem);
+
     worldObj->Init();
 }
 
@@ -54,6 +58,7 @@ void ECS_Manager::DeInit()
 
     worldObj->DeInit();
 
+    delete lightSystem;
     delete meshRendererSystem;
     delete cameraSystemObj;
     delete transformSystemObj;

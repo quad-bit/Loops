@@ -5,6 +5,7 @@
 
 class Camera;
 class MeshRenderer;
+class Light;
 class Entity;
 
 class CameraAdditionEvent : public Event
@@ -19,4 +20,9 @@ public:
     MeshRenderer * renderer;
 };
 
+class LightAdditionEvent : public Event
+{
+public:
+    Light * light;
+};
 

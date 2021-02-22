@@ -60,10 +60,10 @@ bool Plane::Intersect(const vec3 & bbmin, const vec3 & bbmax)
 	return false;
 }
 
-bool Plane::Intersect(const vec3 & center, float radius)
+bool Plane::Intersect(const vec3 & center, float beamRadius)
 {
 	float dp = glm::abs<float>(GetDistance(center));
-	if (dp <= radius)
+	if (dp <= beamRadius)
 		return true;
 
 	return false;

@@ -20,7 +20,7 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
 {
     scriptName = typeid(this).raw_name();
 
-    camHandle0 = worldObj->CreateEntity();
+    /*camHandle0 = worldObj->CreateEntity();
     camHandle0->GetEntity()->entityName = "MainCamera";
     camHandle0->GetTransform()->SetLocalPosition( glm::vec3(0, 0, 10));
     camHandle0->GetTransform()->SetLocalEulerAngles(glm::vec3(0, 0, 0));
@@ -32,7 +32,7 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
 
     cameraController = new CameraController();
     camHandle0->AddComponent<Scriptable>(cameraController);
-
+*/
 
     //camHandle1 = worldObj->CreateEntity();
     //camHandle1->GetEntity()->entityName = "SecondCamera";
@@ -206,6 +206,6 @@ PlayerHandlerScript::~PlayerHandlerScript()
     worldObj->DestroyEntity(leftLeg);
     worldObj->DestroyEntity(rightLeg);
     
-    delete cameraController;
-    worldObj->DestroyEntity(camHandle0);
+    //delete cameraController;
+    //worldObj->DestroyEntity(camHandle0);
 }

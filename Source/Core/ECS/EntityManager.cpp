@@ -53,6 +53,19 @@ EntityHandle * EntityManager::CreateEntityHandle(Entity * obj, World * worldObj)
 	return handle;
 }
 
+EntityHandle * const EntityManager::FindEntity(const std::string & name)
+{
+    std::vector<EntityHandle*>::iterator it;
+    it = std::find_if(entityHandleList.begin(), entityHandleList.end(), [=](EntityHandle * e) {
+        return e->GetEntity()->entityName == name ; });
+
+    if (it != entityHandleList.end())
+    {
+        return *it;
+    }
+    return nullptr;
+}
+
 void EntityManager::DestroyEntity(Entity * entity)
 {
 	uint32_t pos = 0;

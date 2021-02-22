@@ -1,14 +1,15 @@
 #include "ApplicationController.h"
 #include <Scriptable.h>
 #include <ECS_Setting.h>
-#include "PlayerHandlerScript.h"
+#include "SceneManagerScript.h"
 #include "EntityHandle.h"
 
 void ApplicationController::Init()
 {
-    scriptableParent = worldObj->CreateEntity();
-    playerHandlerScript = new PlayerHandlerScript();
-    scriptableParent->AddComponent<Scriptable>(playerHandlerScript);
+    mainObject = worldObj->CreateEntity();
+    mainObject->GetEntity()->entityName = "mainObject";
+    sceneManagerScript = new SceneManagerScript();
+    mainObject->AddComponent<Scriptable>(sceneManagerScript);
 }
 
 void ApplicationController::Update()
@@ -18,8 +19,8 @@ void ApplicationController::Update()
 
 void ApplicationController::DeInit()
 {
-    scriptableParent->RemoveComponent<Scriptable>(playerHandlerScript);
-    delete playerHandlerScript;
-    playerHandlerScript = NULL;
-    worldObj->DestroyEntity(scriptableParent);
+    mainObject->RemoveComponent<Scriptable>(sceneManagerScript);
+    delete sceneManagerScript;
+    sceneManagerScript = NULL;
+    worldObj->DestroyEntity(mainObject);
 }
