@@ -2,7 +2,6 @@
 #include "EntityHandle.h"
 #include "Scriptable.h"
 #include "ECS_Setting.h"
-//#include "PlayerHandlerScript.h"
 #include <EventBus.h>
 #include <InputEvents.h>
 #include <Transform.h>
@@ -25,11 +24,18 @@ SceneManager::~SceneManager()
     delete playerHandlerScript;
     playerHandlerScript = NULL;
     worldObj->DestroyEntity(scriptableParent);
-*/
+    */
     SceneGraphManager::GetInstance()->DeInit();
     delete SceneGraphManager::GetInstance();
 
     worldObj->DestroyEntity(sceneRootEntityHandle);
+}
+
+
+Transform * const SceneManager::GetSceneRootTransform()
+{
+    ASSERT_MSG_DEBUG(sceneRootTransform != nullptr, "scene root null");
+    return sceneRootTransform;
 }
 
 void SceneManager::HandleSceneControls(KeyInputEvent * inputEvent)

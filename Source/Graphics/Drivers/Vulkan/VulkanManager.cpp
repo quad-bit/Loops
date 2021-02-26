@@ -17,6 +17,7 @@
 #include "VkDescriptorPoolFactory.h"
 #include "VkShaderResourceManager.h"
 #include "VkRenderingUnwrapper.h"
+#include "VkBufferFactory.h"
 
 using namespace std;
 
@@ -310,6 +311,7 @@ void VulkanManager::InitializeFactories()
     VulkanGraphicsPipelineFactory::GetInstance()->Init();
     VkShaderFactory::GetInstance()->Init();
     VkDescriptorPoolFactory::GetInstance()->Init();
+    VkBufferFactory::GetInstance()->Init();
     VkShaderResourceManager::GetInstance()->Init();
 }
 
@@ -322,6 +324,9 @@ void VulkanManager::DeInit()
 
     VkDescriptorPoolFactory::GetInstance()->DeInit();
     delete VkDescriptorPoolFactory::GetInstance();
+
+    VkBufferFactory::GetInstance()->DeInit();
+    delete VkBufferFactory::GetInstance();
 
     VkShaderFactory::GetInstance()->DeInit();
     delete VkShaderFactory::GetInstance();

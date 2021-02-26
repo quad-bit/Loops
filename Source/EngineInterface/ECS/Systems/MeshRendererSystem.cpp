@@ -29,6 +29,9 @@ void MeshRendererSystem::Init()
 
     resourceSharingConfig.maxUniformPerResource = 2;
     resourceSharingConfig.allocatedUniformCount = 0;
+
+    size_t uniformSize = sizeof(TransformUniform);
+    memoryAlignedDataSize = UniformFactory::GetInstance()->GetMemoryAlignedDataSizeForBuffer(uniformSize);
 }
 
 void MeshRendererSystem::DeInit()
@@ -71,7 +74,7 @@ void MeshRendererSystem::Update(float dt)
         obj.modelMat = transformObj->GetGlobalModelMatrix();
 
         ShaderBindingDescription * desc = transformToBindDescMap[transformObj];
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, 
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(TransformUniform), memoryAlignedDataSize, 
             &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
 
     }
@@ -103,8 +106,8 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     desc->resourceName = "Transform";
     desc->resourceType = DescriptorType::UNIFORM_BUFFER;
     desc->resParentId = inputEvent->renderer->componentId;
-    desc->parentType = inputEvent->renderer->type;
-    desc->dataSizePerDescriptor = uniformSize;
+    desc->parentType = inputEvent->renderer->componentType;
+    desc->dataSizePerDescriptorAligned = memoryAlignedDataSize;
     desc->uniformId = inputEvent->renderer->componentId; 
     desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(uniformSize, allocConfig, resourceSharingConfig);
     desc->allocationConfig = allocConfig;
@@ -113,7 +116,7 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     if (AllocationUtility::IsNewAllocationRequired(resourceSharingConfig))
     {
         // True : Allocate new buffer
-        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(uniformSize, allocConfig, resourceSharingConfig);
+        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(memoryAlignedDataSize, allocConfig, resourceSharingConfig);
         transformSetWrapper = UniformFactory::GetInstance()->AllocateResource(desc, &totalSize, 1, AllocationMethod::LAZY);
     }
     else
@@ -136,7 +139,7 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     //upload data to buffers
     for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
     {
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, &obj, desc->offsetsForEachDescriptor[i], false);
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(TransformUniform), memoryAlignedDataSize, &obj, desc->offsetsForEachDescriptor[i], false);
     }
     
     // allocate descriptors
@@ -151,7 +154,14 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
         for (uint32_t i = 0; i < numVertBuffers; i++)
             ((MeshNode*)meshNode)->bufferIds.push_back(inputEvent->renderer->geometry->vertexBuffersIds[i]);
         ((MeshNode*)meshNode)->pOffsets.push_back(0);
-        ((MeshNode*)meshNode)->indexBufferId = inputEvent->renderer->geometry->indexBufferId;
+        
+        if (inputEvent->renderer->geometry->indexCount > 0)
+        {
+            ((MeshNode*)meshNode)->isIndexed = true;
+            ((MeshNode*)meshNode)->indexBufferId = inputEvent->renderer->geometry->indexBufferId;
+        }
+        else
+            ((MeshNode*)meshNode)->isIndexed = false;
     }
 
     DrawGraphNode * trfnode = new TransformNode;
@@ -162,15 +172,31 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
         ((TransformNode*)trfnode)->descriptorSetIds = desc->descriptorIds;
     }
 
-    DrawGraphNode * drawingnode = new IndexedDrawNode;
+    uint32_t indexCount = inputEvent->renderer->geometry->indexCount;
+    
+    DrawGraphNode * drawingnode;
+    if(indexCount > 0)
     {
+        drawingnode = new IndexedDrawNode;
         drawingnode->meshList.push_back(meshId);
-
+        
+        //TODO : automate the drawing the attribs
         ((IndexedDrawNode*)drawingnode)->info.firstIndex = 0;
         ((IndexedDrawNode*)drawingnode)->info.firstInstance = 0;
         ((IndexedDrawNode*)drawingnode)->info.indexCount = inputEvent->renderer->geometry->indexCount;
         ((IndexedDrawNode*)drawingnode)->info.instanceCount = 1;
         ((IndexedDrawNode*)drawingnode)->info.vertexOffset = 0;
+    }
+    else
+    {
+        drawingnode = new DrawArrayDrawNode;
+        drawingnode->meshList.push_back(meshId);
+        
+        //TODO : automate the drawing the attribs
+        ((DrawArrayDrawNode*)drawingnode)->info.firstVertex = 0;
+        ((DrawArrayDrawNode*)drawingnode)->info.vertexCount = inputEvent->renderer->geometry->vertexCount;
+        ((DrawArrayDrawNode*)drawingnode)->info.instanceCount = 1;
+        ((DrawArrayDrawNode*)drawingnode)->info.firstInstance = 0;
     }
 
     GraphNode<DrawGraphNode> * transformGraphNode = new GraphNode<DrawGraphNode>(trfnode);
@@ -219,11 +245,14 @@ void MeshNode::Entry()
     info.pOffsets = this->pOffsets;
     dcb->BindVertexBuffers(&info);
 
-    IndexBufferBindingInfo indInfo = {};
-    indInfo.bufferId = this->indexBufferId;
-    indInfo.indexType = IndexType::INDEX_TYPE_UINT32;
-    indInfo.offset = 0;
-    dcb->BindIndexBuffer(&indInfo);
+    if (isIndexed)
+    {
+        IndexBufferBindingInfo indInfo = {};
+        indInfo.bufferId = this->indexBufferId;
+        indInfo.indexType = IndexType::INDEX_TYPE_UINT32;
+        indInfo.offset = 0;
+        dcb->BindIndexBuffer(&indInfo);
+    }
 }
 
 void MeshNode::Exit()
@@ -239,4 +268,13 @@ void IndexedDrawNode::Entry()
 void IndexedDrawNode::Exit()
 {
 
+}
+
+void DrawArrayDrawNode::Entry()
+{
+    dcb->Draw(&this->info);
+}
+
+void DrawArrayDrawNode::Exit()
+{
 }

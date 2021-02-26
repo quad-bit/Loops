@@ -143,10 +143,12 @@ public:
     //Deprecated.
     //uint32_t * CreateBuffer(BufferInfo * info, const uint32_t & count);
     uint32_t * CreateBuffers(BufferInfo * info, const uint32_t & count);
+    size_t GetMemoryAlignedDataSizeForBuffer(const size_t & dataSize);
     uint32_t * AllocateBufferMemory(uint32_t * bufferId, const uint32_t & bufCount);
     uint32_t AllocateMemory(MemoryRequirementInfo * memReq, MemoryType * userReq, const size_t & allocationSize);
     MemoryRequirementInfo GetImageMemoryRequirement(const uint32_t & imageId);
-    void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
+    void CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted);
+    //void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
     void DestroyBuffer(uint32_t * ids, const uint32_t & count);
     void FreeMemory(uint32_t * ids, const uint32_t & count);
     uint32_t * AllocateDescriptorsForASet(SetWrapper * set, const uint32_t & numDescriptors);

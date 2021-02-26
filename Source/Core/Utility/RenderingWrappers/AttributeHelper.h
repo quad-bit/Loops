@@ -35,6 +35,14 @@ struct PC
     glm::vec4 color;
 };
 
+struct PCN
+{
+    glm::vec3 position;
+    glm::vec4 color;
+    glm::vec3 normal;
+};
+
+
 struct AttribStructBase
 {
     void * vertexData;
@@ -102,6 +110,60 @@ struct AttribPC : public AttribStructBase
     void FillData(Mesh * mesh);
 };
 
+struct AttribPCN : public AttribStructBase
+{
+    std::vector<PCN> posColList;
+    std::vector<uint32_t> indicies;
+    AttribPCN()
+    {
+        metaData.vertexDataStride = sizeof(PCN);
+        metaData.attribCount = 3;
+        metaData.attribInfoList = new VertexInputAttributeInfo[metaData.attribCount];
+
+        // position
+        {
+            VertexInputAttributeInfo info = {};
+            info.binding = 0; // As a single vertex buffer is used per mesh
+            info.format = Format::R32G32B32_SFLOAT; //vec3 position
+            info.location = 0;
+            info.offset = (uint32_t)offsetof(PC, PC::position);
+            metaData.attribInfoList[0] = info;
+        }
+
+        //color
+        {
+            VertexInputAttributeInfo info = {};
+            info.binding = 0; // As a single vertex buffer is used per mesh
+            info.format = Format::R32G32B32A32_SFLOAT; //uvec4 color
+            info.location = 1;
+            info.offset = (uint32_t)offsetof(PC, PC::color);
+            metaData.attribInfoList[1] = info;
+        }
+
+        //Normal
+        {
+            VertexInputAttributeInfo info = {};
+            info.binding = 0; // As a single vertex buffer is used per mesh
+            info.format = Format::R32G32B32_SFLOAT;  //uvec4 color
+            info.location = 2;
+            info.offset = (uint32_t)offsetof(PCN, PCN::normal);
+            metaData.attribInfoList[2] = info;
+        }
+
+        indexCount = 0;
+        metaData.indexDataStride = sizeof(uint32_t);
+    }
+
+    ~AttribPCN()
+    {
+        
+    }
+
+    template<typename T>
+    void FillData(Mesh * mesh);
+};
+
+
 #include <Mesh.h>
 
 template<typename T>
@@ -119,10 +181,7 @@ inline void AttribPC::FillData(Mesh * mesh)
     {
         posColList[i].position = obj.positions[i];
         posColList[i].color = obj.color;
-        /*if(obj.colors.size() > 0)
-            posColList[i].color = obj.colors[i];
-        else*/
-
+        
         mesh->positions[i] = &posColList[i].position;
         mesh->colors[i] = &posColList[i].color;
     }
@@ -145,4 +204,45 @@ inline void AttribPC::FillData(Mesh * mesh)
     indexData = indicies.data();
     indexDataSize = (uint32_t)indicies.size() * sizeof( uint32_t );
     indexCount = (uint32_t)numIndicies;
+}
+
+template<typename T>
+inline void AttribPCN::FillData(Mesh * mesh)
+{
+    T obj;
+
+    size_t numVertices = obj.indices.size();
+    posColList.resize(numVertices);
+    
+    mesh->positions.resize(numVertices);
+    mesh->colors.resize(numVertices);
+
+    // position and color
+    for (int i = 0; i < numVertices; i++)
+    {
+        posColList[i].position = obj.positions[obj.indices[i]];
+        posColList[i].color = glm::vec4(0.6, 0.2, 0.5, 1.0);
+
+        mesh->positions[i] = &posColList[i].position;
+        mesh->colors[i] = &posColList[i].color;
+    }
+    
+    // normals
+    mesh->normals.resize(numVertices);
+    for (int i = 0; i < numVertices; i++)
+    {
+        posColList[i].normal = obj.normals[obj.indices[i/6]];
+        mesh->normals[i] = &posColList[i].normal;
+    }
+
+    vertexData = posColList.data();
+    vertexDataSize = (uint32_t)posColList.size() * sizeof(PCN);
+    vertexCount = (uint32_t)numVertices;
+
+    // not going to use indicies as normals need to be present for each vertex, 
+    // indexing won't allow it
+
+    size_t numIndicies = 0;
+    indicies.resize(numIndicies);
+    mesh->indicies.resize(numIndicies);
 }

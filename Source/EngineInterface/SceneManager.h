@@ -4,6 +4,7 @@
 class EntityHandle;
 class Scriptable;
 struct KeyInputEvent;
+struct NodeAdditionEvent;
 class Transform;
 
 class SceneManager
@@ -16,5 +17,7 @@ public:
     SceneManager();
     ~SceneManager();
 
+    Transform * const GetSceneRootTransform();
     void HandleSceneControls(KeyInputEvent * inputEvent);
+    //void HandleSceneNodeAddition(NodeAdditionEvent * inputEvent);
 };

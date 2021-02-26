@@ -53,6 +53,7 @@ public:
     void BindVertexBuffers(VertexBufferBindingInfo * info);
     void BindIndexBuffer(IndexBufferBindingInfo * info);
     void DrawIndex(IndexedDrawInfo * info);
+    void Draw(DrawArrayInfo * info);
 };
 
 #include "RenderingWrapper.h"
@@ -166,4 +167,10 @@ template<typename T>
 inline void DrawCommandBuffer<T>::DrawIndex(IndexedDrawInfo * info)
 {
     commandInterface->DrawIndex(info);
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::Draw(DrawArrayInfo * info)
+{
+    commandInterface->Draw(info);
 }

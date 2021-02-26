@@ -19,22 +19,8 @@ enum class SpreadEquation
 
 struct LightUniform
 {
-    uint8_t isActive;
-    uint8_t lightType;
-    
-    glm::vec3 ligthPos;
-    glm::vec3 forward;
-
-    float intensity;
-    glm::uvec3 color;
-    
-    float beamRadius;
-    float beamWidth;
-    uint8_t equationType;
-
-    glm::uvec3 ambient;
-    glm::uvec3 diffuse;
-    glm::uvec3 specular;
+    glm::vec3 lightPos;
+    glm::vec3 lightColor;
 };
 
 class Light : public Component<Light>
@@ -55,19 +41,24 @@ private:
     float range; // should be directly proportional to the intensity
     float effectiveRange; // max( intensity * range, range) 
 
-    glm::uvec3 ambient;
-    glm::uvec3 diffuse;
-    glm::uvec3 specular;
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+
+    Light() = delete;
+    Light(const Light &) = delete; 
+    Light& operator=(const Light &) = delete;
 
 public:
-    Light(Transform * transform, LightType type = LightType::Point, 
+    Light(Transform * transform, LightType lightType = LightType::Point, 
         SpreadEquation equation = SpreadEquation::Circle)
     {
         this->transform = transform;
-        lightType = type;
+        this->lightType = lightType;
         intensity = 0.5f;
         range = 5.0f;
-        ambient = glm::uvec3(0.2f, 0.2f, 0.2f);
+        ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+        componentType = COMPONENT_TYPE::LIGHT;
     }
     
     void SetEquationType(const SpreadEquation & equation)
@@ -80,17 +71,17 @@ public:
         this->beamRadius = rad;
     }
 
-    void SetWidth(const uint32_t & beamWidth)
+    void SetWidth(const float & beamWidth)
     {
         this->beamWidth = beamWidth;
     }
 
-    void SetDiffuse(const glm::uvec3 & strength)
+    void SetDiffuse(const glm::vec3 & strength)
     {
         this->diffuse = strength;
     }
 
-    void SetSpecular(const glm::uvec3 & strength)
+    void SetSpecular(const glm::vec3 & strength)
     {
         this->specular = strength;
     }
@@ -109,5 +100,10 @@ public:
     float GetEffectiveRange()
     {
         return glm::max(range, intensity * range);
+    }
+
+    Transform * const GetTransform()
+    {
+        return transform;
     }
 };

@@ -29,7 +29,7 @@ private:
     uint32_t GetId();
 
     std::vector<VkBufferWrapper> bufferWrapperList;
-
+    VkPhysicalDeviceProperties physicalDeviceProps;
 public:
     void Init();
     void DeInit();
@@ -43,9 +43,11 @@ public:
     uint32_t * CreateBuffers(const uint32_t & bufferCount, VkBufferUsageFlags * bufferType, VkMemoryPropertyFlags * memType, size_t * dataSizes);
     uint32_t * AllocateBufferMemory(uint32_t * bufferId, const uint32_t & bufCount);
     uint32_t AllocateSharedMemory(uint32_t * bufferId, const uint32_t & bufCount);
-
+    // deprecated.
     void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
+    void CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
     void DestroyBuffer(uint32_t id);
 
     VkBuffer * GetBuffer(const uint32_t & id);
+    size_t GetMemoryAlignedDataSizeForBuffer(const size_t & dataSize);
 };

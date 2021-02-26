@@ -91,7 +91,7 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
         
         // get the setWrappers for the shader combination
         mat->resourceLayoutList = setWrapperList;
-        
+        mat->meshList.push_back(meshId);
         // using the set wrappers create shader resources
         CreateSetResources(setWrapperList);
         mat->componentId = matId;
@@ -113,10 +113,10 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
         }
 
         DecrementMatCounter();
-        AddMeshIds(mat, meshId);
         // if it exists then add the meshid to the list
+        AddMeshIds(mat, meshId);
     }
-
+        
     MeshAdditionEvent event;
     event.meshId = meshId;
     event.setWrapperList = mat->resourceLayoutList;
@@ -155,11 +155,11 @@ std::vector<uint32_t> MaterialFactory::GetMeshList(SetWrapper * setwrapper, cons
                 for each(auto meshId in obj.mat->meshList)
                 {
                     std::vector<uint32_t>::iterator itt;
-                    itt = std::find_if(meshList.begin(), meshList.end(), [=](uint32_t e) {
+                    itt = std::find_if(obj.mat->meshList.begin(), obj.mat->meshList.end(), [=](uint32_t e) {
                         return e == meshId;
                     });
 
-                    if (itt == meshList.end())
+                    if (itt != obj.mat->meshList.end())
                     {
                         meshList.push_back(*itt);
                     }

@@ -19,6 +19,7 @@ public:
     BitArray(unsigned int size);
     ~BitArray();
 
+    void SetSize(const uint32_t & size);
     void ClearAllBits();
     void SetAllBits();
     void SetByte(unsigned int byte, unsigned char val);

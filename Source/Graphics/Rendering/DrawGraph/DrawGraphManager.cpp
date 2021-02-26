@@ -52,9 +52,10 @@ void DrawGraphManager::AddNode(GraphNode<DrawGraphNode> * node)
     {
     case RendererType::Forward:
         fwdGraph->AddNode(node);
-
+        break;
     case RendererType::Deferred:
         dfrdGraph->AddNode(node);
+        break;
     }
 }
 

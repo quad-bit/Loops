@@ -764,14 +764,19 @@ uint32_t * VulkanInterface::CreateBuffers(BufferInfo * info, const uint32_t & co
     return ids;
 }
 
+size_t VulkanInterface::GetMemoryAlignedDataSizeForBuffer(const size_t & dataSize)
+{
+    return VkBufferFactory::GetInstance()->GetMemoryAlignedDataSizeForBuffer(dataSize);
+}
+
 uint32_t * VulkanInterface::AllocateBufferMemory(uint32_t * bufferId, const uint32_t & bufCount)
 {
     return VkBufferFactory::GetInstance()->AllocateBufferMemory(bufferId, bufCount);
 }
 
-void VulkanInterface::CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted)
+void VulkanInterface::CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted)
 {
-    VkBufferFactory::GetInstance()->CopyBufferDataToMemory(bufId, dataSize, data, memoryOffset, keepMemoryMounted);
+    VkBufferFactory::GetInstance()->CopyBufferDataToMemory(bufId, dataSize, memAlignedSize, data, memoryOffset, keepMemoryMounted);
 }
 
 void VulkanInterface::DestroyBuffer(uint32_t * ids, const uint32_t & count)

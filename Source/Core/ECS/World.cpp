@@ -18,6 +18,13 @@ EntityHandle* World::CreateEntity()
     return handle;
 }
 
+EntityHandle * World::CreateEntity(const std::string & name)
+{
+    EntityHandle * handle = CreateEntity();
+    handle->GetEntity()->entityName = name;
+    return handle;
+}
+
 EntityHandle * const World::FindEntity(const std::string & name)
 {
     return EntityManager::GetSingleton()->FindEntity(name);

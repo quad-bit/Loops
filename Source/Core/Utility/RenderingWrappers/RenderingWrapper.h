@@ -1,11 +1,11 @@
 #pragma once
 #include <stdint.h>
-//#include <Settings.h>
-#include <BitArray.h>
+//#include <BitArray.h>
 #include <string>
 #include <map>
 #include <vector>
 #include <array>
+#include <bitset>
 
 enum class ImageViewType
 {
@@ -312,7 +312,7 @@ enum class CullMode {
 
 struct MeshInfo
 {
-    BitArray attribMaskReq;
+    std::bitset<9> attribMaskReq;
     bool isIndexed;
     bool bufferPerAttribRequired;
     PrimtiveType * primitive = nullptr;
@@ -328,7 +328,8 @@ enum class ShaderResourceClassification
 {
     PER_SCENE,
     PER_MATERIAL,
-    PER_MATERIAL_INSTANCE
+    PER_MATERIAL_INSTANCE,
+    PER_OBJECT
 };
 
 struct ShaderDescription
@@ -946,6 +947,14 @@ enum class DependencyFlagBits
         uint32_t instanceCount;
         uint32_t firstIndex;
         int32_t vertexOffset;
+        uint32_t firstInstance;
+    };
+
+    struct DrawArrayInfo
+    {
+        uint32_t vertexCount;
+        uint32_t instanceCount;
+        uint32_t firstVertex;
         uint32_t firstInstance;
     };
 

@@ -26,12 +26,15 @@ void UniformFactory::HandlerUniformBuffer(ShaderBindingDescription * desc, SetWr
     info.memType = mem;
     info.memTypeCount = 2;
 
+
+    // num bufs should be deduced from alloc info
     uint32_t * id = apiInterface->CreateBuffers(&info, 1);
     desc->resourceId = *id;
     bufferIds.push_back(*id);
     delete[] id;
 
     //allocate buffer memory
+    // num mem should be deduced from alloc info
     uint32_t * memId = apiInterface->AllocateBufferMemory(&desc->resourceId, 1);
     desc->resourceMemoryId = *memId;
     memoryIds.push_back(*memId);
@@ -80,7 +83,8 @@ SetWrapper * UniformFactory::AllocateResource(ShaderBindingDescription * desc, s
     std::vector<SetWrapper*>::iterator it;
     it = std::find_if(setWrapperList->begin(), setWrapperList->end(), [&](SetWrapper * e)
     {
-        return (e->setValue == desc->set && numBindings == e->bindingWrapperList.size());
+        return (e->setValue == desc->set && 
+            numBindings == e->bindingWrapperList.size());
     });
 
     ASSERT_MSG_DEBUG(it != setWrapperList->end(), "Set not found");
@@ -128,9 +132,9 @@ SetWrapper * UniformFactory::AllocateResource(ShaderBindingDescription * desc, s
     return *it;
 }
 
-void UniformFactory::UploadDataToBuffers(const uint32_t & bufId, const size_t & dataSize, void * data, const size_t & memoryOffset, bool keepMemoryMounted)
+void UniformFactory::UploadDataToBuffers(const uint32_t & bufId, const size_t & dataSize, const size_t & memAlignedSize, void * data, const size_t & memoryOffset, bool keepMemoryMounted)
 {
-    apiInterface->CopyBufferDataToMemory(bufId, dataSize, data, memoryOffset);
+    apiInterface->CopyBufferDataToMemory(bufId, dataSize, memAlignedSize, data, memoryOffset, keepMemoryMounted);
 }
 
 void UniformFactory::AllocateDescriptors(SetWrapper * wrapper, ShaderBindingDescription * desc, const uint32_t & numBindings, const uint32_t & numDescriptorsPerBinding)
@@ -152,4 +156,9 @@ std::vector<uint32_t> UniformFactory::AcquireMeshList(SetWrapper * wrapper)
 {
 
     return std::vector<uint32_t>();
+}
+
+size_t UniformFactory::GetMemoryAlignedDataSizeForBuffer(const size_t & dataSize)
+{
+    return apiInterface->GetMemoryAlignedDataSizeForBuffer(dataSize);
 }

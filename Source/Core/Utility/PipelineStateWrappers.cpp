@@ -17,15 +17,36 @@ uint32_t MultiSampleStateWrapper::idCounter = 0;
 uint32_t DynamicStateWrapper::idCounter = 0;
 uint32_t ViewPortStateWrapper::idCounter = 0;
 
-void PipelineUtil::FillGlobalMeshList(std::vector<uint32_t>& meshList)
+void PipelineUtil::FillGlobalMeshList(std::vector<uint32_t>& meshList, const PipelineStates & currentState)
 {
     if (meshList.size() != 0)
     {
-        if (pipelineStateMeshList.size() == 0 || meshList.size() < pipelineStateMeshList.size())
+        if (meshList.size() > 0)
         {
-            pipelineStateMeshList.clear();
-            //pipelineStateMeshList.resize(0);
-            pipelineStateMeshList = meshList;
+            // compare the mesh and pipelineStateMeshList
+            if (pipelineStateMeshList.size() == 0 && currentState == PipelineStates::VertexInputState)
+            {
+                pipelineStateMeshList = meshList;
+            }
+            else if (pipelineStateMeshList.size() > 0)
+            {
+                std::vector<uint32_t>::iterator itt;
+                for(itt = pipelineStateMeshList.begin(); itt != pipelineStateMeshList.end(); itt++)
+                {
+                    std::vector<uint32_t>::iterator it;
+                    it = std::find_if(meshList.begin(), meshList.end(), [&](uint32_t meshId) { return meshId == *itt; });
+                    
+                    // if the id in pipelineMeshList is not found in meshList
+                    // erase the id from pipelineMeshList 
+                    if (it == meshList.end())
+                    {
+                        pipelineStateMeshList.erase(itt);
+                    }
+
+                    if (pipelineStateMeshList.size() == 0)
+                        break;
+                }
+            }
         }
     }
 }

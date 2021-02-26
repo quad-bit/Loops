@@ -7,7 +7,7 @@
 #include <Mesh.h>
 #include <AttributeHelper.h>
 #include <MeshFactory.h>
-#include <BitArray.h>
+#include <bitset>
 #include <MaterialFactory.h>
 #include <Camera.h>
 #include <MeshRenderer.h>
@@ -20,25 +20,6 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
 {
     scriptName = typeid(this).raw_name();
 
-    /*camHandle0 = worldObj->CreateEntity();
-    camHandle0->GetEntity()->entityName = "MainCamera";
-    camHandle0->GetTransform()->SetLocalPosition( glm::vec3(0, 0, 10));
-    camHandle0->GetTransform()->SetLocalEulerAngles(glm::vec3(0, 0, 0));
-
-    Camera * camera = new Camera(camHandle0->GetTransform());
-    camHandle0->AddComponent<Camera>(camera);
-
-    ComponentHandle<Camera> test = camHandle0->GetComponent<Camera>();
-
-    cameraController = new CameraController();
-    camHandle0->AddComponent<Scriptable>(cameraController);
-*/
-
-    //camHandle1 = worldObj->CreateEntity();
-    //camHandle1->GetEntity()->entityName = "SecondCamera";
-    //Camera * cam = new Camera(&camHandle1->GetTransform()->globalPosition);
-    //camHandle1->AddComponent<Camera>(cam);
-
     playerHandle = worldObj->CreateEntity();
     playerHandle->GetEntity()->entityName = "player";
     Transform * playerTrf = playerHandle->GetTransform();
@@ -50,12 +31,13 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
     Transform * torsoTrf = torso->GetTransform();
     torsoTrf->SetLocalPosition(glm::vec3(0, 0, 0));
 
-    Material * colMat;
+    Material * colMat, * colLitMat;
     torsoTrf->SetParent(playerTrf);
+    
     {
-        BitArray req(10);
-        req.SetBit((unsigned int)ATTRIBUTES::POSITION);
-        req.SetBit((unsigned int)ATTRIBUTES::COLOR);
+        std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
+        req.set((unsigned int)ATTRIBUTES::POSITION);
+        req.set((unsigned int)ATTRIBUTES::COLOR);
 
         PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST};
         MeshInfo meshInfo{};
@@ -82,7 +64,7 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
         torsoMeshRenderer = new MeshRenderer(torsoMesh, colMat, torsoTrf);
         torso->AddComponent<MeshRenderer>(torsoMeshRenderer);
     }
-
+    
     // HEAD
     head = worldObj->CreateEntity();
     head->GetEntity()->entityName = "head";
@@ -91,15 +73,16 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
     headTrf->SetLocalPosition( glm::vec3(0, 3, 0));
 
     {
-        BitArray req(10);
-        req.SetBit((unsigned int)ATTRIBUTES::POSITION);
-        req.SetBit((unsigned int)ATTRIBUTES::COLOR);
+        std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
+        req.set((unsigned int)ATTRIBUTES::POSITION);
+        req.set((unsigned int)ATTRIBUTES::COLOR);
+        req.set((unsigned int)ATTRIBUTES::NORMAL);
 
         PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST }; 
         MeshInfo meshInfo{};
         meshInfo.attribMaskReq = req;
         meshInfo.bufferPerAttribRequired = false;
-        meshInfo.isIndexed = true;
+        meshInfo.isIndexed = true; // needs to be corrected, as we are using indexed mesh but not the index buffer
         meshInfo.isPrimitiveRestartEnabled = false;
         meshInfo.primitive = prim;
         MESH_TYPE meshType = MESH_TYPE::CUBE;
@@ -107,11 +90,30 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
         Mesh * headMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
         head->AddComponent<Mesh>(headMesh);
 
+        //head->AddComponent<Material>(colMat);
+        ShaderDescription shaders[2];
+        shaders[0].type = ShaderType::VERTEX;
+        shaders[0].shaderName = "PCN_Lighting.vert";
+
+        shaders[1].type = ShaderType::FRAGMENT;
+        shaders[1].shaderName = "ColorLighting.frag";
+
+    #if 1
+        colLitMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, headMesh->componentId);
+        head->AddComponent<Material>(colLitMat);
+
+        headMeshRenderer = new MeshRenderer(headMesh, colLitMat, headTrf);
+        head->AddComponent<MeshRenderer>(headMeshRenderer);
+
+    #else
         head->AddComponent<Material>(colMat);
         MaterialFactory::GetInstance()->AddMeshIds(colMat, headMesh->componentId);
 
         headMeshRenderer = new MeshRenderer(headMesh, colMat, headTrf);
         head->AddComponent<MeshRenderer>(headMeshRenderer);
+
+    #endif
+    
     }
 
     //LEFT ARM
@@ -133,7 +135,6 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
     leftLeg = worldObj->CreateEntity();
     leftLeg->GetEntity()->entityName = "leftLeg";
     leftLeg->GetTransform()->SetParent(torsoTrf);
-
 }
 
 void PlayerHandlerScript::Init()

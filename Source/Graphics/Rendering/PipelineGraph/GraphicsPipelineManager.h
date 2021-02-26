@@ -779,7 +779,7 @@ inline void GraphicsPipelineManager<T>::CreateVertexInputState(const uint32_t & 
     VertexInputWrapper* wrapper =  new VertexInputWrapper;
     wrapper->inputState = inputStateInfo;
 
-    uint32_t id = HashManager::GetInstance()->FindVertexInputStateHash(inputStateInfo, wrapper->GetId());
+    int id = HashManager::GetInstance()->FindVertexInputStateHash(inputStateInfo, wrapper->GetId());
     
     // vertex input will be the first state hence the vector can be resized
     std::vector<GraphNode<StateWrapperBase>*> nodeList;
@@ -797,7 +797,7 @@ inline void GraphicsPipelineManager<T>::CreateVertexInputState(const uint32_t & 
     
         // TODO : as this is vertex input state the connection won't be made here, Done.
 
-        // TODO : Create vulkan vertexinput object
+        // TODO : Create vulkan vertexinput object, done.
 
         apiInterface->CreateVertexInputState(wrapper);
     }
@@ -828,7 +828,7 @@ inline void GraphicsPipelineManager<T>::CreateVertexAssemblyState(const uint32_t
     InputAssemblyWrapper * wrapper = new InputAssemblyWrapper;
     wrapper->assemblyState = assembly;
 
-    uint32_t id = HashManager::GetInstance()->FindInputAssemblyStateHash(assembly, wrapper->GetId());
+    int id = HashManager::GetInstance()->FindInputAssemblyStateHash(assembly, wrapper->GetId());
     GraphNode<StateWrapperBase> * node;
 
     if (id == -1)
@@ -1002,6 +1002,14 @@ inline std::vector<SetWrapper*> GraphicsPipelineManager<T>::CreatResourceLayoutS
 template<typename T>
 inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEvent * event)
 {
+    if (PipelineUtil::pipelineStateMeshList.size() == 0)
+    {
+        PipelineUtil::setsPerPipeline.clear();
+        PipelineUtil::pipelineStateMeshList.clear();
+        PipelineUtil::stateToIdMap.clear();
+        return;
+    }
+
     // pipeline create info
     PipelineCreateInfo info = {};
     info.renderPassId = renderPassID;
@@ -1021,7 +1029,6 @@ template<typename T>
 inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & renderPassId, const uint32_t & subpassId)
 {
     // traversal
-
     this->renderPassID = renderPassId;
     this->subPassId = subpassId;
 
@@ -1069,8 +1076,6 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & re
     apiInterface->CreatePipeline(&pipelineCreateInfoList[0], numPipelines, ids);
 
     delete[] ids;
-    // Get ids of all pipeline states
-    // Get all the meshId from a given path
 }
 
 

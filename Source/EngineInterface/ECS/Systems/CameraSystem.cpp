@@ -30,6 +30,9 @@ void CameraSystem::Init()
 
     resourceSharingConfig.maxUniformPerResource = 2;
     resourceSharingConfig.allocatedUniformCount = 0;
+
+    size_t uniformSize = sizeof(CameraUniform);
+    memoryAlignedUniformSize = UniformFactory::GetInstance()->GetMemoryAlignedDataSizeForBuffer(uniformSize);
 }
 
 void CameraSystem::DeInit()
@@ -58,7 +61,7 @@ void CameraSystem::Update(float dt)
         //upload data to buffers
         //for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
         {
-            UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
+            UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptorAligned, memoryAlignedUniformSize, &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
         }
 
         // TODO : write the uniform data of Camera to gpu memory via void*
@@ -78,16 +81,16 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     desc->resourceName = "View";
     desc->resourceType = DescriptorType::UNIFORM_BUFFER;
     desc->resParentId = inputEvent->cam->componentId;
-    desc->parentType = inputEvent->cam->type;
-    desc->dataSizePerDescriptor = sizeof(CameraUniform);
+    desc->parentType = inputEvent->cam->componentType;
+    desc->dataSizePerDescriptorAligned = memoryAlignedUniformSize;
     desc->uniformId = inputEvent->cam->componentId; // as one cam = one uniform
-    desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(sizeof(CameraUniform), allocConfig, resourceSharingConfig);
+    desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(memoryAlignedUniformSize, allocConfig, resourceSharingConfig);
     desc->allocationConfig = allocConfig;
 
     // Check if it can be fit into an existing buffer
     if (AllocationUtility::IsNewAllocationRequired(resourceSharingConfig))
     {
-        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(sizeof(CameraUniform), allocConfig, resourceSharingConfig);
+        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(memoryAlignedUniformSize, allocConfig, resourceSharingConfig);
         // True : Allocate new buffer
         cameraSetWrapper = UniformFactory::GetInstance()->AllocateResource(desc, &totalSize,  1, AllocationMethod::LAZY);
     }
@@ -108,7 +111,7 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     //upload data to buffers
     for(uint32_t i = 0; i < allocConfig.numDescriptors; i++)
     {
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptor, &obj, desc->offsetsForEachDescriptor[i], false);
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(CameraUniform), memoryAlignedUniformSize, &obj, desc->offsetsForEachDescriptor[i], false);
     }
 
     UniformFactory::GetInstance()->AllocateDescriptors(cameraSetWrapper, desc, 1, allocConfig.numDescriptors);

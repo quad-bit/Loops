@@ -38,12 +38,27 @@ public:
     }
 };
 
+class DrawArrayDrawNode : public DrawGraphNode
+{
+public:
+    DrawArrayInfo info;
+
+    virtual void Entry() override;
+    virtual void Exit() override;
+    DrawArrayDrawNode()
+    {
+        numMeshes = 1;
+        drawNodeType = DrawNodeTypes::DRAWING;
+    }
+};
+
 class MeshNode : public DrawGraphNode
 {
 public:
     std::vector<uint32_t> bufferIds;
     std::vector<size_t> pOffsets;
     uint32_t indexBufferId;
+    bool isIndexed;
     virtual void Entry() override;
     virtual void Exit() override;
     MeshNode()
@@ -76,6 +91,7 @@ private:
     std::vector<GraphNode<DrawGraphNode> * >  meshNodeList;
     std::vector<GraphNode<DrawGraphNode> * >  transformNodeList;
     std::vector<GraphNode<DrawGraphNode> * >  drawingNodeList;
+    size_t memoryAlignedDataSize;
 
 public:
     virtual void Init() override;

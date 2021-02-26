@@ -45,7 +45,8 @@ struct ShaderBindingDescription
     uint32_t binding;
     std::string resourceName;
     uint32_t numElements;
-    size_t dataSizePerDescriptor;
+    size_t dataSizePerDescriptorAligned;
+    size_t dataSizePerDescriptor; //sizeOf(Uniform Struct)
     uint32_t uniformId;
     uint32_t resParentId;
     COMPONENT_TYPE parentType;

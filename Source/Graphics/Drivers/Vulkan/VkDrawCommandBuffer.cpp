@@ -135,3 +135,8 @@ void VkDrawCommandBuffer::DrawIndex(IndexedDrawInfo * info)
 {
     vkCmdDrawIndexed(*commandBuffer, info->indexCount, info->instanceCount, info->firstIndex, info->vertexOffset, info->firstInstance);
 }
+
+void VkDrawCommandBuffer::Draw(DrawArrayInfo * info)
+{
+    vkCmdDraw(*commandBuffer, info->vertexCount, info->instanceCount, info->firstVertex, info->firstInstance);
+}

@@ -17,7 +17,7 @@ class DrawCommandBuffer;
 
 enum class DrawNodeTypes
 {
-    PIPELINE,
+    PIPELINE, // cmdBindPipeline
     CAMERA,
     LIGHT,
     LIGHT_GROUP,

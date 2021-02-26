@@ -59,7 +59,7 @@ private:
     std::vector<GraphNode<DrawGraphNode> *> cameraGraphNodeList;
     std::map<DrawGraphNode *, ShaderBindingDescription *> nodeToDescriptionMap;
     std::map<Camera *, ShaderBindingDescription *> camToDescriptionMap;
-
+    size_t memoryAlignedUniformSize;
 public:
     virtual void Init() override;
     virtual void DeInit() override;

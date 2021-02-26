@@ -14,6 +14,7 @@
 #include "MeshRenderer.h"
 #include "MeshRendererSystem.h"
 #include "LightSystem.h"
+#include "Light.h"
 
 ECS_Manager* ECS_Manager::instance = nullptr;
 World * worldObj;
@@ -30,6 +31,7 @@ void ECS_Manager::Init()
     materialManager = worldObj->CreateManager<Material>();
     cameraManager = worldObj->CreateManager<Camera>();
     meshRendererManager = worldObj->CreateManager<MeshRenderer>();
+    lightManager = worldObj->CreateManager<Light>();
 
     scriptableSystemObj = new ScriptableSystem();
     worldObj->AddSystem(scriptableSystemObj);

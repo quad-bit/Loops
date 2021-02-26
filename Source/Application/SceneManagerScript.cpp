@@ -5,6 +5,7 @@
 #include <glm\glm.hpp>
 #include <EntityHandle.h>
 #include <Transform.h>
+#include <Light.h>
 
 SceneManagerScript::SceneManagerScript() : Scriptable(false)
 {
@@ -28,10 +29,21 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
 
     playerHandlerScript = new PlayerHandlerScript();
     mainObject->AddComponent<Scriptable>(playerHandlerScript);
+
+    lightHandle = worldObj->CreateEntity("light");
+    ComponentHandle<Transform> lightTrfHandle = lightHandle->GetComponent<Transform>();
+    lightTrfHandle->SetLocalPosition(glm::vec3(3, 5, 0));
+    lightTrfHandle->SetLocalEulerAngles(glm::vec3(0, 0, 0));
+
+    lightComponent = new Light(lightTrfHandle.GetComponent());
+    lightHandle->AddComponent<Light>(lightComponent);
 }
 
 SceneManagerScript::~SceneManagerScript()
 {
+    lightHandle->RemoveComponent<Light>(lightComponent);
+    worldObj->DestroyEntity(lightHandle);
+
     delete cameraController;
     worldObj->DestroyEntity(camHandle0);
 

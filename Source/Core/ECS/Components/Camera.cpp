@@ -13,7 +13,7 @@ Camera::Camera(Transform * transform, glm::vec3 up, float yaw, float pitch, Came
     this->projectionType = projectionType;
     //this->updateCameraVectors();
 
-    type = COMPONENT_TYPE::CAMERA;
+    componentType = COMPONENT_TYPE::CAMERA;
 }
 
 // Returns the view matrix calculated using Euler Angles and the LookAt Matrix

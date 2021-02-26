@@ -1,6 +1,9 @@
 #pragma once
 #include "BitArray.h"
 #include <map>
+#include "PlatformSettings.h"
+#include <bitset>
+#include <AttributeHelper.h>
 
 enum class MESH_TYPE;
 class Mesh;
@@ -8,21 +11,17 @@ struct AttribStructBase;
 struct MeshInfo;
 
 #if (RENDERING_API == VULKAN)
-class VulkanInterface;
+    class VulkanInterface;
+    typedef VulkanInterface ApiInterface;
 #elif (RENDERING_API == DX)
-class DxInterface;
+    class DxInterface;
+    typedef DxInterface ApiInterface;
 #endif
 
 class MeshFactory
 {
 private:
-
-#if (RENDERING_API == VULKAN)
-    VulkanInterface * apiInterface;
-#elif (RENDERING_API == DX)
-    DxInterface * apiInterface;
-#endif
-
+    ApiInterface * apiInterface;
     MeshFactory(){}
     MeshFactory(MeshFactory const &) {}
     MeshFactory const & operator= (MeshFactory const &) {}
@@ -31,20 +30,16 @@ private:
     std::map<Mesh *, AttribStructBase *> meshToVertWrapperMap;
 
     uint32_t idCounter = 0;
-    uint32_t GetId() { return idCounter++; }
+    uint32_t GenerateMeshId() { return idCounter++; }
 
     int * CreateVertexBuffer(uint32_t count);
     int CreateIndexBuffer();
-    //Create vertex input location description
-    //Create vertex input binding description
+
+    std::bitset<(uint32_t)ATTRIBUTES::NUM_ATTRIBUTES> pcMask; 
+    std::bitset<(uint32_t)ATTRIBUTES::NUM_ATTRIBUTES> pcnMask;
 
 public:
-#if (RENDERING_API == VULKAN)
-    void Init(VulkanInterface * obj) { apiInterface = obj; }
-#elif (RENDERING_API == DX)
-    void Init(DxInterface * obj) { apiInterface = obj; }
-#endif
-
+    void Init(ApiInterface * obj);
     void DeInit();
     void Update();
     static MeshFactory* GetInstance();

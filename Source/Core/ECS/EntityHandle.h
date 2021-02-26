@@ -55,7 +55,7 @@ public:
 #include "EventBus.h"
 #include "MeshRenderer.h"
 #include "Scriptable.h"
-
+#include "Light.h"
 template<typename ComponentType>
 inline void EntityHandle::AddComponent(ComponentType * componentType)
 {
@@ -88,6 +88,16 @@ inline void EntityHandle::AddComponent(Scriptable * componentType)
     worldObj->AddComponent<Scriptable>(componentType, entityObj);
     componentType->entityHandle = this;
     componentType->Activated();
+}
+
+template<>
+inline void EntityHandle::AddComponent(Light * componentType)
+{
+    worldObj->AddComponent<Light>(componentType, entityObj);
+
+    LightAdditionEvent evt;
+    evt.light = componentType;
+    EventBus::GetInstance()->Publish(&evt);
 }
 
 template<typename ComponentType>

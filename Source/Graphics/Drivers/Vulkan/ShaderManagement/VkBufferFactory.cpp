@@ -3,6 +3,7 @@
 #include "VulkanSettings.h"
 #include "VulkanMemoryManager.h"
 #include <CorePrecompiled.h>
+#include "VulkanManager.h"
 
 VkBufferFactory* VkBufferFactory::instance = nullptr;
 
@@ -14,6 +15,7 @@ uint32_t VkBufferFactory::GetId()
 void VkBufferFactory::Init()
 {
     PLOGD << "VKBUfferFactory init";
+    physicalDeviceProps = VulkanManager::GetInstance()->GetPhysicalDeviceProps();
 
 }
 
@@ -193,6 +195,19 @@ void VkBufferFactory::CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSiz
     vkUnmapMemory(*CoreObjects::logicalDeviceObj, *it->bufferMemory);
 }
 
+void VkBufferFactory::CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, VkDeviceSize memoryMapOffset, bool keepMemoryMounted)
+{
+    std::vector<VkBufferWrapper>::iterator it;
+    it = std::find_if(bufferWrapperList.begin(), bufferWrapperList.end(), [&](VkBufferWrapper e) { return e.id == bufId; });
+    ASSERT_MSG_DEBUG(it != bufferWrapperList.end(), "buffer id not found");
+
+    void * gpuMem;
+    ErrorCheck(vkMapMemory(*CoreObjects::logicalDeviceObj, *it->bufferMemory, memoryMapOffset,
+        memAlignedSize, 0, (void**)&gpuMem));
+    memcpy(gpuMem, data, dataSize);
+    vkUnmapMemory(*CoreObjects::logicalDeviceObj, *it->bufferMemory);
+}
+
 void VkBufferFactory::DestroyBuffer(uint32_t id)
 {
     std::vector<VkBufferWrapper>::iterator it;
@@ -220,4 +235,14 @@ VkBuffer * VkBufferFactory::GetBuffer(const uint32_t & id)
     ASSERT_MSG_DEBUG(it != bufferWrapperList.end(), "Buffer not found");
     
     return it->buffer;
+}
+
+size_t VkBufferFactory::GetMemoryAlignedDataSizeForBuffer(const size_t & dataSize)
+{
+    size_t alignedDataSize;
+    VkDeviceSize minUniformAlignment = physicalDeviceProps.limits.minUniformBufferOffsetAlignment;
+    if (minUniformAlignment)
+        alignedDataSize = (dataSize + minUniformAlignment - 1) &
+        ~(minUniformAlignment - 1);
+    return alignedDataSize;
 }

@@ -39,6 +39,7 @@ public:
     void DestroyEntity(Entity* entityObj);
     void DestroyEntity(EntityHandle* entityHandleObj);
     EntityHandle* CreateEntity();
+    EntityHandle* CreateEntity(const std::string & name);
 
     EntityHandle * const FindEntity(const std::string & name);
 

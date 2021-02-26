@@ -22,4 +22,6 @@ public:
     void BindVertexBuffers(VertexBufferBindingInfo * info);
     void BindIndexBuffers(IndexBufferBindingInfo * info);
     void DrawIndex(IndexedDrawInfo * info);
+    void Draw(DrawArrayInfo * info);
+
 };

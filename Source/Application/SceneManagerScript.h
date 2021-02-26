@@ -5,6 +5,7 @@
 class EntityHandle;
 class MeshRenderer;
 class CameraController;
+class Light;
 
 class SceneManagerScript : public Scriptable
 {
@@ -15,6 +16,9 @@ private:
     EntityHandle* camHandle0;
     EntityHandle* camHandle1;
     EntityHandle* playerHandle;
+    
+    EntityHandle* lightHandle;
+    Light * lightComponent;
 
     Scriptable * cameraController;
 

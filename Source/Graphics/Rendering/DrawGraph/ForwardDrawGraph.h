@@ -105,7 +105,7 @@ inline void ForwardGraph<T>::CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> 
             // outgoing edge, special case
             // pipeline = 1
             // set 4 = 2 (in list) , TRANFORM
-            else if (setValue == ResourceSets::TRANSFORM && i == 1)
+            else if (setValue == ResourceSets::TRANSFORM)
             {
                 // connect to the mesh node
                 std::vector<GraphNode<DrawGraphNode>*> * nodeList = &typeToNodeMap[DrawNodeTypes::MESH];
@@ -118,7 +118,8 @@ inline void ForwardGraph<T>::CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> 
                         AddNodeToPipelineData(data, obj);
 
                         // if yes create an outgoing edge from pipeline node.
-                        drawGraph->AttachDirectedEdge(pipelineNode, obj);
+                        if(i == 1)
+                            drawGraph->AttachDirectedEdge(pipelineNode, obj);
                     }
                 }
 
@@ -194,10 +195,17 @@ inline PerPipelineNodeData * ForwardGraph<T>::CreatePipelineData(GraphNode<DrawG
     PerPipelineNodeData data = {};
     data.pipelineNode = pipelineNode;
 
+    // set values
     for (uint32_t i = 0; i < numSetsWrappers; i++)
     {
         data.setValues.push_back(setWrapperList->at(i)->setValue);
     }
+
+    std::sort(data.setValues.begin(), data.setValues.end());
+
+    // type to node map
+
+    // set to node map
 
     pipelineNodeDataList.push_back(data);
     return &pipelineNodeDataList.back();
@@ -289,10 +297,10 @@ inline void ForwardGraph<T>::CreateEdgesWithinPipeline(PerPipelineNodeData * dat
         if (higherSetLevel == ResourceSets::CAMERA || (lowerSetLevel == ResourceSets::TRANSFORM && i == 0))
         {
             // already connected to pipeline node 
-            return;
+            continue;
         }
 
-        ASSERT_MSG_DEBUG(0, "Case yet to be handled");
+        //ASSERT_MSG_DEBUG(0, "Case yet to be handled");
 
         if (lowerSetLevel == ResourceSets::TRANSFORM)
         {
@@ -442,7 +450,8 @@ inline void ForwardGraph<T>::AddNode(GraphNode<DrawGraphNode> * node)
 
             bool isNodeInPipeline = CheckIfNodeBelongsToPipeline(data.pipelineNode, node, &data.setValues);
             // if yes add to the node list 
-            AddNodeToPipelineData(&data, node);
+            if(isNodeInPipeline)
+                AddNodeToPipelineData(&data, node);
             // create edge with existing
         }
     }

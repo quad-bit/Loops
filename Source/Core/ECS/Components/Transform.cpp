@@ -3,7 +3,6 @@
 #include "SceneChangeEvent.h"
 #include "Entity.h"
 
-
 void Transform::Init()
 {
     up = glm::vec3(0, 1, 0);
@@ -26,7 +25,6 @@ void Transform::Init()
     nodeType = NODE_TYPE::TRANSFORM;
 
     // publish scene node creation event
-
     NodeAdditionEvent event;
     event.node = this;
     EventBus::GetInstance()->Publish(&event);
@@ -41,7 +39,7 @@ Transform::Transform(Entity * entity)
 {
     owner = entity;
     entityName = &owner->entityName; 
-    type = COMPONENT_TYPE::TRANSFORM;
+    componentType = COMPONENT_TYPE::TRANSFORM;
     Init();
 }
 
@@ -146,7 +144,26 @@ glm::mat4 Transform::GetLocalModelMatrix()
 
 glm::vec3 Transform::GetGlobalPosition()
 {
-    ASSERT_MSG_DEBUG(0, "Yet to be implemented");
+    //ASSERT_MSG_DEBUG(0, "Yet to be implemented");
+    //not sure.. this is not required as using the localPosition localModelMat gets derived
+    
+    glm::vec3 origin = glm::vec3(0, 0, 0);
+    glm::vec4 temp = localModelMatrix * Vec3ToVec4_1(origin);
+    glm::vec3 position = Vec4ToVec3(temp);
+
+    Transform * parentTransform = parent;
+    glm::mat4 globalTransform = glm::identity<glm::mat4>();
+
+    while (parentTransform != nullptr)
+    {
+        glm::vec4 temp = parentTransform->GetLocalModelMatrix() * Vec3ToVec4_1(position);
+        position = Vec4ToVec3(temp);
+
+        parentTransform = parentTransform->parent;
+    }
+
+    globalPosition = position;
+
     return globalPosition;
 }
 

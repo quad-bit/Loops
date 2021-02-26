@@ -56,7 +56,7 @@ public:
 
     Mesh()
     {
-        type = COMPONENT_TYPE::MESH;
+        componentType = COMPONENT_TYPE::MESH;
     }
 
     ~Mesh()

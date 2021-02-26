@@ -17,6 +17,17 @@ BitArray::~BitArray()
 {
 }
 
+void BitArray::SetSize(const uint32_t & size)
+{
+    assert(size > 0);
+    m_bits.clear();
+    totalBits = size;
+    m_bits.reserve(size);
+    totalBytes = BIT_TO_CHAR(size);
+    for (uint32_t i = 0; i < size; i++)
+        m_bits.push_back(0);
+}
+
 void BitArray::ClearAllBits()
 {
 	m_bits.assign(m_bits.size(), 0);

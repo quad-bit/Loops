@@ -751,7 +751,7 @@ void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription
             VkDescriptorBufferInfo info = {};
             info.buffer = *VkBufferFactory::GetInstance()->GetBuffer(desc->resourceId);
             info.offset = desc->offsetsForEachDescriptor[i];
-            info.range = desc->dataSizePerDescriptor;
+            info.range = desc->dataSizePerDescriptorAligned;
             bufferInfoList.push_back(info);
         }
         break;

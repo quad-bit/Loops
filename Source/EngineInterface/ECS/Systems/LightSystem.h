@@ -14,10 +14,23 @@ class ComponentHandle;
 
 class Light;
 
+class LightDrawNode : public DrawGraphNode
+{
+public:
+    std::vector<uint32_t> descriptorIds;
+    virtual void Entry() override;
+    //virtual void Exit() override;
+    LightDrawNode()
+    {
+        drawNodeType = DrawNodeTypes::LIGHT;
+    }
+};
+
+
 class LightSystem : public System
 {
 private:
-    std::vector<Light *> cameraList;
+    std::vector<Light *> lightlist;
     std::vector<ShaderBindingDescription *> resDescriptionList;
     GlobalResourceAllocationConfig allocConfig;
     GlobalResourceSharingConfig resourceSharingConfig;
@@ -30,6 +43,8 @@ private:
     std::vector<GraphNode<DrawGraphNode> *> lightGraphNodeList;
     std::map<DrawGraphNode *, ShaderBindingDescription *> nodeToDescriptionMap;
     std::map<Light *, ShaderBindingDescription *> lightToDescriptionMap;
+
+    size_t memoryAlignedUniformSize;
 
 public:
     virtual void Init() override;

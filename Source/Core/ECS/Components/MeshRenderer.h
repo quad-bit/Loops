@@ -14,7 +14,7 @@ public:
     Material * material;
     Transform * transform;
 
-    COMPONENT_TYPE type{COMPONENT_TYPE::MESH_RENDERER};
+    COMPONENT_TYPE componentType{COMPONENT_TYPE::MESH_RENDERER};
 
     MeshRenderer(Mesh * geo, Material * mat, Transform * tran)
     {

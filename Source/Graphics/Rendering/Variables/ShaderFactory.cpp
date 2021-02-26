@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <Shader.h>
 #include <GraphicsPipelineManager.h>
+#include "PlatformSettings.h"
 
 #if (RENDERING_API == VULKAN)
 #include <VulkanInterface.h>

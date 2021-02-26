@@ -27,7 +27,7 @@ public:
     {
         this->shaders = shaders;
         this->numShaders = numShaders;
-        type = COMPONENT_TYPE::MATERIAL;
+        componentType = COMPONENT_TYPE::MATERIAL;
     }
 };
 
