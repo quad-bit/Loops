@@ -5,6 +5,7 @@
 layout (location = 0) in vec4 color;
 layout (location = 1) in vec3 normal;
 layout (location = 2) in vec4 fragPos;
+layout (location = 3) in vec3 viewPos;
 
 layout (location = 0) out vec4 outColor;
 
@@ -25,8 +26,15 @@ void main()
    vec3 lightDir = normalize(light.lightPos - fragPos.xyz);
    float diff = max(dot(norm, lightDir), 0.0);
    vec3 diffuse = diff * light.lightColor;
-          
-   vec3 result = (ambient + diffuse) * color.xyz;
+   
+   //specular       
+   float specularStrength = 0.5;
+   vec3 viewDir = normalize(viewPos - fragPos.xyz);
+   vec3 reflectDir = reflect(-lightDir, norm);  
+   float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+   vec3 specular = specularStrength * spec * light.lightColor;  
     
-   outColor = vec4(result, 1.0); //vec4(normal.xyx * color.xyz, color.z); 
+   vec3 result = (ambient + diffuse + specular) * color.xyz;
+    
+   outColor = vec4(result, 1.0); 
 }

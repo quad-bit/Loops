@@ -4,6 +4,7 @@
 #include "Entity.h"
 #include "Transform.h"
 #include "glm\glm.hpp"
+#include "MathUtil.h"
 #include "EntityHandle.h"
 #include "Camera.h"
 #include <CorePrecompiled.h>
@@ -42,19 +43,19 @@ CameraController::~CameraController()
 
 void CameraController::MouseDragEventHandler(MouseDragEvent * evt)
 {
-    switch (evt->keyState)
+    glm::vec2 mouseScreenCoord = glm::vec2(evt->x, evt->y);
+    
+    if (mouseScreenCoord.x > 0 && mouseScreenCoord.x < Settings::windowWidth &&
+        mouseScreenCoord.y > 0 && mouseScreenCoord.y < Settings::windowHeight)
     {
-    case KeyState::PRESSED:
-        PLOGD << "Pressed";
-        break;
-
-    case KeyState::DOWN:
-        PLOGD << "Down";
-        break;
-
-    case KeyState::RELEASED:
-        PLOGD << "Released";
-        break;
+          
+        float x = MathUtil::RangeConversion<float>(mouseScreenCoord.x / Settings::windowWidth, -1, 1);
+        float y = -MathUtil::RangeConversion<float>(mouseScreenCoord.y / Settings::windowHeight, -1, 1);
+        glm::vec3 ndc = glm::vec3(x, y, -1);
+        glm::vec4 transformed = glm::inverse<4, 4, float, glm::qualifier::highp>(cam->GetProjectionMat()) *
+            glm::inverse<4, 4, float, glm::qualifier::highp>(cam->GetViewMatrix()) * Vec3ToVec4_1(ndc);
+        PLOGD << "Pressed " << transformed.x * 10 << "  " << transformed.y * 10;
+        
     }
 }
 

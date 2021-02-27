@@ -56,6 +56,7 @@ void CameraSystem::Update(float dt)
         CameraUniform obj = {};
         obj.projectionMat = camHandle->GetComponent()->GetProjectionMat();
         obj.viewMat = camHandle->GetComponent()->GetViewMatrix();
+        obj.cameraPos = *camHandle->GetComponent()->GetPosition();
 
         ShaderBindingDescription * desc = camToDescriptionMap[camHandle->GetComponent()];
         //upload data to buffers
@@ -75,9 +76,9 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     inputEvent->cam->componentId = GeneratedCamId();
 
     ShaderBindingDescription * desc = new ShaderBindingDescription;
-    desc->set = 0;
+    desc->set = (uint32_t)ResourceSets::CAMERA;
     desc->binding = 0;
-    desc->numElements = 2;
+    desc->numElements = 3;
     desc->resourceName = "View";
     desc->resourceType = DescriptorType::UNIFORM_BUFFER;
     desc->resParentId = inputEvent->cam->componentId;
@@ -107,6 +108,7 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     CameraUniform obj = {};
     obj.projectionMat = inputEvent->cam->GetProjectionMat();
     obj.viewMat = inputEvent->cam->GetViewMatrix();
+    obj.cameraPos = *inputEvent->cam->GetPosition();
 
     //upload data to buffers
     for(uint32_t i = 0; i < allocConfig.numDescriptors; i++)
@@ -233,22 +235,3 @@ void CameraSystem::UpdateCameraVectors(Camera * cam)
     cam->GetUp() = glm::normalize(glm::cross(cam->GetRight(), cam->GetFront()));
 }
 
-
-#include "DrawCommandBuffer.h"
-
-void CameraDrawNode::Entry()
-{
-    PipelineType bindPoint = PipelineType::GRAPHICS;
-
-    // Binding the descriptor set for Camera
-    DescriptorSetBindingInfo info = {};
-    //info.descriptorSetIds.push_back( this->descriptorIds[Settings::currentFrameInFlight]);
-    //info.dynamicOffsetCount = 0;
-    //info.firstSet = 0;
-    //info.pDynamicOffsets = nullptr;
-    //info.pipelineBindPoint = &bindPoint;
-    //info.pipelineLayoutId = DrawGraphUtil::pipelineLayoutId;
-    info.descriptorSetId = this->descriptorIds[Settings::currentFrameInFlight];
-    DrawGraphUtil::descriptorIdList.push_back(info.descriptorSetId);
-    //dcb->BindDescriptorSets(&info);
-}

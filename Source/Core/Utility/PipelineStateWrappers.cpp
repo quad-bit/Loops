@@ -40,7 +40,7 @@ void PipelineUtil::FillGlobalMeshList(std::vector<uint32_t>& meshList, const Pip
                     // erase the id from pipelineMeshList 
                     if (it == meshList.end())
                     {
-                        pipelineStateMeshList.erase(itt);
+                        itt = pipelineStateMeshList.erase(itt);
                     }
 
                     if (pipelineStateMeshList.size() == 0)

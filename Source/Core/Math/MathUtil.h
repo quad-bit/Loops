@@ -12,4 +12,10 @@ namespace MathUtil
 #define Vec3ToVec4_0(a) glm::vec4(a.x, a.y, a.z, 0.0f)
 
     float lerp(float x, float y, float t);
+
+    template <typename T>
+    T RangeConversion(T val, T newMin, T newMax)
+    {
+        return val * (newMax - newMin) - newMax;
+    }
 }

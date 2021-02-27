@@ -19,6 +19,7 @@ private:
     
     EntityHandle* lightHandle;
     Light * lightComponent;
+    MeshRenderer * lightDebugRenderer;
 
     Scriptable * cameraController;
 

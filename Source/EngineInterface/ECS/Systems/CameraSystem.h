@@ -16,18 +16,6 @@ class CameraAdditionEvent;
 template <typename T>
 class ComponentHandle;
 
-class CameraDrawNode : public DrawGraphNode
-{
-public:
-    std::vector<uint32_t> descriptorIds;
-    virtual void Entry() override;
-    //virtual void Exit() override;
-    CameraDrawNode()
-    {
-        drawNodeType = DrawNodeTypes::CAMERA;
-    }
-};
-
 class CameraSystem : public System
 {
 private:

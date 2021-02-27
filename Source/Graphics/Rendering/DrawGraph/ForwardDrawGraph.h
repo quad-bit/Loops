@@ -39,7 +39,8 @@ private:
     void CreateEdgesWithinPipeline(PerPipelineNodeData * data);
 
     bool CheckForCommonMeshId(GraphNode<DrawGraphNode> * src, GraphNode<DrawGraphNode> * dest);
-
+    DrawGraphNode * dummyNode;
+    GraphNode<DrawGraphNode> * dummyGraphNode;
 public:
     void Init(Graph<DrawGraphNode> * drawGraph);
     void DeInit();
@@ -366,11 +367,20 @@ template<typename T>
 inline void ForwardGraph<T>::Init(Graph<DrawGraphNode>* drawGraph)
 {
     this->drawGraph = drawGraph;
+
+    // Create a dummy node, which wont have any connections, hence all the nodes
+    // will get traversed to find this dummy, Hopefully.
+
+    dummyNode = new IndexedDrawNode;
+    dummyGraphNode = new GraphNode<DrawGraphNode>(dummyNode);
+    AddNode(dummyGraphNode);
 }
 
 template<typename T>
 inline void ForwardGraph<T>::DeInit()
 {
+    delete dummyGraphNode;
+    delete dummyNode;
 }
 
 template<typename T>
@@ -378,21 +388,13 @@ inline void ForwardGraph<T>::Update(DrawCommandBuffer<T>* dcb)
 {
     std::vector<GraphNode<DrawGraphNode> *>* cameraNodeList = &typeToNodeMap[DrawNodeTypes::CAMERA];
     std::vector<GraphNode<DrawGraphNode> *>* drawingNodeList = &typeToNodeMap[DrawNodeTypes::DRAWING];
-    
-    /*
-    for each(auto cam in *cameraNodeList)
-    {
-        for each(auto draw in *drawingNodeList)
-        {
-            drawGraph->FindAllPaths(cam->GetNodeId(), draw->GetNodeId());
-        }
-    }
-    */
+       
     DrawGraphUtil::setOffset = 0;
     DrawGraphUtil::descriptorIdList.clear();
     for each(auto cam in *cameraNodeList)
     {
-        drawGraph->DepthFirstTraversal(cam->GetNodeId(), drawingNodeList->back()->GetNodeId());
+        // searching for a disconnected dummy node, it will allow us iterate through all nodes
+        drawGraph->DepthFirstTraversal(cam->GetNodeId(), dummyGraphNode->GetNodeId());
     }
 }
 

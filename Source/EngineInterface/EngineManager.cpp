@@ -72,7 +72,7 @@ void EngineManager::Update()
 
         // to make it more smooth pass this(lag / MS_PER_UPDATE) to renderer, advance the render
         ECS_Manager::GetInstance()->Update((float)(lag / msPerUpdate));
-        //lag = msPerUpdate;
+        // lag = msPerUpdate;
         GraphicsManager::GetInstance()->Update();
     }
 

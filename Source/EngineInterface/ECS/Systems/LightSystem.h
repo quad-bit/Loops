@@ -14,19 +14,6 @@ class ComponentHandle;
 
 class Light;
 
-class LightDrawNode : public DrawGraphNode
-{
-public:
-    std::vector<uint32_t> descriptorIds;
-    virtual void Entry() override;
-    //virtual void Exit() override;
-    LightDrawNode()
-    {
-        drawNodeType = DrawNodeTypes::LIGHT;
-    }
-};
-
-
 class LightSystem : public System
 {
 private:

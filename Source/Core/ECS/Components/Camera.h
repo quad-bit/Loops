@@ -36,6 +36,7 @@ struct CameraUniform
 {
     glm::mat4 viewMat;
     glm::mat4 projectionMat;
+    glm::vec3 cameraPos;
 };
 
 // An abstract camera class that processes input and calculates the corresponding Eular Angles, Vectors and Matrices for use in OpenGL

@@ -4,7 +4,7 @@
             "set": 0,
             "binding": 0,
             "name": "View",
-            "size": 128,
+            "size": 140,
             "type": "UNIFORM",
             "ArraySize": 0,
             "members": [
@@ -17,6 +17,11 @@
                     "name": "view",
                     "size": 64,
                     "offset": 0
+                },
+                {
+                    "name": "cameraPos",
+                    "size": 12,
+                    "offset": 128
                 }
             ]
         },

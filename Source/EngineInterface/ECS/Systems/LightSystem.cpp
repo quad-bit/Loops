@@ -143,10 +143,3 @@ LightSystem::~LightSystem()
 {
 }
 
-void LightDrawNode::Entry()
-{
-    // Binding the descriptor set for Light
-    DescriptorSetBindingInfo info = {};
-    info.descriptorSetId = this->descriptorIds[Settings::currentFrameInFlight];
-    DrawGraphUtil::descriptorIdList.push_back(info.descriptorSetId);
-}

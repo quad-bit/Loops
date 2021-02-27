@@ -6,6 +6,10 @@
 #include <EntityHandle.h>
 #include <Transform.h>
 #include <Light.h>
+#include <bitset>
+#include <AttributeHelper.h>
+#include <MeshFactory.h>
+#include <MaterialFactory.h>
 
 SceneManagerScript::SceneManagerScript() : Scriptable(false)
 {
@@ -32,15 +36,58 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
 
     lightHandle = worldObj->CreateEntity("light");
     ComponentHandle<Transform> lightTrfHandle = lightHandle->GetComponent<Transform>();
-    lightTrfHandle->SetLocalPosition(glm::vec3(3, 5, 0));
+    lightTrfHandle->SetLocalPosition(glm::vec3(3, 3, 0));
     lightTrfHandle->SetLocalEulerAngles(glm::vec3(0, 0, 0));
 
     lightComponent = new Light(lightTrfHandle.GetComponent());
     lightHandle->AddComponent<Light>(lightComponent);
+
+    Material * colMat;
+
+    {
+        std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
+        req.set((unsigned int)ATTRIBUTES::POSITION);
+        req.set((unsigned int)ATTRIBUTES::COLOR);
+
+        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST };
+        MeshInfo meshInfo{};
+        meshInfo.attribMaskReq = req;
+        meshInfo.bufferPerAttribRequired = false;
+        meshInfo.isIndexed = true;
+        meshInfo.isPrimitiveRestartEnabled = false;
+        meshInfo.primitive = prim;
+        MESH_TYPE meshType = MESH_TYPE::CUBE;
+
+        Mesh * mesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
+        lightHandle->AddComponent<Mesh>(mesh);
+
+        ShaderDescription shaders[2];
+        shaders[0].type = ShaderType::VERTEX;
+        shaders[0].shaderName = "PC.vert";
+
+        shaders[1].type = ShaderType::FRAGMENT;
+        shaders[1].shaderName = "Color.frag";
+
+        colMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, mesh->componentId);
+        lightHandle->AddComponent<Material>(colMat);
+
+        lightDebugRenderer = new MeshRenderer(mesh, colMat, lightTrfHandle.GetComponent());
+        lightHandle->AddComponent<MeshRenderer>(lightDebugRenderer);
+    }
 }
 
 SceneManagerScript::~SceneManagerScript()
 {
+    {
+        ComponentHandle<Mesh> mesh = lightHandle->GetComponent<Mesh>();
+        MeshFactory::GetInstance()->DestroyMesh(mesh->componentId);
+        mesh.DestroyComponent();
+        //torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
+        //delete torsoMesh.GetComponent(); //TODO  fix this get component function
+        ComponentHandle<Material> mat = lightHandle->GetComponent<Material>();
+        mat.DestroyComponent();
+    }
+
     lightHandle->RemoveComponent<Light>(lightComponent);
     worldObj->DestroyEntity(lightHandle);
 

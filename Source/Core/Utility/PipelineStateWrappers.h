@@ -13,7 +13,7 @@ struct GraphTraversalEvent : public Event
     
 };
 
-#define PRINT_STATE 1
+#define PRINT_STATE 0
 
 
 

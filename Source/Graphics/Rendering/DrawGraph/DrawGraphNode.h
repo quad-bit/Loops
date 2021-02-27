@@ -26,7 +26,8 @@ enum class DrawNodeTypes
     MATERIAL_SURFACE,
     MESH,
     TRANSFORM,
-    DRAWING
+    DRAWING,
+    NONE
 };
 
 namespace DrawGraphUtil
@@ -51,4 +52,90 @@ public:
     
     static DrawCommandBuffer<ApiInterface> * dcb;
 };
+
+class TransformNode : public DrawGraphNode
+{
+public:
+    std::vector<uint32_t> descriptorSetIds;
+    virtual void Entry() override;
+    //virtual void Exit() override;
+    TransformNode()
+    {
+        numMeshes = 1;
+        drawNodeType = DrawNodeTypes::TRANSFORM;
+    }
+};
+
+
+class IndexedDrawNode : public DrawGraphNode
+{
+public:
+    IndexedDrawInfo info;
+
+    virtual void Entry() override;
+    virtual void Exit() override;
+    IndexedDrawNode()
+    {
+        numMeshes = 1;
+        drawNodeType = DrawNodeTypes::DRAWING;
+    }
+};
+
+class DrawArrayDrawNode : public DrawGraphNode
+{
+public:
+    DrawArrayInfo info;
+
+    virtual void Entry() override;
+    virtual void Exit() override;
+    DrawArrayDrawNode()
+    {
+        numMeshes = 1;
+        drawNodeType = DrawNodeTypes::DRAWING;
+    }
+};
+
+class MeshNode : public DrawGraphNode
+{
+public:
+    std::vector<uint32_t> bufferIds;
+    std::vector<size_t> pOffsets;
+    uint32_t indexBufferId;
+    bool isIndexed;
+    virtual void Entry() override;
+    virtual void Exit() override;
+    MeshNode()
+    {
+        numMeshes = 1; //  for now vertex buffer and index buffer are not getting shared
+                       // between multiple objects
+        drawNodeType = DrawNodeTypes::MESH;
+    }
+};
+
+
+class LightDrawNode : public DrawGraphNode
+{
+public:
+    std::vector<uint32_t> descriptorIds;
+    virtual void Entry() override;
+    //virtual void Exit() override;
+    LightDrawNode()
+    {
+        drawNodeType = DrawNodeTypes::LIGHT;
+    }
+};
+
+
+class CameraDrawNode : public DrawGraphNode
+{
+public:
+    std::vector<uint32_t> descriptorIds;
+    virtual void Entry() override;
+    //virtual void Exit() override;
+    CameraDrawNode()
+    {
+        drawNodeType = DrawNodeTypes::CAMERA;
+    }
+};
+
 
