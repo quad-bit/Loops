@@ -29,7 +29,7 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
     torso = worldObj->CreateEntity();
     torso->GetEntity()->entityName = "torso";
     Transform * torsoTrf = torso->GetTransform();
-    torsoTrf->SetLocalPosition(glm::vec3(0, 0, 0));
+    torsoTrf->SetLocalPosition(glm::vec3(0, -5, 0));
 
     Material * colMat, * colLitMat;
     torsoTrf->SetParent(playerTrf);
@@ -38,6 +38,7 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
         std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
         req.set((unsigned int)ATTRIBUTES::POSITION);
         req.set((unsigned int)ATTRIBUTES::COLOR);
+        //req.set((unsigned int)ATTRIBUTES::NORMAL);
 
         PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST};
         MeshInfo meshInfo{};
@@ -57,7 +58,14 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
 
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "Color.frag";
+    
+        /*ShaderDescription shaders[2];
+        shaders[0].type = ShaderType::VERTEX;
+        shaders[0].shaderName = "PCN_Lighting.vert";
 
+        shaders[1].type = ShaderType::FRAGMENT;
+        shaders[1].shaderName = "ColorLighting.frag";
+        */
         colMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
         torso->AddComponent<Material>(colMat);
 
@@ -71,7 +79,8 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
     Transform * headTrf = head->GetTransform();
     headTrf->SetParent(torsoTrf);
     headTrf->SetLocalPosition( glm::vec3(0, 3, 0));
-
+    headTrf->SetLocalEulerAngles(glm::vec3(glm::radians(90.0), 0, 0));
+    
     {
         std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
         req.set((unsigned int)ATTRIBUTES::POSITION);
@@ -113,8 +122,8 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
         head->AddComponent<MeshRenderer>(headMeshRenderer);
 
     #endif
-    
     }
+    
 
     //LEFT ARM
     leftArm = worldObj->CreateEntity();

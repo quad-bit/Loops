@@ -9,8 +9,8 @@ DrawCommandBuffer<ApiInterface> * DrawGraphNode::dcb = nullptr;
 
 void DrawGraphNode::Exit()
 {
-    DrawGraphUtil::descriptorIdList.pop_back();
     DrawGraphUtil::setOffset = (uint32_t)DrawGraphUtil::descriptorIdList.size() - 1;
+    DrawGraphUtil::descriptorIdList.pop_back();
 }
 
 void TransformNode::Entry()
@@ -31,7 +31,6 @@ void TransformNode::Entry()
     info.descriptorSetIds = (DrawGraphUtil::descriptorIdList);
     dcb->BindDescriptorSets(&info);
 }
-
 
 void MeshNode::Entry()
 {

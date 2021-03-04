@@ -65,15 +65,6 @@ struct AttribPC : public AttribStructBase
     AttribPC()
     {
         metaData.vertexDataStride = sizeof(PC);
-        /*
-        metaData.offets.insert(std::pair<ATTRIBUTES, uint32_t>(ATTRIBUTES::POSITION, (uint32_t)offsetof(PC, PC::position)));
-        metaData.offets.insert(std::pair<ATTRIBUTES, uint32_t>(ATTRIBUTES::COLOR, (uint32_t)offsetof(PC, PC::color)));
-        metaData.locations.insert(std::pair<ATTRIBUTES, uint32_t>(ATTRIBUTES::POSITION, 0));
-        metaData.locations.insert(std::pair<ATTRIBUTES, uint32_t>(ATTRIBUTES::COLOR, 1));
-        metaData.attributeFormats.insert(std::pair<ATTRIBUTES, Format>(ATTRIBUTES::POSITION, Format::R32G32B32_SFLOAT));
-        metaData.attributeFormats.insert(std::pair<ATTRIBUTES, Format>(ATTRIBUTES::COLOR, Format::R32G32B32A32_SFLOAT));
-        */
-
         metaData.attribCount = 2;
         metaData.attribInfoList = new VertexInputAttributeInfo[metaData.attribCount];
         
@@ -126,7 +117,7 @@ struct AttribPCN : public AttribStructBase
             info.binding = 0; // As a single vertex buffer is used per mesh
             info.format = Format::R32G32B32_SFLOAT; //vec3 position
             info.location = 0;
-            info.offset = (uint32_t)offsetof(PC, PC::position);
+            info.offset = (uint32_t)offsetof(PCN, PCN::position);
             metaData.attribInfoList[0] = info;
         }
 
@@ -136,7 +127,7 @@ struct AttribPCN : public AttribStructBase
             info.binding = 0; // As a single vertex buffer is used per mesh
             info.format = Format::R32G32B32A32_SFLOAT; //uvec4 color
             info.location = 1;
-            info.offset = (uint32_t)offsetof(PC, PC::color);
+            info.offset = (uint32_t)offsetof(PCN, PCN::color);
             metaData.attribInfoList[1] = info;
         }
 

@@ -100,6 +100,10 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
         matSetWrapper.wrapperList = setWrapperList;
         matSetWrapperList.push_back(matSetWrapper);
         
+        MeshAdditionEvent event;
+        event.meshId = meshId;
+        event.setWrapperList = mat->resourceLayoutList;
+        EventBus::GetInstance()->Publish(&event);
     }
     else
     {
@@ -116,12 +120,7 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
         // if it exists then add the meshid to the list
         AddMeshIds(mat, meshId);
     }
-        
-    MeshAdditionEvent event;
-    event.meshId = meshId;
-    event.setWrapperList = mat->resourceLayoutList;
-    EventBus::GetInstance()->Publish(&event);
-
+    
     return mat;
 }
 

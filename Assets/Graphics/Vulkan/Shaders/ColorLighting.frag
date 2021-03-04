@@ -11,30 +11,35 @@ layout (location = 0) out vec4 outColor;
 
 layout (std140, set = 2, binding = 0) uniform Lights
 {
-    vec3 lightPos; 
-    vec3 lightColor;
+    vec4 lightPos; 
+    vec4 ambient;
+    vec4 diffuse;
+    vec4 specular;
 } light;
 
 void main()
 {
    // ambient
-   float ambientStrength = 0.7;
-   vec3 ambient = ambientStrength * light.lightColor;
-	
-   // diffuse 
+   vec3 ambient = light.ambient.xyz;
+   vec3 diffuse = light.diffuse.xyz; 
+   vec3 specular = light.specular.xyz; 
+   vec3 lightPos = light.lightPos.xyz; 
+
+   
    vec3 norm = normalize(normal);
-   vec3 lightDir = normalize(light.lightPos - fragPos.xyz);
+   vec3 lightDir = normalize(lightPos.xyz - fragPos.xyz);
+   vec3 viewDir = normalize(viewPos - fragPos.xyz);
+
+   // diffuse 
    float diff = max(dot(norm, lightDir), 0.0);
-   vec3 diffuse = diff * light.lightColor;
+   vec3 diffuseVal = diff * diffuse.xyz;  
    
    //specular       
-   float specularStrength = 0.5;
-   vec3 viewDir = normalize(viewPos - fragPos.xyz);
    vec3 reflectDir = reflect(-lightDir, norm);  
    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-   vec3 specular = specularStrength * spec * light.lightColor;  
+   vec3 specularVal = spec * specular.xyz; 
     
-   vec3 result = (ambient + diffuse + specular) * color.xyz;
+   vec3 result = (ambient + diffuseVal + specularVal) * color.xyz;
     
    outColor = vec4(result, 1.0); 
 }

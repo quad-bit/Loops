@@ -5,6 +5,7 @@
 #include <rapidjson\document.h> 
 #include <vector>
 #include <map>
+#include <tuple>
 #include <ShaderResourceDescription.h>
 
 struct ShaderResources
@@ -87,6 +88,7 @@ public:
     std::vector<SetWrapper*> * GetSetWrapperList();
     
     std::vector<VkDescriptorSet> GetDescriptors(uint32_t * ids, const uint32_t & count, const uint32_t & pipelineLayoutId);
+    std::tuple<std::vector<VkDescriptorSet>, uint32_t> GetDescriptors(uint32_t * ids, const uint32_t & count, const uint32_t & pipelineLayoutId, const uint32_t & firstSet);
     uint32_t * AllocateDescriptors(SetWrapper * set, const uint32_t & numDescriptors);
     void LinkSetBindingToResources(ShaderBindingDescription * desc);
     const std::vector<int> * GetSetValuesInPipelineLayout(const uint32_t & pipelineLayoutId);

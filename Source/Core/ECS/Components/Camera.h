@@ -24,7 +24,7 @@ const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const float SPEED = 6.0f;
 const float SENSITIVTY = 0.25f;
-const float FOV = 45.0f;
+const float FOV = 60.0f;
 
 enum class CameraType
 {
@@ -47,7 +47,6 @@ private:
     //glm::vec3* position;
     //glm::vec3* eulerAngles;
 
-    Transform * transform;
 
     // Directions
     //glm::vec3 front;
@@ -74,6 +73,8 @@ private:
     Camera() = delete;
 
 public:
+
+    Transform * transform;
     // Constructor with vectors
     Camera::Camera(Transform * transform, glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH, CameraType projectionType = CameraType::PERSPECTIVE);
 
@@ -101,4 +102,6 @@ public:
     float& GetMouseSensitivity();
     
     float& GetFOV();
+
+    void SetFOV( const float & FOV);
 };

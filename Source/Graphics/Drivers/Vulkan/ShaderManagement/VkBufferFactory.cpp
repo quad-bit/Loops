@@ -195,7 +195,7 @@ void VkBufferFactory::CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSiz
     vkUnmapMemory(*CoreObjects::logicalDeviceObj, *it->bufferMemory);
 }
 
-void VkBufferFactory::CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, VkDeviceSize memoryMapOffset, bool keepMemoryMounted)
+void VkBufferFactory::CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, const VkDeviceSize & memoryMapOffset, bool keepMemoryMounted)
 {
     std::vector<VkBufferWrapper>::iterator it;
     it = std::find_if(bufferWrapperList.begin(), bufferWrapperList.end(), [&](VkBufferWrapper e) { return e.id == bufId; });

@@ -2,12 +2,6 @@
 
 #include "InputEvents.h"
 
-enum class MouseButtons
-{
-    Left,
-    Right,
-    None
-};
 
 class MouseInputManager
 {

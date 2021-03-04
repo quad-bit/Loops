@@ -89,12 +89,65 @@ void VkDrawCommandBuffer::BindDescriptorSet(DescriptorSetBindingInfo * info)
     default:
         ASSERT_MSG_DEBUG(0, "Invalid option");
     }
-    
+/*
+    static int count = 0;
+    uint32_t size, offset;
+
+    switch (count)
+    {
+    case 0 :
+        size = 5;
+        offset = 0;
+        break;
+
+    case 1:
+        size = 1;
+        offset = 4;
+        break;
+
+    case 2:
+        size = 3;
+        offset = 2;
+        break;
+
+    case 3:
+        size = 1;
+        offset = 4;
+        break;
+    }
+
+    count++;
+    if (count >= 4)
+    {
+        count = 0;
+    }
+    uint32_t temp = info->firstSet;
+*/
+
+    /*
+    INFO : vkCmdBindDescriptorSets
+    array bound [a, b, c, d]
+    firstSet = 0, size = 4, address = &array[0]
+
+    array bound [a, b, c, e]
+    firstSet = 3, size = 1, address = &array[3]
+
+    array bound [a, b, c, f, g]
+    firstSet = 4, size = 2, address = &array[4]
+    */
+
     VkPipelineLayout* layout = VkShaderResourceManager::GetInstance()->GetPipelineLayout(info->pipelineLayoutId);
     uint32_t numSets = (uint32_t)info->descriptorSetIds.size();
-    std::vector<VkDescriptorSet> setList = VkShaderResourceManager::GetInstance()->GetDescriptors(info->descriptorSetIds.data(), numSets, info->pipelineLayoutId);
 
-    vkCmdBindDescriptorSets(*commandBuffer, bindPoint, *layout, info->firstSet, (uint32_t)setList.size(), setList.data(), info->dynamicOffsetCount, info->pDynamicOffsets);
+    uint32_t firstSet, numSetsToBind;
+    std::vector<VkDescriptorSet> setList;
+    std::tie(setList, firstSet) = VkShaderResourceManager::GetInstance()->GetDescriptors(
+        info->descriptorSetIds.data(), numSets, info->pipelineLayoutId, info->firstSet);
+
+    numSetsToBind = setList.size() - firstSet;
+
+    vkCmdBindDescriptorSets(*commandBuffer, bindPoint, *layout, firstSet, 
+      numSetsToBind, &setList[firstSet], info->dynamicOffsetCount, info->pDynamicOffsets);
 }
 
 void VkDrawCommandBuffer::BindVertexBuffers(VertexBufferBindingInfo * info)

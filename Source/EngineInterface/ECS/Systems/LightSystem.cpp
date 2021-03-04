@@ -7,6 +7,7 @@
 #include "Transform.h"
 #include "MaterialFactory.h"
 #include "DrawGraphManager.h"
+#include "World.h"
 
 uint32_t LightSystem::GeneratedLightId()
 {
@@ -22,7 +23,7 @@ void LightSystem::Init()
     allocConfig.numMemories = 1;
     allocConfig.numResources = 1;
 
-    resourceSharingConfig.maxUniformPerResource = 20;
+    resourceSharingConfig.maxUniformPerResource = 1;
     resourceSharingConfig.allocatedUniformCount = 0;
 
     size_t uniformSize = sizeof(LightUniform);
@@ -40,13 +41,32 @@ void LightSystem::DeInit()
 
 void LightSystem::Update(float dt)
 {
-    // write the light uniforms
-    int k = 0;
+    return;
+    for (auto & entity : registeredEntities)
+    {
+        ComponentHandle<Light> * lightHandle;
+        worldObj->Unpack(entity, &lightHandle);
+
+        Light * light = lightHandle->GetComponent();
+        LightUniform obj = {};
+        obj.ambient = Vec3ToVec4_0(light->GetAmbient());
+        obj.diffuse = Vec3ToVec4_0(light->GetDiffuse());
+        obj.specular = Vec3ToVec4_0(light->GetSpecular());
+        obj.lightPos = Vec3ToVec4_0(light->GetTransform()->GetGlobalPosition());
+
+        ShaderBindingDescription * desc = lightToDescriptionMap[lightHandle->GetComponent()];
+
+        //upload data to buffers
+        {
+            UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(LightUniform), memoryAlignedUniformSize, &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
+        }
+
+        // TODO : write the uniform data of Camera to gpu memory via void*
+    }
 }
 
 void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
 {
-
     // recieved the light addition to the scene 
     Light * light = lightAdditionEvent->light;
 
@@ -54,14 +74,14 @@ void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
     light->componentId = GeneratedLightId();
 
     ShaderBindingDescription * desc = new ShaderBindingDescription;
-    desc->set = 2;
+    desc->set = (uint32_t)ResourceSets::LIGHT;
     desc->binding = 0;
-    desc->numElements = 2;
+    desc->numElements = 4;
     desc->resourceName = "Lights";
     desc->resourceType = DescriptorType::UNIFORM_BUFFER;
-    //desc->resParentId = inputEvent->cam->componentId; // not getting used, for now
     desc->parentType = light->componentType;
     desc->dataSizePerDescriptorAligned = memoryAlignedUniformSize;
+    desc->dataSizePerDescriptor = sizeof(LightUniform);
     desc->uniformId = light->componentId; // as one buffer is getting used to for all the descriptors
     desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(memoryAlignedUniformSize, allocConfig, resourceSharingConfig);
     desc->allocationConfig = allocConfig;
@@ -82,15 +102,18 @@ void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
 
     resDescriptionList.push_back(desc);
     resourceSharingConfig.allocatedUniformCount += 1;
-  
-    LightUniform obj = {};
-    obj.lightColor = glm::vec3(0.2f, 0.1, 0.5f);
-    obj.lightPos = light->GetTransform()->GetGlobalPosition();
 
+    LightUniform obj = {};
+    obj.ambient = Vec3ToVec4_0(light->GetAmbient());
+    obj.diffuse = Vec3ToVec4_0(light->GetDiffuse());
+    obj.specular = Vec3ToVec4_0(light->GetSpecular());
+    obj.lightPos = Vec3ToVec4_0(light->GetTransform()->GetGlobalPosition());
+    
     //upload data to buffers
     for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
     {
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(LightUniform), memoryAlignedUniformSize, &obj, desc->offsetsForEachDescriptor[i], false);
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(LightUniform),
+            memoryAlignedUniformSize, &obj, desc->offsetsForEachDescriptor[i], false);
     }
 
     UniformFactory::GetInstance()->AllocateDescriptors(lightSetWrapper, desc, 1, allocConfig.numDescriptors);
@@ -137,6 +160,7 @@ void LightSystem::HandleMeshAddition(MeshAdditionEvent * meshAdditionEvent)
 
 LightSystem::LightSystem()
 {
+    signature.AddComponent<Light>();
 }
 
 LightSystem::~LightSystem()

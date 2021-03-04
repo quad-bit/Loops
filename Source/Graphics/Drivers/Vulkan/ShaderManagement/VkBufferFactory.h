@@ -45,7 +45,7 @@ public:
     uint32_t AllocateSharedMemory(uint32_t * bufferId, const uint32_t & bufCount);
     // deprecated.
     void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
-    void CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
+    void CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, const VkDeviceSize & memoryOffset, bool keepMemoryMounted = false);
     void DestroyBuffer(uint32_t id);
 
     VkBuffer * GetBuffer(const uint32_t & id);

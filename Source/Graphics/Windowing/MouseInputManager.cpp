@@ -6,7 +6,7 @@ MouseInputManager* MouseInputManager::instance = nullptr;
 
 void MouseInputManager::CreateMouseDragEvent(KeyState state)
 {
-    if (currentMouseButtonDown == MouseButtons::Left)
+    if (currentMouseButtonDown == MouseButtons::Left || currentMouseButtonDown == MouseButtons::Right)
     {
         MouseDragEvent * evt = FetchMouseDragEvent();
         evt->x = mouseX;
@@ -154,5 +154,9 @@ void MouseInputManager::MouseButtonEventHandler(const char * buttonName, const c
     }
 
     currentMouseButtonState = keyEvent->keyState;
+    keyEvent->button = currentMouseButtonDown;
+    keyEvent->mouseX = mouseX;
+    keyEvent->mouseY = mouseY;
 
+    EventBus::GetInstance()->Publish(keyEvent);
 }

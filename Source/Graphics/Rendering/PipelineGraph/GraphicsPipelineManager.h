@@ -219,7 +219,7 @@ inline void GraphicsPipelineManager<T>::CreateRasterizationDefault()
     raster->depthBiasEnable = false;
     raster->depthBiasSlopeFactor = 0;
     raster->depthClampEnable = false;
-    raster->frontFace = FrontFace::FRONT_FACE_COUNTER_CLOCKWISE;
+    raster->frontFace = FrontFace::FRONT_FACE_CLOCKWISE;
     raster->lineWidth = 1.0f;
     raster->polygonMode = PolygonMode::POLYGON_MODE_FILL;
     raster->rasterizerDiscardEnable = false;

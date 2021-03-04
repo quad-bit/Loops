@@ -368,9 +368,9 @@ VkShaderStageFlags VulkanUnwrap::UnwrapShaderStage(ShaderType type)
 
 VkShaderStageFlags VulkanUnwrap::UnwrapShaderStage(ShaderType * type, const uint32_t & count)
 {
-    VkShaderStageFlags shaderFlag;
+    VkShaderStageFlags shaderFlag = 0;
     //shaderflag needs to be filled with something to be OR-ED with subsequent stages
-    switch (type[0])
+    /*switch (type[0])
     {
     case  ShaderType::VERTEX:
         shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_VERTEX_BIT;
@@ -392,9 +392,9 @@ VkShaderStageFlags VulkanUnwrap::UnwrapShaderStage(ShaderType * type, const uint
         shaderFlag = VkShaderStageFlagBits::VK_SHADER_STAGE_COMPUTE_BIT;
         break;
     }
+*/
 
-
-    for(uint32_t i = 1; i < count; i++)
+    for(uint32_t i = 0; i < count; i++)
     switch (type[i])
     {
     case    ShaderType::VERTEX:

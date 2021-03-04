@@ -42,7 +42,7 @@ glm::mat4 Camera::GetProjectionMat()
         break;
 
     case CameraType::PERSPECTIVE:
-        projectionMat = glm::perspective(this->fov, this->aspect, this->zNear, this->zFar);
+        projectionMat = glm::perspective(glm::radians(this->fov), this->aspect, this->zNear, this->zFar);
         break;
     }
     return projectionMat;
@@ -96,4 +96,9 @@ float& Camera::GetMouseSensitivity()
 float& Camera::GetFOV()
 {
     return this->fov;
+}
+
+void Camera::SetFOV(const float & FOV)
+{
+    fov = FOV;
 }

@@ -19,8 +19,11 @@ enum class SpreadEquation
 
 struct LightUniform
 {
-    glm::vec3 lightPos;
-    glm::vec3 lightColor;
+    glm::vec4 lightPos;
+
+    glm::vec4 ambient;
+    glm::vec4 diffuse;
+    glm::vec4 specular;
 };
 
 class Light : public Component<Light>
@@ -57,7 +60,10 @@ public:
         this->lightType = lightType;
         intensity = 0.5f;
         range = 5.0f;
-        ambient = glm::vec3(0.2f, 0.2f, 0.2f);
+        ambient = glm::vec3(0.4f, 0.4f, 0.4f);
+        diffuse = glm::vec3(0.4f, 0.4f, 0.4f);
+        specular = glm::vec3(0.6f, 0.6f, 0.6f);
+
         componentType = COMPONENT_TYPE::LIGHT;
     }
     
@@ -85,7 +91,7 @@ public:
     {
         this->specular = strength;
     }
-
+    
     void SetRange(const float & range)
     {
         this->range = range;
@@ -105,5 +111,20 @@ public:
     Transform * const GetTransform()
     {
         return transform;
+    }
+
+    glm::vec3 GetSpecular()
+    {
+        return this->specular;
+    }
+
+    glm::vec3 GetAmbient()
+    {
+        return this->ambient;
+    }
+
+    glm::vec3 GetDiffuse()
+    {
+        return this->diffuse;
     }
 };

@@ -17,14 +17,12 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
 
     camHandle0 = worldObj->CreateEntity();
     camHandle0->GetEntity()->entityName = "MainCamera";
-    camHandle0->GetTransform()->SetLocalPosition(glm::vec3(0, 0, 10));
-    camHandle0->GetTransform()->SetLocalEulerAngles(glm::vec3(0, 0, 0));
+    camHandle0->GetTransform()->SetLocalPosition(glm::vec3(0, 15, 30));
+    camHandle0->GetTransform()->SetLocalEulerAngles(glm::vec3(glm::radians(-19.0f), 0, 0));
 
     Camera * camera = new Camera(camHandle0->GetTransform());
     camHandle0->AddComponent<Camera>(camera);
-
-    ComponentHandle<Camera> test = camHandle0->GetComponent<Camera>();
-
+    
     cameraController = new CameraController();
     camHandle0->AddComponent<Scriptable>(cameraController);
 
@@ -36,14 +34,13 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
 
     lightHandle = worldObj->CreateEntity("light");
     ComponentHandle<Transform> lightTrfHandle = lightHandle->GetComponent<Transform>();
-    lightTrfHandle->SetLocalPosition(glm::vec3(3, 3, 0));
+    lightTrfHandle->SetLocalPosition(glm::vec3(10, 10, 0));
     lightTrfHandle->SetLocalEulerAngles(glm::vec3(0, 0, 0));
 
     lightComponent = new Light(lightTrfHandle.GetComponent());
     lightHandle->AddComponent<Light>(lightComponent);
-
-    Material * colMat;
-
+    
+    Material *colMat, *floorMat , *wallMat;
     {
         std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
         req.set((unsigned int)ATTRIBUTES::POSITION);
@@ -74,16 +71,101 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
         lightDebugRenderer = new MeshRenderer(mesh, colMat, lightTrfHandle.GetComponent());
         lightHandle->AddComponent<MeshRenderer>(lightDebugRenderer);
     }
+    
+    floorHandle = worldObj->CreateEntity("floor");
+    ComponentHandle<Transform> floorTrfHandle = floorHandle->GetComponent<Transform>();
+    floorTrfHandle->SetLocalPosition(glm::vec3(0, -20, 0));
+    floorTrfHandle->SetLocalScale(glm::vec3(25, 25, 1));
+    floorTrfHandle->SetLocalEulerAngles(glm::vec3(glm::radians(90.0), 0, 0));
+
+    {
+        std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
+        req.set((unsigned int)ATTRIBUTES::POSITION);
+        req.set((unsigned int)ATTRIBUTES::COLOR);
+        req.set((unsigned int)ATTRIBUTES::NORMAL);
+
+        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST };
+        MeshInfo meshInfo{};
+        meshInfo.attribMaskReq = req;
+        meshInfo.bufferPerAttribRequired = false;
+        meshInfo.isIndexed = true; // needs to be corrected, as we are using indexed mesh but not the index buffer
+        meshInfo.isPrimitiveRestartEnabled = false;
+        meshInfo.primitive = prim;
+        MESH_TYPE meshType = MESH_TYPE::QUAD;
+
+        Mesh * mesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
+        floorHandle->AddComponent<Mesh>(mesh);
+
+        ShaderDescription shaders[2];
+        shaders[0].type = ShaderType::VERTEX;
+        shaders[0].shaderName = "PCN_Lighting.vert";
+
+        shaders[1].type = ShaderType::FRAGMENT;
+        shaders[1].shaderName = "ColorLighting.frag";
+
+        floorMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, mesh->componentId);
+        floorHandle->AddComponent<Material>(floorMat);
+
+        floorRenderer = new MeshRenderer(mesh, floorMat, floorTrfHandle.GetComponent());
+        floorHandle->AddComponent<MeshRenderer>(floorRenderer);
+    }
+
+    /*
+    wallHandle = worldObj->CreateEntity("wall");
+    ComponentHandle<Transform> wallTrfHandle = wallHandle->GetComponent<Transform>();
+    wallTrfHandle->SetLocalPosition(glm::vec3(0, 0, -40));
+    wallTrfHandle->SetLocalScale(glm::vec3(20, 20, 1));
+    wallTrfHandle->SetLocalEulerAngles(glm::vec3(0, glm::radians(-180.0), 0));
+
+    {
+        std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
+        req.set((unsigned int)ATTRIBUTES::POSITION);
+        req.set((unsigned int)ATTRIBUTES::COLOR);
+        req.set((unsigned int)ATTRIBUTES::NORMAL);
+
+        PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST };
+        MeshInfo meshInfo{};
+        meshInfo.attribMaskReq = req;
+        meshInfo.bufferPerAttribRequired = false;
+        meshInfo.isIndexed = true; // needs to be corrected, as we are using indexed mesh but not the index buffer
+        meshInfo.isPrimitiveRestartEnabled = false;
+        meshInfo.primitive = prim;
+        MESH_TYPE meshType = MESH_TYPE::QUAD;
+
+        Mesh * mesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
+        wallHandle->AddComponent<Mesh>(mesh);
+
+        ShaderDescription shaders[2];
+        shaders[0].type = ShaderType::VERTEX;
+        shaders[0].shaderName = "PCN_Lighting.vert";
+
+        shaders[1].type = ShaderType::FRAGMENT;
+        shaders[1].shaderName = "ColorLighting.frag";
+
+        wallMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, mesh->componentId);
+        wallHandle->AddComponent<Material>(wallMat);
+
+        wallRenderer = new MeshRenderer(mesh, wallMat, wallTrfHandle.GetComponent());
+        wallHandle->AddComponent<MeshRenderer>(wallRenderer);
+    }
+    */
 }
 
 SceneManagerScript::~SceneManagerScript()
 {
     {
+        ComponentHandle<Mesh> mesh = floorHandle->GetComponent<Mesh>();
+        MeshFactory::GetInstance()->DestroyMesh(mesh->componentId);
+        mesh.DestroyComponent();
+        ComponentHandle<Material> mat = floorHandle->GetComponent<Material>();
+        mat.DestroyComponent();
+    }
+    worldObj->DestroyEntity(floorHandle);
+
+    {
         ComponentHandle<Mesh> mesh = lightHandle->GetComponent<Mesh>();
         MeshFactory::GetInstance()->DestroyMesh(mesh->componentId);
         mesh.DestroyComponent();
-        //torso->RemoveComponent<Mesh>(torsoMesh.GetComponent());
-        //delete torsoMesh.GetComponent(); //TODO  fix this get component function
         ComponentHandle<Material> mat = lightHandle->GetComponent<Material>();
         mat.DestroyComponent();
     }

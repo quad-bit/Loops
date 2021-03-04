@@ -11,6 +11,13 @@ enum class KeyState
     NONE
 };
 
+enum class MouseButtons
+{
+    Left,
+    Right,
+    None
+};
+
 struct KeyInputEvent : public Event
 {
     KeyState keyState = KeyState::NONE;
@@ -21,8 +28,10 @@ struct KeyInputEvent : public Event
 struct MouseButtonEvent : public Event
 {
     KeyState keyState = KeyState::NONE;
+    MouseButtons button;
     const char* keyname;
     const char* keyStateName;
+    float mouseX, mouseY;
 };
 
 struct MousePointerEvent : public Event

@@ -4,6 +4,8 @@
 #include "PlatformSettings.h"
 #include <bitset>
 #include <AttributeHelper.h>
+#include "Quad.h"
+#include "Cube.h"
 
 enum class MESH_TYPE;
 class Mesh;
@@ -38,6 +40,9 @@ private:
     std::bitset<(uint32_t)ATTRIBUTES::NUM_ATTRIBUTES> pcMask; 
     std::bitset<(uint32_t)ATTRIBUTES::NUM_ATTRIBUTES> pcnMask;
 
+    template<typename AttribType>
+    void FillMeshAttrib(AttribStructBase * wrapper, MESH_TYPE * meshType, Mesh * mesh);
+
 public:
     void Init(ApiInterface * obj);
     void DeInit();
@@ -49,3 +54,21 @@ public:
     Mesh * CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType);
     void DestroyMesh(const uint32_t & meshId);
 };
+
+#include <Mesh.h>
+#include "AttributeHelper.h"
+
+template<typename AttribType>
+inline void MeshFactory::FillMeshAttrib(AttribStructBase * wrapper, MESH_TYPE * meshType, Mesh * mesh)
+{
+    switch (*meshType)
+    {
+    case MESH_TYPE::CUBE:
+        ((AttribType*)wrapper)->FillData<CubeIndexed>(mesh);
+        break;
+
+    case MESH_TYPE::QUAD:
+        ((AttribType*)wrapper)->FillData<QuadIndexed>(mesh);
+        break;
+    }
+}

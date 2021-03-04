@@ -11,17 +11,20 @@ class SceneManagerScript : public Scriptable
 {
 private:
     EntityHandle* mainObject;
-    Scriptable* playerHandlerScript;
 
     EntityHandle* camHandle0;
     EntityHandle* camHandle1;
+    Scriptable * cameraController;
+    
     EntityHandle* playerHandle;
+    Scriptable* playerHandlerScript;
     
     EntityHandle* lightHandle;
     Light * lightComponent;
     MeshRenderer * lightDebugRenderer;
-
-    Scriptable * cameraController;
+    
+    EntityHandle* floorHandle, *wallHandle;
+    MeshRenderer * floorRenderer, *wallRenderer;
 
     float prevAngle, currentAngle;
 

@@ -693,14 +693,32 @@ std::vector<VkDescriptorSet> VkShaderResourceManager::GetDescriptors(uint32_t * 
             list.push_back(fillerSet);
         }
     }
-
-    /*for (uint32_t i = 0; i < count; i++)
-    {
-        VkDescriptorSet set = idToSetMap[ids[i]];
-        ASSERT_MSG(set != VK_NULL_HANDLE, "Set not found");
-        list.push_back(set);
-    }*/
     return list;
+}
+
+std::tuple<std::vector<VkDescriptorSet>, uint32_t> VkShaderResourceManager::GetDescriptors(uint32_t * ids, const uint32_t & count, const uint32_t & pipelineLayoutId, const uint32_t & firstSet)
+{
+    std::vector<int> * setValues = &pipelineLayoutIdToSetValuesMap[pipelineLayoutId];
+    std::vector<VkDescriptorSet> list;
+    uint32_t offset;
+    for (uint32_t i = 0, k = 0; i < setValues->size(); i++)
+    {
+        if (setValues->at(i) != -1)
+        {
+            if (firstSet == k)
+                offset = i;
+            VkDescriptorSet set = idToSetMap[ids[k]];
+            ASSERT_MSG_DEBUG(set != VK_NULL_HANDLE, "Set not found");
+            list.push_back(set);
+            k++;
+        }
+        else
+        {
+            list.push_back(fillerSet);
+        }
+    }
+
+    return std::make_tuple(list, offset);
 }
 
 uint32_t * VkShaderResourceManager::AllocateDescriptors(SetWrapper * setwrapper, const uint32_t & numDescriptors)

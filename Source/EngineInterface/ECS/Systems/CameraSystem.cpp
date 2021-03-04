@@ -60,9 +60,10 @@ void CameraSystem::Update(float dt)
 
         ShaderBindingDescription * desc = camToDescriptionMap[camHandle->GetComponent()];
         //upload data to buffers
-        //for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
         {
-            UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, desc->dataSizePerDescriptorAligned, memoryAlignedUniformSize, &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
+            UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId,
+                memoryAlignedUniformSize, memoryAlignedUniformSize, &obj, 
+                desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
         }
 
         // TODO : write the uniform data of Camera to gpu memory via void*
@@ -84,6 +85,7 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     desc->resParentId = inputEvent->cam->componentId;
     desc->parentType = inputEvent->cam->componentType;
     desc->dataSizePerDescriptorAligned = memoryAlignedUniformSize;
+    desc->dataSizePerDescriptor = sizeof(CameraUniform);
     desc->uniformId = inputEvent->cam->componentId; // as one cam = one uniform
     desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(memoryAlignedUniformSize, allocConfig, resourceSharingConfig);
     desc->allocationConfig = allocConfig;
@@ -113,7 +115,9 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     //upload data to buffers
     for(uint32_t i = 0; i < allocConfig.numDescriptors; i++)
     {
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(CameraUniform), memoryAlignedUniformSize, &obj, desc->offsetsForEachDescriptor[i], false);
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, 
+            sizeof(CameraUniform), memoryAlignedUniformSize, &obj, 
+            desc->offsetsForEachDescriptor[i], false);
     }
 
     UniformFactory::GetInstance()->AllocateDescriptors(cameraSetWrapper, desc, 1, allocConfig.numDescriptors);

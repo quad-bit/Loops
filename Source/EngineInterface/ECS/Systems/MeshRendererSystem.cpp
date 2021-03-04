@@ -74,7 +74,7 @@ void MeshRendererSystem::Update(float dt)
         obj.modelMat = transformObj->GetGlobalModelMatrix();
 
         ShaderBindingDescription * desc = transformToBindDescMap[transformObj];
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(TransformUniform), memoryAlignedDataSize, 
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, memoryAlignedDataSize, memoryAlignedDataSize,
             &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
 
     }
@@ -108,6 +108,7 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     desc->resParentId = inputEvent->renderer->componentId;
     desc->parentType = inputEvent->renderer->componentType;
     desc->dataSizePerDescriptorAligned = memoryAlignedDataSize;
+    desc->dataSizePerDescriptor = sizeof(TransformUniform);
     desc->uniformId = inputEvent->renderer->componentId; 
     desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(uniformSize, allocConfig, resourceSharingConfig);
     desc->allocationConfig = allocConfig;
@@ -137,7 +138,7 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     //upload data to buffers
     for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
     {
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, sizeof(TransformUniform), memoryAlignedDataSize, &obj, desc->offsetsForEachDescriptor[i], false);
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, memoryAlignedDataSize, memoryAlignedDataSize, &obj, desc->offsetsForEachDescriptor[i], false);
     }
     
     // allocate descriptors
