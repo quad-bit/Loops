@@ -1,7 +1,7 @@
 #include "VkShaderResourceAllocator.h"
 #include "VulkanUtility.h"
 #include "VkDescriptorPoolFactory.h" 
-
+/*
 void VkShaderResourceAllocator::CreateResourceSetting()
 {
     std::vector<uint32_t> perSceneSets{ 0, 1 };    //"View", "Lights"
@@ -50,3 +50,4 @@ VkDescriptorSet ** VkShaderResourceAllocator::AllocateDescriptor(SetWrapper ** s
 {
     return nullptr;
 }
+*/

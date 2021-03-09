@@ -1,5 +1,5 @@
 #pragma once
-
+/*
 #include <vulkan\vulkan.h>
 #include <map>
 #include <vector>
@@ -20,3 +20,4 @@ public:
     VkDescriptorSet * AllocateDescriptor(SetWrapper * setWrapper, VkDescriptorSetLayout * layout);
     VkDescriptorSet ** AllocateDescriptor(SetWrapper ** setWrapper, VkDescriptorSetLayout ** layout);
 };
+*/

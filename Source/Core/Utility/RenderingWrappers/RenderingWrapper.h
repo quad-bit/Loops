@@ -177,6 +177,19 @@ enum class SubpassContentStatus
     SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS = 1,
 };
 
+enum class RenderPassTag
+{
+    ColorPass = 1,
+    DepthPass = 2,
+    None = 10
+};
+
+inline RenderPassTag operator |(const RenderPassTag & lhs, const RenderPassTag & rhs)
+{
+    using T = std::underlying_type_t <RenderPassTag>;
+    return static_cast<RenderPassTag>(static_cast<T>(lhs) | static_cast<T>(rhs));
+}
+
 enum class PipelineStage
 {
     TOP_OF_PIPE_BIT = 0x00000001,

@@ -63,6 +63,7 @@ private:
     std::map < PipelineStates, std::vector<GraphNode<StateWrapperBase> *>> stateToNodeMap; // nodes per pipeline state
     std::map<PipelineStates, int> stateToDefaultNodeIndex; // index into stateToNodeMap's vector
     GraphNode<StateWrapperBase> * CreateGraphNode(StateWrapperBase * stateWrapper);
+    std::map<RenderPassTag, std::vector<uint32_t>> renderPassToShaderStageIdMap;
 
     // for a pipeline
     uint32_t renderPassID, subPassId;
@@ -120,7 +121,7 @@ public:
     void CreateVertexInputState(const uint32_t & meshId, VertexInputState * inputStateInfo );
     void CreateVertexAssemblyState(const uint32_t & meshId, InputAssemblyState * assembly);
     void AssignDefaultState(const uint32_t & meshId, const PipelineStates & state);
-    void CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
+    void CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount, const RenderPassTag & tag = RenderPassTag::ColorPass);
     std::vector<SetWrapper*> CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
 
     void TraversalEventHandler(GraphTraversalEvent * event);
@@ -884,11 +885,15 @@ inline void GraphicsPipelineManager<T>::AssignDefaultState(const uint32_t & mesh
 }
 
 template<typename T>
-inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount)
+inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, 
+    const uint32_t & shaderCount, const RenderPassTag & tag)
 {
     ShaderStateWrapper * wrapper = new ShaderStateWrapper;
     wrapper->shader = shaders;
     wrapper->shaderCount = shaderCount;
+    wrapper->tag = tag;
+    
+
 
     // check if the hash exist for the above object
     int id = HashManager::GetInstance()->FindShaderStateHash(shaders, shaderCount, wrapper->GetId(), &wrapper->state);
@@ -906,6 +911,18 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
 
         // TODO : Create vulkan pipeline shader stage object 
         apiInterface->CreateShaderState(wrapper);
+
+        auto it = renderPassToShaderStageIdMap.find(tag);
+
+        if (it != renderPassToShaderStageIdMap.end())
+        {
+            it->second.push_back(wrapper->GetId());
+        }
+        else
+        {
+            renderPassToShaderStageIdMap.insert(std::pair< RenderPassTag, std::vector<uint32_t>>({
+                tag, std::vector<uint32_t>{ wrapper->GetId()} }));
+        }
     }
     else
     {
@@ -956,8 +973,12 @@ inline std::vector<SetWrapper*> GraphicsPipelineManager<T>::CreatResourceLayoutS
     // if not add the wrapper to the list
     if (id == -1)
     {
-        // add wrapper to list
-        wrapper->meshIdList.push_back(meshId);
+        // add wrapper to list 
+        std::vector<uint32_t>::iterator it;
+        it = std::find_if(wrapper->meshIdList.begin(), wrapper->meshIdList.end(), [&](uint32_t id) { return id == meshId; });
+        if(it == wrapper->meshIdList.end())
+            wrapper->meshIdList.push_back(meshId);
+
         shaderResourceStateWrapperList.push_back(wrapper);
         // create a new pipeline node encapsulate in graph node, add it to graph
         // TODO : Create pipeline node, done .
@@ -981,11 +1002,15 @@ inline std::vector<SetWrapper*> GraphicsPipelineManager<T>::CreatResourceLayoutS
         std::vector<ShaderResourceStateWrapper*>::iterator it;
         it = std::find_if(shaderResourceStateWrapperList.begin(), shaderResourceStateWrapperList.end(), [&](ShaderResourceStateWrapper* e) { return e->GetId() == id; });
         ASSERT_MSG_DEBUG(it != shaderResourceStateWrapperList.end(), "wrapper not found");
-        (*it)->meshIdList.push_back(meshId);
+        
+        // add wrapper to list 
+        std::vector<uint32_t>::iterator itt;
+        itt = std::find_if((*it)->meshIdList.begin(), (*it)->meshIdList.end(), [&](uint32_t id) { return id == meshId; });
+        if (itt == (*it)->meshIdList.end())
+            (*it)->meshIdList.push_back(meshId);
 
         node = GetNode((*it)->state, (*it));
         setWrapperList = (*it)->resourcesSetList;
-
     }
 
     InsertToMeshList(meshId, PipelineStates::ShaderResourcesLayout, node);
@@ -1068,6 +1093,16 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & re
         ((PipelineDrawNode*)pipelineNode)->pipelineLayoutId = pipelineCreateInfoList[i].pipelineLayoutId;
         ((PipelineDrawNode*)pipelineNode)->pipelineId = wrapper.id;
 
+        uint32_t shaderStateId = pipelineCreateInfoList[i].statesToIdMap[PipelineStates::ShaderStage];
+        std::vector<uint32_t> idList = renderPassToShaderStageIdMap[RenderPassTag::DepthPass];
+        
+        std::vector<uint32_t>::iterator it;
+        it = std::find_if(idList.begin(), idList.end(), [&](uint32_t id) { return shaderStateId == id; });
+        if (it != idList.end())
+        {
+            pipelineNode->tag = RenderPassTag::DepthPass;
+        }
+        
         GraphNode<DrawGraphNode> * pipelinGraphNode = new GraphNode<DrawGraphNode>(pipelineNode);
         DrawGraphManager::GetInstance()->AddNode(pipelinGraphNode);
         pipelineDrawNodeList.push_back(pipelinGraphNode);

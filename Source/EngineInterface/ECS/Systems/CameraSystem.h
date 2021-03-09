@@ -54,7 +54,7 @@ public:
     virtual void Update(float dt) override;
 
     void HandleCameraAddition(CameraAdditionEvent * inputEvent);
-    void HandleMeshAddition(MeshAdditionEvent *  meshAdditionEvent);
+    void HandleMeshAddition(MeshToMatAdditionEvent *  meshAdditionEvent);
 
     CameraSystem();
     virtual ~CameraSystem();

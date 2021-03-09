@@ -31,20 +31,32 @@ void PipelineUtil::FillGlobalMeshList(std::vector<uint32_t>& meshList, const Pip
             else if (pipelineStateMeshList.size() > 0)
             {
                 std::vector<uint32_t>::iterator itt;
-                for(itt = pipelineStateMeshList.begin(); itt != pipelineStateMeshList.end(); itt++)
+                std::vector<uint32_t> indicesToBeErased;
+                //for(itt = pipelineStateMeshList.begin(); itt != pipelineStateMeshList.end(); itt++)
+                for(uint32_t i = 0; i < pipelineStateMeshList.size(); i++)
                 {
                     std::vector<uint32_t>::iterator it;
-                    it = std::find_if(meshList.begin(), meshList.end(), [&](uint32_t meshId) { return meshId == *itt; });
+                    it = std::find_if(meshList.begin(), meshList.end(), [&](uint32_t meshId) { return meshId == pipelineStateMeshList[i]; });
                     
                     // if the id in pipelineMeshList is not found in meshList
                     // erase the id from pipelineMeshList 
                     if (it == meshList.end())
                     {
-                        itt = pipelineStateMeshList.erase(itt);
+                        //itt = pipelineStateMeshList.erase(itt);
+                        indicesToBeErased.push_back(pipelineStateMeshList[i]);
                     }
 
-                    if (pipelineStateMeshList.size() == 0)
-                        break;
+                    //if (pipelineStateMeshList.size() == 0)
+                        //break;
+                }
+
+                for (auto index : indicesToBeErased)
+                {
+                    std::vector<uint32_t>::iterator it;
+                    it = std::find_if(pipelineStateMeshList.begin(), pipelineStateMeshList.end(), [&](uint32_t meshId) { return meshId == index; });
+
+                    if(it != pipelineStateMeshList.end())
+                    pipelineStateMeshList.erase(it);
                 }
             }
         }

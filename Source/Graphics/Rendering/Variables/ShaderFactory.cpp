@@ -27,7 +27,7 @@ ShaderFactory::~ShaderFactory()
 {
 }
 
-std::vector<SetWrapper*> ShaderFactory::CreateShader(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount)
+std::vector<SetWrapper*> ShaderFactory::CreateShader(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount, const RenderPassTag & tag)
 {
     // Get the ids for each shader object.
     char ** shaderNames = new char*[shaderCount];
@@ -48,7 +48,7 @@ std::vector<SetWrapper*> ShaderFactory::CreateShader(const uint32_t & meshId, Sh
     }
     shaderList.push_back(shaders);
 
-    GraphicsPipelineManager<ApiInterface>::GetInstance()->CreatShaderPipelineState(meshId, shaders, shaderCount);
+    GraphicsPipelineManager<ApiInterface>::GetInstance()->CreatShaderPipelineState(meshId, shaders, shaderCount, tag);
     std::vector<SetWrapper*> list = GraphicsPipelineManager<ApiInterface>::GetInstance()->CreatResourceLayoutState(meshId, shaders, shaderCount);
 
     delete[] ids;

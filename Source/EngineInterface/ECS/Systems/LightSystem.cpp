@@ -8,6 +8,7 @@
 #include "MaterialFactory.h"
 #include "DrawGraphManager.h"
 #include "World.h"
+#include "Mesh.h"
 
 uint32_t LightSystem::GeneratedLightId()
 {
@@ -17,7 +18,8 @@ uint32_t LightSystem::GeneratedLightId()
 void LightSystem::Init()
 {
     EventBus::GetInstance()->Subscribe<LightSystem, LightAdditionEvent>(this, &LightSystem::HandleLightAddition);
-    EventBus::GetInstance()->Subscribe<LightSystem, MeshAdditionEvent>(this, &LightSystem::HandleMeshAddition);
+    EventBus::GetInstance()->Subscribe<LightSystem, MeshToMatAdditionEvent>(this, &LightSystem::HandleMeshAddition);
+    EventBus::GetInstance()->Subscribe<LightSystem, MeshRendererAdditionEvent>(this, &LightSystem::HandleRendererAddition);
 
     allocConfig.numDescriptors = Settings::maxFramesInFlight;
     allocConfig.numMemories = 1;
@@ -136,7 +138,7 @@ void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
     DrawGraphManager::GetInstance()->AddNode(graphNode);
 }
 
-void LightSystem::HandleMeshAddition(MeshAdditionEvent * meshAdditionEvent)
+void LightSystem::HandleMeshAddition(MeshToMatAdditionEvent * meshAdditionEvent)
 {
     uint32_t setCount = (uint32_t)meshAdditionEvent->setWrapperList.size();
     for (uint32_t k = 0; k < lightGraphNodeList.size(); k++)
@@ -156,6 +158,34 @@ void LightSystem::HandleMeshAddition(MeshAdditionEvent * meshAdditionEvent)
                 }
             }
         }
+}
+
+void LightSystem::HandleRendererAddition(MeshRendererAdditionEvent * rendererAdditionEvent)
+{
+    // whaterever is the material attached to the mesh, we need to check if it casts shadow
+    // if yes then add the mesh id to shadowMapping material
+    
+    uint32_t meshId = rendererAdditionEvent->renderer->geometry->componentId;
+    if (!rendererAdditionEvent->renderer->castShadows)
+        return;
+
+    if (shadowMappingMat == nullptr)
+    {
+        ShaderDescription shaders[2];
+        shaders[0].type = ShaderType::VERTEX;
+        shaders[0].shaderName = "ShadowMapping.vert";
+
+        shaders[1].type = ShaderType::FRAGMENT;
+        shaders[1].shaderName = "ShadowMapping.frag";
+
+        shadowMappingMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, meshId, RenderPassTag::DepthPass);
+    }
+    else
+    {
+        MaterialFactory::GetInstance()->AddMeshIds(shadowMappingMat, meshId);
+    }
+
+    // check for the edge connections to create pipeline
 }
 
 LightSystem::LightSystem()

@@ -43,6 +43,7 @@ protected:
 
 public:
     DrawNodeTypes drawNodeType;
+    RenderPassTag tag;
     uint32_t setLevel;
     std::vector<SetWrapper*> setWrapperList;// pipeline node can have multiple sets wrappers
     std::vector<uint32_t> meshList;

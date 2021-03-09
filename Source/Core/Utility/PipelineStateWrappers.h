@@ -13,7 +13,7 @@ struct GraphTraversalEvent : public Event
     
 };
 
-#define PRINT_STATE 0
+#define PRINT_STATE 1
 
 
 
@@ -102,7 +102,7 @@ struct ShaderStateWrapper : public StateWrapperBase
 {
     Shader * shader;// one shader equivalent to one shader module
     uint32_t shaderCount;
-
+    RenderPassTag tag;
     static uint32_t idCounter;
 
     ShaderStateWrapper()
@@ -115,6 +115,14 @@ struct ShaderStateWrapper : public StateWrapperBase
     {
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId()) + " PipelineStates::ShaderStateWrapper";
+
+        std::string meshIds;
+        for (auto id : meshIdList)
+        {
+            meshIds += (std::to_string(id) + " ");
+        }
+
+        PLOGD << meshIds + " PipelineStates::ShaderStateWrapper";
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderStage, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
@@ -140,6 +148,14 @@ struct ShaderResourceStateWrapper : public StateWrapperBase
     {
 #if PRINT_STATE
         PLOGD << std::to_string(this->GetId()) + " PipelineStates::ShaderResourcesLayout";
+        
+        std::string meshIds;
+        for (auto id : meshIdList)
+        {
+            meshIds += (std::to_string(id) + " ");
+        }
+
+        PLOGD << meshIds + " PipelineStates::ShaderResourcesLayout";
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderResourcesLayout, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);

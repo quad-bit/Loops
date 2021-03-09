@@ -22,7 +22,7 @@ struct PipelineLayoutWrapper
     VkPipelineLayout * pipelineLayout;
 };
 
-class VkShaderResourceAllocator;
+//class VkShaderResourceAllocator;
 
 class VkShaderResourceManager
 {
@@ -32,7 +32,7 @@ private:
     VkShaderResourceManager const & operator= (VkShaderResourceManager const &) {}
 
     static VkShaderResourceManager* instance;
-    VkShaderResourceAllocator * resourceAllocator;
+    //VkShaderResourceAllocator * resourceAllocator;
 
     uint32_t bindingIdCounter = 0;
     uint32_t setWrapperIdCounter = 0;

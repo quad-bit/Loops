@@ -3,7 +3,7 @@
 #include <Event.h>
 #include "RenderingWrapper.h"
 
-class MeshAdditionEvent : public Event
+class MeshToMatAdditionEvent : public Event
 {
 public:
     std::vector<SetWrapper *> setWrapperList;

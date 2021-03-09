@@ -22,7 +22,7 @@ uint32_t CameraSystem::GeneratedCamId()
 void CameraSystem::Init()
 {
     EventBus::GetInstance()->Subscribe<CameraSystem, CameraAdditionEvent>(this, &CameraSystem::HandleCameraAddition);
-    EventBus::GetInstance()->Subscribe<CameraSystem, MeshAdditionEvent>(this, &CameraSystem::HandleMeshAddition);
+    EventBus::GetInstance()->Subscribe<CameraSystem, MeshToMatAdditionEvent>(this, &CameraSystem::HandleMeshAddition);
 
     allocConfig.numDescriptors = Settings::maxFramesInFlight;
     allocConfig.numMemories = 1;
@@ -142,7 +142,7 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     DrawGraphManager::GetInstance()->AddNode(graphNode);
 }
 
-void CameraSystem::HandleMeshAddition(MeshAdditionEvent * meshAdditionEvent)
+void CameraSystem::HandleMeshAddition(MeshToMatAdditionEvent * meshAdditionEvent)
 {
     uint32_t setCount = (uint32_t)meshAdditionEvent->setWrapperList.size();
     for (uint32_t k = 0; k < cameraGraphNodeList.size(); k++)

@@ -236,7 +236,7 @@ VkDescriptorSet VkShaderResourceManager::GetDescriptorSet(const uint32_t & id)
 
 void VkShaderResourceManager::Init()
 {
-    resourceAllocator = new VkShaderResourceAllocator();
+    //resourceAllocator = new VkShaderResourceAllocator();
 
     std::vector<std::string> fileList;
     GetFilesInFolder(VULKAN_ASSETS_PATH + std::string{ "/Reflections" }, fileList);
@@ -423,7 +423,7 @@ void VkShaderResourceManager::Init()
 
 void VkShaderResourceManager::DeInit()
 {
-    delete resourceAllocator;
+    //delete resourceAllocator;
 
     for (uint32_t i = 0; i < setWrapperList.size(); i++)
     {

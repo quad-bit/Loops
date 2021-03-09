@@ -2,6 +2,7 @@
 #include "Material.h"
 #include "Shader.h"
 #include <map>
+#include "RenderingWrapper.h"
 
 struct ShaderDescription;
 
@@ -36,7 +37,8 @@ public:
     ~MaterialFactory();
 
     //Material * CreateMaterial(Shader * shaders, const uint32_t & shaderCount, const uint32_t & meshId);
-    Material * CreateMaterial(ShaderDescription * shaders, const uint32_t & shaderCount, const uint32_t & meshId);
+    Material * CreateMaterial(ShaderDescription * shaders, const uint32_t & shaderCount, 
+        const uint32_t & meshId, const RenderPassTag & tag = RenderPassTag::ColorPass);
     void AddMeshIds(Material * mat, const uint32_t & meshId);
 
     std::vector<uint32_t> GetMeshList(SetWrapper * setwrapper, const uint32_t & setWrapperCount);

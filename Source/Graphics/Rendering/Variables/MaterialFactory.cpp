@@ -56,7 +56,8 @@ MaterialFactory::~MaterialFactory()
 {
 }
 
-Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescriptions, const uint32_t & shaderCount, const uint32_t & meshId)
+Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescriptions, const uint32_t & shaderCount, 
+    const uint32_t & meshId, const RenderPassTag & tag)
 {
     std::vector<std::string> shaderNames;
     shaderNames.resize(shaderCount);
@@ -83,7 +84,7 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
             shaders[i].shaderName = shaderDescriptions[i].shaderName;
         }
         
-        std::vector<SetWrapper*> setWrapperList =  ShaderFactory::GetInstance()->CreateShader(meshId, shaders, shaderCount);
+        std::vector<SetWrapper*> setWrapperList =  ShaderFactory::GetInstance()->CreateShader(meshId, shaders, shaderCount, tag);
         
         mat = new Material(shaders, shaderCount);
         idToMaterialMap.insert(std::pair<uint32_t, Material*>(
@@ -100,7 +101,7 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
         matSetWrapper.wrapperList = setWrapperList;
         matSetWrapperList.push_back(matSetWrapper);
         
-        MeshAdditionEvent event;
+        MeshToMatAdditionEvent event;
         event.meshId = meshId;
         event.setWrapperList = mat->resourceLayoutList;
         EventBus::GetInstance()->Publish(&event);
@@ -129,7 +130,7 @@ void MaterialFactory::AddMeshIds(Material * mat, const uint32_t & meshId)
     ShaderFactory::GetInstance()->AddMeshToShader(meshId, mat->shaders, mat->numShaders);
     mat->meshList.push_back(meshId);
 
-    MeshAdditionEvent event;
+    MeshToMatAdditionEvent event;
     event.meshId = meshId;
     event.setWrapperList = mat->resourceLayoutList;
     EventBus::GetInstance()->Publish(&event);

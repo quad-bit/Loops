@@ -13,6 +13,7 @@ template <typename T>
 class ComponentHandle;
 
 class Light;
+class Material;
 
 class LightSystem : public System
 {
@@ -32,6 +33,8 @@ private:
     std::map<Light *, ShaderBindingDescription *> lightToDescriptionMap;
 
     size_t memoryAlignedUniformSize;
+    
+    Material * shadowMappingMat = nullptr;
 
 public:
     virtual void Init() override;
@@ -39,7 +42,8 @@ public:
     virtual void Update(float dt) override;
 
     void HandleLightAddition(LightAdditionEvent * lightAdditionEvent);
-    void HandleMeshAddition(MeshAdditionEvent *  meshAdditionEvent);
+    void HandleMeshAddition(MeshToMatAdditionEvent *  meshAdditionEvent);
+    void HandleRendererAddition(MeshRendererAdditionEvent *  rendererAdditionEvent);
 
     LightSystem();
     virtual ~LightSystem();

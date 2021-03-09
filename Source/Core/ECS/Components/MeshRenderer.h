@@ -13,6 +13,8 @@ public:
     Mesh * geometry;
     Material * material;
     Transform * transform;
+    bool castShadows = true;
+    bool receiveShadows = true;
 
     COMPONENT_TYPE componentType{COMPONENT_TYPE::MESH_RENDERER};
 
