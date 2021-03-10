@@ -9,6 +9,8 @@
 #include "DrawGraphManager.h"
 #include "World.h"
 #include "Mesh.h"
+#include "Camera.h"
+#include "CameraSystem.h"
 
 uint32_t LightSystem::GeneratedLightId()
 {
@@ -129,6 +131,7 @@ void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
     lightNode->meshList = MaterialFactory::GetInstance()->GetMeshList(lightSetWrapper, 1);
     lightNode->setLevel = lightSetWrapper->setValue;
     lightNode->setWrapperList.push_back(lightSetWrapper);
+    lightNode->tag = RenderPassTag::ColorPass;
 
     ((LightDrawNode*)lightNode)->descriptorIds = desc->descriptorIds;
 
@@ -136,6 +139,15 @@ void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
     lightGraphNodeList.push_back(graphNode);
 
     DrawGraphManager::GetInstance()->AddNode(graphNode);
+
+    // create a camera 
+    Camera * lightCam = new Camera(light->GetTransform());
+    //lightCam->SetProjectionType(CameraType::ORTHOGONAL);
+    cameralist.push_back(lightCam);
+
+    // create the camera draw node, node has been added to the graph in HandleCameraAddition
+    GraphNode<DrawGraphNode> * cameraNode = ((CameraSystem*)cameraSystem)->HandleCameraAddition(lightCam, RenderPassTag::DepthPass);
+    cameraNode->node->tag = RenderPassTag::DepthPass;
 }
 
 void LightSystem::HandleMeshAddition(MeshToMatAdditionEvent * meshAdditionEvent)
@@ -184,8 +196,11 @@ void LightSystem::HandleRendererAddition(MeshRendererAdditionEvent * rendererAdd
     {
         MaterialFactory::GetInstance()->AddMeshIds(shadowMappingMat, meshId);
     }
+}
 
-    // check for the edge connections to create pipeline
+void LightSystem::AssignCameraSystem(System * camSystem)
+{
+    cameraSystem = camSystem;
 }
 
 LightSystem::LightSystem()

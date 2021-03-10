@@ -893,8 +893,6 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
     wrapper->shaderCount = shaderCount;
     wrapper->tag = tag;
     
-
-
     // check if the hash exist for the above object
     int id = HashManager::GetInstance()->FindShaderStateHash(shaders, shaderCount, wrapper->GetId(), &wrapper->state);
     GraphNode<StateWrapperBase> * node;
@@ -1093,16 +1091,23 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(const uint32_t & re
         ((PipelineDrawNode*)pipelineNode)->pipelineLayoutId = pipelineCreateInfoList[i].pipelineLayoutId;
         ((PipelineDrawNode*)pipelineNode)->pipelineId = wrapper.id;
 
-        uint32_t shaderStateId = pipelineCreateInfoList[i].statesToIdMap[PipelineStates::ShaderStage];
-        std::vector<uint32_t> idList = renderPassToShaderStageIdMap[RenderPassTag::DepthPass];
-        
-        std::vector<uint32_t>::iterator it;
-        it = std::find_if(idList.begin(), idList.end(), [&](uint32_t id) { return shaderStateId == id; });
-        if (it != idList.end())
+        // TODO : find better design to tag and find pipeline node
         {
-            pipelineNode->tag = RenderPassTag::DepthPass;
+            uint32_t shaderStateId = pipelineCreateInfoList[i].statesToIdMap[PipelineStates::ShaderStage];
+            std::vector<uint32_t> idList = renderPassToShaderStageIdMap[RenderPassTag::DepthPass];
+
+            std::vector<uint32_t>::iterator it;
+            it = std::find_if(idList.begin(), idList.end(), [&](uint32_t id) { return shaderStateId == id; });
+            if (it != idList.end())
+            {
+                pipelineNode->tag = RenderPassTag::DepthPass;
+            }
+            else
+            {
+                pipelineNode->tag = RenderPassTag::ColorPass;
+            }
         }
-        
+
         GraphNode<DrawGraphNode> * pipelinGraphNode = new GraphNode<DrawGraphNode>(pipelineNode);
         DrawGraphManager::GetInstance()->AddNode(pipelinGraphNode);
         pipelineDrawNodeList.push_back(pipelinGraphNode);

@@ -47,6 +47,7 @@ void ECS_Manager::Init()
 
     lightSystem = new LightSystem();
     worldObj->AddSystem(lightSystem);
+    ((LightSystem*)lightSystem)->AssignCameraSystem(cameraSystemObj);
 
     worldObj->Init();
 }

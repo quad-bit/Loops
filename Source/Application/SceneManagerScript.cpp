@@ -11,6 +11,8 @@
 #include <MeshFactory.h>
 #include <MaterialFactory.h>
 
+#define debugMeshForLight 0
+
 SceneManagerScript::SceneManagerScript() : Scriptable(false)
 {
     scriptName = typeid(this).raw_name();
@@ -35,12 +37,14 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
     lightHandle = worldObj->CreateEntity("light");
     ComponentHandle<Transform> lightTrfHandle = lightHandle->GetComponent<Transform>();
     lightTrfHandle->SetLocalPosition(glm::vec3(10, 10, 0));
-    lightTrfHandle->SetLocalEulerAngles(glm::vec3(0, 0, 0));
+    lightTrfHandle->SetLocalEulerAngles(glm::vec3(glm::radians(-39.0f), glm::radians(90.0), 0));
 
     lightComponent = new Light(lightTrfHandle.GetComponent());
     lightHandle->AddComponent<Light>(lightComponent);
     
     Material *colMat, *floorMat , *wallMat;
+
+#if (debugMeshForLight)
     {
         std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
         req.set((unsigned int)ATTRIBUTES::POSITION);
@@ -71,7 +75,8 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
         lightDebugRenderer = new MeshRenderer(mesh, colMat, lightTrfHandle.GetComponent());
         lightHandle->AddComponent<MeshRenderer>(lightDebugRenderer);
     }
-    
+#endif
+
     floorHandle = worldObj->CreateEntity("floor");
     ComponentHandle<Transform> floorTrfHandle = floorHandle->GetComponent<Transform>();
     floorTrfHandle->SetLocalPosition(glm::vec3(0, -20, 0));
@@ -162,6 +167,7 @@ SceneManagerScript::~SceneManagerScript()
     }
     worldObj->DestroyEntity(floorHandle);
 
+#if (debugMeshForLight)
     {
         ComponentHandle<Mesh> mesh = lightHandle->GetComponent<Mesh>();
         MeshFactory::GetInstance()->DestroyMesh(mesh->componentId);
@@ -169,6 +175,7 @@ SceneManagerScript::~SceneManagerScript()
         ComponentHandle<Material> mat = lightHandle->GetComponent<Material>();
         mat.DestroyComponent();
     }
+#endif
 
     lightHandle->RemoveComponent<Light>(lightComponent);
     worldObj->DestroyEntity(lightHandle);

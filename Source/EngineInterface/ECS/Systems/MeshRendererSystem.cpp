@@ -161,6 +161,7 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
         }
         else
             ((MeshNode*)meshNode)->isIndexed = false;
+        
     }
 
     DrawGraphNode * trfnode = new TransformNode;
@@ -196,6 +197,17 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
         ((DrawArrayDrawNode*)drawingnode)->info.vertexCount = inputEvent->renderer->geometry->vertexCount;
         ((DrawArrayDrawNode*)drawingnode)->info.instanceCount = 1;
         ((DrawArrayDrawNode*)drawingnode)->info.firstInstance = 0;
+    }
+
+    drawingnode->tag = RenderPassTag::ColorPass;
+    trfnode->tag = RenderPassTag::ColorPass;
+    meshNode->tag = RenderPassTag::ColorPass;
+
+    if (inputEvent->renderer->castShadows)
+    {
+        drawingnode->tag = RenderPassTag::ColorPass | RenderPassTag::DepthPass;
+        trfnode->tag = RenderPassTag::ColorPass | RenderPassTag::DepthPass;
+        meshNode->tag = RenderPassTag::ColorPass | RenderPassTag::DepthPass;
     }
 
     GraphNode<DrawGraphNode> * transformGraphNode = new GraphNode<DrawGraphNode>(trfnode);

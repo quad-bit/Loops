@@ -144,7 +144,7 @@ void VkDrawCommandBuffer::BindDescriptorSet(DescriptorSetBindingInfo * info)
     std::tie(setList, firstSet) = VkShaderResourceManager::GetInstance()->GetDescriptors(
         info->descriptorSetIds.data(), numSets, info->pipelineLayoutId, info->firstSet);
 
-    numSetsToBind = setList.size() - firstSet;
+    numSetsToBind = (uint32_t)setList.size() - firstSet;
 
     vkCmdBindDescriptorSets(*commandBuffer, bindPoint, *layout, firstSet, 
       numSetsToBind, &setList[firstSet], info->dynamicOffsetCount, info->pDynamicOffsets);

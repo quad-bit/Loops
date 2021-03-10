@@ -19,20 +19,29 @@ struct PerPipelineNodeData
     std::map<uint32_t, std::vector<GraphNode<DrawGraphNode> *>> setToNodesMap;
 };
 
+struct NodeSetPerPass
+{
+    RenderPassTag tag;
+    std::vector<GraphNode<DrawGraphNode> *> pipelineNodeList;
+    std::map<DrawNodeTypes, std::vector<GraphNode<DrawGraphNode> *>> typeToNodeMap;
+    std::map<uint32_t, std::vector<GraphNode<DrawGraphNode> *>> setToNodesMap;
+    std::vector<PerPipelineNodeData> pipelineNodeDataList;
+};
+
 template <typename T>
 class ForwardGraph
 {
 private:
     Graph<DrawGraphNode> * drawGraph;
-    std::vector<GraphNode<DrawGraphNode> *> pipelineNodeList;
+    /*std::vector<GraphNode<DrawGraphNode> *> pipelineNodeList;
     std::map<DrawNodeTypes, std::vector<GraphNode<DrawGraphNode> *>> typeToNodeMap;
     std::map<uint32_t, std::vector<GraphNode<DrawGraphNode> *>> setToNodesMap;
-    //std::map<GraphNode<DrawGraphNode> *, std::vector<uint32_t>> pipelineNodeToExpecedSetMap;
     std::vector<PerPipelineNodeData> pipelineNodeDataList;
-
-    void CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> * pipelineNode, PerPipelineNodeData * data);
+*/
+    std::map<RenderPassTag, NodeSetPerPass * > nodeDataPerPassMap;
+    void CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> * pipelineNode, PerPipelineNodeData * data, NodeSetPerPass * dataSetPerPass);
     void CreateEdge(GraphNode<DrawGraphNode> * newNode);
-    PerPipelineNodeData * CreatePipelineData(GraphNode<DrawGraphNode> * pipelineNode);
+    PerPipelineNodeData * CreatePipelineData(GraphNode<DrawGraphNode> * pipelineNode, std::vector<PerPipelineNodeData> & dataList);
     bool CheckIfNodeBelongsToPipeline(GraphNode<DrawGraphNode> * pipelineNode, 
         GraphNode<DrawGraphNode> * node, std::vector<uint32_t> * pipelineNodeSetList);
     void AddNodeToPipelineData(PerPipelineNodeData * data, GraphNode<DrawGraphNode> * node);
@@ -41,17 +50,20 @@ private:
     bool CheckForCommonMeshId(GraphNode<DrawGraphNode> * src, GraphNode<DrawGraphNode> * dest);
     DrawGraphNode * dummyNode;
     GraphNode<DrawGraphNode> * dummyGraphNode;
+    
+    void CreateConnections(GraphNode<DrawGraphNode> * node, NodeSetPerPass * dataSetPerPass);
+
 public:
     void Init(Graph<DrawGraphNode> * drawGraph);
     void DeInit();
-    void Update(DrawCommandBuffer<T> * dcb);
+    void Update(DrawCommandBuffer<T> * dcb, const RenderPassTag & tag);
     ~ForwardGraph();
 
     void AddNode(GraphNode<DrawGraphNode> * node);
 };
 
 template<typename T>
-inline void ForwardGraph<T>::CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> * pipelineNode, PerPipelineNodeData * data)
+inline void ForwardGraph<T>::CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> * pipelineNode, PerPipelineNodeData * data, NodeSetPerPass * dataSetPerPass)
 {
     // for now camera is the first node in the graph as it is getting shared by each and every object.
     // Camera = 0
@@ -61,7 +73,7 @@ inline void ForwardGraph<T>::CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> 
     // Incoming node to pipeline node
     {
         // iterate through all the non pipeline nodes with set = 0
-        std::vector<GraphNode<DrawGraphNode>*> * nodeList = &setToNodesMap[ResourceSets::CAMERA];
+        std::vector<GraphNode<DrawGraphNode>*> * nodeList = &dataSetPerPass->setToNodesMap[ResourceSets::CAMERA];
 
         // find match for mesh id among the nodes
         for each(auto obj in *nodeList)
@@ -88,7 +100,7 @@ inline void ForwardGraph<T>::CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> 
             auto setValue = data->setValues[i];
             if (setValue != ResourceSets::CAMERA && setValue != ResourceSets::TRANSFORM)// camera already connected
             {
-                std::vector<GraphNode<DrawGraphNode>*> * nodeList = &setToNodesMap[setValue];
+                std::vector<GraphNode<DrawGraphNode>*> * nodeList = &dataSetPerPass->setToNodesMap[setValue];
                 for each(auto obj in *nodeList)
                 {
                     bool isNodeInPipeline = CheckIfNodeBelongsToPipeline(pipelineNode, obj, &data->setValues);
@@ -109,7 +121,7 @@ inline void ForwardGraph<T>::CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> 
             else if (setValue == ResourceSets::TRANSFORM)
             {
                 // connect to the mesh node
-                std::vector<GraphNode<DrawGraphNode>*> * nodeList = &typeToNodeMap[DrawNodeTypes::MESH];
+                std::vector<GraphNode<DrawGraphNode>*> * nodeList = &dataSetPerPass->typeToNodeMap[DrawNodeTypes::MESH];
                 for each(auto obj in *nodeList)
                 {
                     bool isNodeInPipeline = CheckIfNodeBelongsToPipeline(pipelineNode, obj, &data->setValues);
@@ -124,7 +136,7 @@ inline void ForwardGraph<T>::CreateEdgeForPipelineNode(GraphNode<DrawGraphNode> 
                     }
                 }
 
-                std::vector<GraphNode<DrawGraphNode>*> * drawingNodeList = &typeToNodeMap[DrawNodeTypes::DRAWING];
+                std::vector<GraphNode<DrawGraphNode>*> * drawingNodeList = &dataSetPerPass->typeToNodeMap[DrawNodeTypes::DRAWING];
                 for each(auto obj in *drawingNodeList)
                 {
                     bool isNodeInPipeline = CheckIfNodeBelongsToPipeline(pipelineNode, obj, &data->setValues);
@@ -188,7 +200,7 @@ inline void ForwardGraph<T>::CreateEdge(GraphNode<DrawGraphNode>* newNode)
 }
 
 template<typename T>
-inline PerPipelineNodeData * ForwardGraph<T>::CreatePipelineData(GraphNode<DrawGraphNode>* pipelineNode)
+inline PerPipelineNodeData * ForwardGraph<T>::CreatePipelineData(GraphNode<DrawGraphNode>* pipelineNode, std::vector<PerPipelineNodeData> & dataList)
 {
     std::vector<SetWrapper *> * setWrapperList = &pipelineNode->node->setWrapperList;
     uint32_t numSetsWrappers = (uint32_t)setWrapperList->size();
@@ -208,8 +220,8 @@ inline PerPipelineNodeData * ForwardGraph<T>::CreatePipelineData(GraphNode<DrawG
 
     // set to node map
 
-    pipelineNodeDataList.push_back(data);
-    return &pipelineNodeDataList.back();
+    dataList.push_back(data);
+    return &dataList.back();
 }
 
 template<typename T>
@@ -364,14 +376,79 @@ inline bool ForwardGraph<T>::CheckForCommonMeshId(GraphNode<DrawGraphNode>* src,
 }
 
 template<typename T>
+inline void ForwardGraph<T>::CreateConnections(GraphNode<DrawGraphNode>* node, NodeSetPerPass * dataSetPerPass)
+{
+    DrawNodeTypes nodeType = node->node->drawNodeType;
+
+    if (node->node->drawNodeType == DrawNodeTypes::PIPELINE)
+    {
+        PerPipelineNodeData * pipelineData = CreatePipelineData(node, dataSetPerPass->pipelineNodeDataList);
+        CreateEdgeForPipelineNode(node, pipelineData, dataSetPerPass);
+    }
+    else
+    {
+        //if entry present then insert a new node
+        auto it = dataSetPerPass->typeToNodeMap.find(nodeType);
+        if (it != dataSetPerPass->typeToNodeMap.end())
+        {
+            it->second.push_back(node);
+        }
+        else
+        {
+            dataSetPerPass->typeToNodeMap.insert(std::pair<DrawNodeTypes, std::vector<GraphNode<DrawGraphNode> *>>({
+                nodeType, std::vector<GraphNode<DrawGraphNode> *>{ node } }));
+        }
+
+        if (node->node->drawNodeType != DrawNodeTypes::MESH &&
+            node->node->drawNodeType != DrawNodeTypes::DRAWING)
+        {
+            uint32_t setLevel = node->node->setLevel;
+            auto itt = dataSetPerPass->setToNodesMap.find(setLevel);
+            if (itt != dataSetPerPass->setToNodesMap.end())
+            {
+                itt->second.push_back(node);
+            }
+            else
+            {
+                dataSetPerPass->setToNodesMap.insert(std::pair<uint32_t, std::vector<GraphNode<DrawGraphNode> *>>({
+                    setLevel, std::vector<GraphNode<DrawGraphNode> *>{ node } }));
+            }
+        }
+
+        // Check with existing pipeline nodes if this node belongs to any of them
+        for each(auto data in dataSetPerPass->pipelineNodeDataList)
+        {
+            ASSERT_MSG_DEBUG(0, "Case yet to be handled");
+
+            bool isNodeInPipeline = CheckIfNodeBelongsToPipeline(data.pipelineNode, node, &data.setValues);
+            // if yes add to the node list 
+            if (isNodeInPipeline)
+                AddNodeToPipelineData(&data, node);
+            // create edge with existing
+        }
+    }
+}
+
+template<typename T>
 inline void ForwardGraph<T>::Init(Graph<DrawGraphNode>* drawGraph)
 {
     this->drawGraph = drawGraph;
 
     // Create a dummy node, which wont have any connections, hence all the nodes
     // will get traversed to find this dummy, Hopefully.
+    NodeSetPerPass * nodeSetColorPass, * nodeSetDepthPass;
+    nodeSetColorPass = new NodeSetPerPass;
+    nodeSetColorPass->tag = RenderPassTag::ColorPass;
+    
+    nodeSetDepthPass = new NodeSetPerPass;
+    nodeSetDepthPass->tag = RenderPassTag::DepthPass;
+
+    nodeDataPerPassMap.clear();
+    nodeDataPerPassMap.insert(std::pair<RenderPassTag, NodeSetPerPass*>({ RenderPassTag::ColorPass, nodeSetColorPass }));
+    nodeDataPerPassMap.insert(std::pair<RenderPassTag, NodeSetPerPass*>({ RenderPassTag::DepthPass, nodeSetDepthPass }));
 
     dummyNode = new IndexedDrawNode;
+    dummyNode->tag = RenderPassTag::ColorPass;
     dummyGraphNode = new GraphNode<DrawGraphNode>(dummyNode);
     AddNode(dummyGraphNode);
 }
@@ -379,15 +456,22 @@ inline void ForwardGraph<T>::Init(Graph<DrawGraphNode>* drawGraph)
 template<typename T>
 inline void ForwardGraph<T>::DeInit()
 {
+    for each(auto obj in nodeDataPerPassMap)
+    {
+        delete obj.second;
+    }
+
     delete dummyGraphNode;
     delete dummyNode;
 }
 
 template<typename T>
-inline void ForwardGraph<T>::Update(DrawCommandBuffer<T>* dcb)
+inline void ForwardGraph<T>::Update(DrawCommandBuffer<T>* dcb, const RenderPassTag & tag)
 {
-    std::vector<GraphNode<DrawGraphNode> *>* cameraNodeList = &typeToNodeMap[DrawNodeTypes::CAMERA];
-    std::vector<GraphNode<DrawGraphNode> *>* drawingNodeList = &typeToNodeMap[DrawNodeTypes::DRAWING];
+    NodeSetPerPass * dataSetPerPass = nodeDataPerPassMap[tag];
+
+    std::vector<GraphNode<DrawGraphNode> *>* cameraNodeList = &dataSetPerPass->typeToNodeMap[DrawNodeTypes::CAMERA];
+    std::vector<GraphNode<DrawGraphNode> *>* drawingNodeList = &dataSetPerPass->typeToNodeMap[DrawNodeTypes::DRAWING];
        
     DrawGraphUtil::setOffset = 0;
     DrawGraphUtil::descriptorIdList.clear();
@@ -409,52 +493,30 @@ inline void ForwardGraph<T>::AddNode(GraphNode<DrawGraphNode> * node)
     drawGraph->Push(node);
 
     DrawNodeTypes nodeType = node->node->drawNodeType;
-    if (node->node->drawNodeType == DrawNodeTypes::PIPELINE)
-    {
-        //pipelineNodeList.push_back(node);
-        PerPipelineNodeData * pipelineData = CreatePipelineData(node);
-        CreateEdgeForPipelineNode(node, pipelineData);
-    }
-    else
-    {
-        //if entry present then insert a new node
-        auto it = typeToNodeMap.find(nodeType);
-        if (it != typeToNodeMap.end())
-        {
-            it->second.push_back(node);
-        }
-        else
-        {
-            typeToNodeMap.insert(std::pair<DrawNodeTypes, std::vector<GraphNode<DrawGraphNode> *>>({
-                nodeType, std::vector<GraphNode<DrawGraphNode> *>{ node } }));
-        }
+    RenderPassTag passTag = node->node->tag;
 
-        if (node->node->drawNodeType != DrawNodeTypes::MESH && 
-            node->node->drawNodeType != DrawNodeTypes::DRAWING)
-        {
-            uint32_t setLevel = node->node->setLevel;
-            auto itt = setToNodesMap.find(setLevel);
-            if (itt != setToNodesMap.end())
-            {
-                itt->second.push_back(node);
-            }
-            else
-            {
-                setToNodesMap.insert(std::pair<uint32_t, std::vector<GraphNode<DrawGraphNode> *>>({
-                    setLevel, std::vector<GraphNode<DrawGraphNode> *>{ node } }));
-            }
-        }
-        
-        // Check with existing pipeline nodes if this node belongs to any of them
-        for each(auto data in pipelineNodeDataList)
-        {
-            ASSERT_MSG_DEBUG(0, "Case yet to be handled");
+    NodeSetPerPass * dataSetPerPass;
 
-            bool isNodeInPipeline = CheckIfNodeBelongsToPipeline(data.pipelineNode, node, &data.setValues);
-            // if yes add to the node list 
-            if(isNodeInPipeline)
-                AddNodeToPipelineData(&data, node);
-            // create edge with existing
-        }
+    switch (passTag)
+    {
+    case RenderPassTag::ColorPass:
+    case RenderPassTag::DepthPass:
+        // perform the normal connections
+        dataSetPerPass = nodeDataPerPassMap[passTag];
+        CreateConnections(node, dataSetPerPass);
+        break;
+
+    case RenderPassTag::Color_Depth:
+        // perform the connections for both the passes
+        dataSetPerPass = nodeDataPerPassMap[RenderPassTag::ColorPass];
+        CreateConnections(node, dataSetPerPass);
+
+        dataSetPerPass = nodeDataPerPassMap[RenderPassTag::DepthPass];
+        CreateConnections(node, dataSetPerPass);
+        break;
+
+    case RenderPassTag::None:
+    default:
+        ASSERT_MSG(0, "Invalid renderPass");
     }
 }

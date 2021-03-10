@@ -42,13 +42,8 @@ private:
     int maxDrawNodes = 30;
 
     std::vector<DrawGraphNode *> drawGraphNodeList;
-    Graph<DrawGraphNode> * drawGraph;// TODO: add the graph construction without predefined length
-    //GraphNode<StateWrapperBase> * CreateGraphNode(StateWrapperBase * stateWrapper);
-
-    //void CreateGraphEdges();
-    //void CreateGraphEdges(const uint32_t & meshId, PipelineStates src, PipelineStates dest);
-    //GraphNode<StateWrapperBase> * GetNode(PipelineStates state, StateWrapperBase * stateObj);
-
+    Graph<DrawGraphNode> * drawGraph;
+    
 public:
     void Init(RendererType rendererType);
     void DeInit();
@@ -61,7 +56,6 @@ public:
 
     void AddNode(GraphNode<DrawGraphNode> * node);
     void CreateGraphEdges(GraphNode<DrawGraphNode> * src, GraphNode<DrawGraphNode> * dest);
-
 };
 
 template<typename T>
@@ -69,7 +63,7 @@ inline void DrawGraphManager::Update(DrawCommandBuffer<T>* dcb)
 {
     if (rendererType == RendererType::Forward)
     {
-        fwdGraph->Update(dcb);
+        fwdGraph->Update(dcb, RenderPassTag::DepthPass);
     }
     else if (rendererType == RendererType::Deferred)
     {

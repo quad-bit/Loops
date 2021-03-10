@@ -5,6 +5,7 @@
 #include "DrawGraphNode.h"
 #include "MeshAdditionEvent.h"
 #include <map>
+#include <tuple>
 
 template <typename T>
 class GraphNode;
@@ -48,12 +49,14 @@ private:
     std::map<DrawGraphNode *, ShaderBindingDescription *> nodeToDescriptionMap;
     std::map<Camera *, ShaderBindingDescription *> camToDescriptionMap;
     size_t memoryAlignedUniformSize;
+
 public:
     virtual void Init() override;
     virtual void DeInit() override;
     virtual void Update(float dt) override;
 
     void HandleCameraAddition(CameraAdditionEvent * inputEvent);
+    GraphNode<DrawGraphNode> * HandleCameraAddition(Camera * camera, const RenderPassTag & tag);
     void HandleMeshAddition(MeshToMatAdditionEvent *  meshAdditionEvent);
 
     CameraSystem();

@@ -104,4 +104,6 @@ public:
     float& GetFOV();
 
     void SetFOV( const float & FOV);
+
+    void SetProjectionType(const CameraType & type);
 };

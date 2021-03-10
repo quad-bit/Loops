@@ -102,3 +102,8 @@ void Camera::SetFOV(const float & FOV)
 {
     fov = FOV;
 }
+
+void Camera::SetProjectionType(const CameraType & type)
+{
+    this->projectionType = type;
+}

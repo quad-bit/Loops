@@ -130,6 +130,7 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     DrawGraphNode * cameraNode = new CameraDrawNode();
     cameraNode->meshList = MaterialFactory::GetInstance()->GetMeshList(cameraSetWrapper, 1);
     cameraNode->setLevel = cameraSetWrapper->setValue;
+    cameraNode->tag = RenderPassTag::ColorPass;
     cameraNode->setWrapperList.push_back(cameraSetWrapper);
     ((CameraDrawNode*)cameraNode)->descriptorIds = desc->descriptorIds;
 
@@ -140,6 +141,77 @@ void CameraSystem::HandleCameraAddition(CameraAdditionEvent * inputEvent)
     //    ({cameraNode, desc}));
 
     DrawGraphManager::GetInstance()->AddNode(graphNode);
+}
+
+GraphNode<DrawGraphNode>* CameraSystem::HandleCameraAddition(Camera * camera, const RenderPassTag & tag)
+{
+    // recieved the camera addition to the scene 
+    cameraList.push_back(camera);
+    camera->componentId = GeneratedCamId();
+
+    ShaderBindingDescription * desc = new ShaderBindingDescription;
+    desc->set = (uint32_t)ResourceSets::CAMERA;
+    desc->binding = 0;
+    desc->numElements = 3;
+    desc->resourceName = "View";
+    desc->resourceType = DescriptorType::UNIFORM_BUFFER;
+    desc->resParentId = camera->componentId;
+    desc->parentType = camera->componentType;
+    desc->dataSizePerDescriptorAligned = memoryAlignedUniformSize;
+    desc->dataSizePerDescriptor = sizeof(CameraUniform);
+    desc->uniformId = camera->componentId; // as one cam = one uniform
+    desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(memoryAlignedUniformSize, allocConfig, resourceSharingConfig);
+    desc->allocationConfig = allocConfig;
+
+    // Check if it can be fit into an existing buffer
+    if (AllocationUtility::IsNewAllocationRequired(resourceSharingConfig))
+    {
+        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(memoryAlignedUniformSize, allocConfig, resourceSharingConfig);
+        // True : Allocate new buffer
+        cameraSetWrapper = UniformFactory::GetInstance()->AllocateResource(desc, &totalSize, 1, AllocationMethod::LAZY);
+    }
+    else
+    {
+        // False : Assign the buffer id to this shaderResourceDescription
+        desc->resourceId = resDescriptionList[resDescriptionList.size() - 1]->resourceId;
+        desc->resourceMemoryId = resDescriptionList[resDescriptionList.size() - 1]->resourceMemoryId;
+    }
+
+    resDescriptionList.push_back(desc);
+    resourceSharingConfig.allocatedUniformCount += 1;
+
+    CameraUniform obj = {};
+    obj.projectionMat = camera->GetProjectionMat();
+    obj.viewMat = camera->GetViewMatrix();
+    obj.cameraPos = *camera->GetPosition();
+
+    //upload data to buffers
+    for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
+    {
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId,
+            sizeof(CameraUniform), memoryAlignedUniformSize, &obj,
+            desc->offsetsForEachDescriptor[i], false);
+    }
+
+    UniformFactory::GetInstance()->AllocateDescriptors(cameraSetWrapper, desc, 1, allocConfig.numDescriptors);
+
+    camToDescriptionMap.insert(std::pair<Camera *, ShaderBindingDescription *>(
+    { camera , desc }));
+
+    // draw graph node creation
+    // top level node as its Set 0
+    DrawGraphNode * cameraNode = new CameraDrawNode();
+    cameraNode->meshList = MaterialFactory::GetInstance()->GetMeshList(cameraSetWrapper, 1);
+    cameraNode->setLevel = cameraSetWrapper->setValue;
+    cameraNode->tag = tag;
+    cameraNode->setWrapperList.push_back(cameraSetWrapper);
+    ((CameraDrawNode*)cameraNode)->descriptorIds = desc->descriptorIds;
+
+    GraphNode<DrawGraphNode> * graphNode = new GraphNode<DrawGraphNode>(cameraNode);
+    DrawGraphManager::GetInstance()->AddNode(graphNode);
+    cameraGraphNodeList.push_back(graphNode);
+
+    return graphNode;
 }
 
 void CameraSystem::HandleMeshAddition(MeshToMatAdditionEvent * meshAdditionEvent)

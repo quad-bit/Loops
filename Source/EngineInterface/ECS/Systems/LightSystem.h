@@ -13,12 +13,14 @@ template <typename T>
 class ComponentHandle;
 
 class Light;
+class Camera;
 class Material;
 
 class LightSystem : public System
 {
 private:
     std::vector<Light *> lightlist;
+    std::vector<Camera *> cameralist;
     std::vector<ShaderBindingDescription *> resDescriptionList;
     GlobalResourceAllocationConfig allocConfig;
     GlobalResourceSharingConfig resourceSharingConfig;
@@ -35,6 +37,7 @@ private:
     size_t memoryAlignedUniformSize;
     
     Material * shadowMappingMat = nullptr;
+    System * cameraSystem;
 
 public:
     virtual void Init() override;
@@ -44,6 +47,8 @@ public:
     void HandleLightAddition(LightAdditionEvent * lightAdditionEvent);
     void HandleMeshAddition(MeshToMatAdditionEvent *  meshAdditionEvent);
     void HandleRendererAddition(MeshRendererAdditionEvent *  rendererAdditionEvent);
+
+    void AssignCameraSystem(System * camSystem);
 
     LightSystem();
     virtual ~LightSystem();
