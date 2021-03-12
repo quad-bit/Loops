@@ -11,7 +11,9 @@ uint32_t VkRenderPassFactory::renderpassIdCounter = 0;
 
 uint32_t VkRenderPassFactory::GetId()
 {
-    return renderpassIdCounter++;
+    uint32_t id = renderpassIdCounter;
+    renderpassIdCounter += 1;
+    return id;
 }
 
 void VkRenderPassFactory::Init()
@@ -72,7 +74,7 @@ void VkRenderPassFactory::CreateRenderPass(const VkAttachmentDescription * rende
     ErrorCheck(vkCreateRenderPass(*CoreObjects::logicalDeviceObj, &renderPassCreateInfo, CoreObjects::pAllocator, &info->renderPass));
 
     renderpassList.push_back(info);
-    renderpassIdCounter = info->id;
+    renderPassId = info->id;
     
     VkClearValue * clearValue;
     if (RendererSettings::MSAA_Enabled && RendererSettings::multiSamplingAvailable)

@@ -556,7 +556,7 @@ enum class DependencyFlagBits
         ImageType imageType;
         //Dimensions degree;
         ColorSpace colorSpace;
-        Usage usage;
+        std::vector<Usage> usage;
         Samples sampleCount;
         ImageLayout initialLayout;
     };
@@ -661,6 +661,13 @@ enum class DependencyFlagBits
     struct CommandBufferInheritanceInfo
     {
 
+    };
+    
+    struct RenderingPassInfo
+    {
+        RenderPassTag passTag;
+        uint32_t renderPassId;
+        uint32_t subpassId;
     };
 
     struct SubmitInfo

@@ -50,6 +50,9 @@ public:
     
     template <typename T>
     void Update(DrawCommandBuffer<T> * dcb);
+
+    template <typename T>
+    void Update(DrawCommandBuffer<T> * dcb, const RenderPassTag & passTag);
     
     static DrawGraphManager* GetInstance();
     ~DrawGraphManager();
@@ -63,7 +66,20 @@ inline void DrawGraphManager::Update(DrawCommandBuffer<T>* dcb)
 {
     if (rendererType == RendererType::Forward)
     {
-        fwdGraph->Update(dcb, RenderPassTag::DepthPass);
+        fwdGraph->Update(dcb, RenderPassTag::ColorPass);
+    }
+    else if (rendererType == RendererType::Deferred)
+    {
+        dfrdGraph->Update(dcb);
+    }
+}
+
+template<typename T>
+inline void DrawGraphManager::Update(DrawCommandBuffer<T>* dcb, const RenderPassTag & passTag)
+{
+    if (rendererType == RendererType::Forward)
+    {
+        fwdGraph->Update(dcb, passTag);
     }
     else if (rendererType == RendererType::Deferred)
     {

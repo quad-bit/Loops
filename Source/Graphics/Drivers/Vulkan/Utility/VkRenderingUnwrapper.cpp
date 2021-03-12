@@ -296,6 +296,17 @@ VkImageUsageFlagBits VulkanUnwrap::UnwrapUsage(Usage usage)
     }
 }
 
+VkImageUsageFlags VulkanUnwrap::UnwrapUsage(std::vector<Usage>& usage)
+{
+    VkImageUsageFlags flag = 0;
+    for (uint32_t i = 0; i < usage.size(); i++)
+    {
+        flag |= UnwrapUsage(usage[i]);
+    }
+
+    return flag;
+}
+
 VkRenderPassBeginInfo VulkanUnwrap::UnwrapRenderPassBeginInfo(RenderPassBeginInfo beginInfo)
 {
     VkRenderPassBeginInfo vkBeginInfo = {};
@@ -307,14 +318,14 @@ VkRenderPassBeginInfo VulkanUnwrap::UnwrapRenderPassBeginInfo(RenderPassBeginInf
     vkBeginInfo.renderPass = *VkRenderPassFactory::GetInstance()->GetRenderPass(beginInfo.renderPassId);
     vkBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     
-    if (beginInfo.clearColorValue.size() == 0)
+    /*if (beginInfo.clearColorValue.size() == 0)
     {
         vkBeginInfo.pClearValues = VkRenderPassFactory::GetInstance()->GetClearValue(beginInfo.renderPassId);
         vkBeginInfo.clearValueCount = VkRenderPassFactory::GetInstance()->GetClearValueCount(beginInfo.renderPassId);
     }
-    else
+    else*/
     {
-        // color + 1 depthStencil
+        // color attachments + 1 depth
         const uint32_t numClearVals = (uint32_t)beginInfo.clearColorValue.size() + 1;
         VkClearValue * clearVal = new VkClearValue[numClearVals];
 

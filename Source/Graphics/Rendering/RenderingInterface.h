@@ -131,7 +131,7 @@ inline void RenderingInterface<T>::EndRenderLoop()
 template<typename T>
 inline void RenderingInterface<T>::RenderLoop()
 {
-    DrawGraphManager::GetInstance()->Update(activeDrawCommandBuffer);
+    forwardRenderer->Render(activeDrawCommandBuffer, currentSwapchainIndex);
 }
 
 template<typename T>
@@ -171,7 +171,6 @@ inline void RenderingInterface<T>::CheckForMSAA()
     }
     else
     {
-        RendererSettings::multiSamplingAvailable = false;
         RendererSettings::multiSamplingAvailable = false;
         *RendererSettings::sampleCount = Samples::SAMPLE_COUNT_1_BIT;
     }

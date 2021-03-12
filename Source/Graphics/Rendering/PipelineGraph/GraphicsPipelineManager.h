@@ -126,6 +126,7 @@ public:
 
     void TraversalEventHandler(GraphTraversalEvent * event);
     void GenerateAllPipelines(const uint32_t & renderPassId, const uint32_t & subpassId);
+    void GenerateAllPipelines(std::vector<RenderingPassInfo> & passInfo);
 };
 
 template<typename T>
@@ -1035,8 +1036,8 @@ inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEven
 
     // pipeline create info
     PipelineCreateInfo info = {};
-    info.renderPassId = renderPassID;
-    info.subpassId = subPassId;
+    //info.renderPassId = renderPassID;
+    //info.subpassId = subPassId;
     info.statesToIdMap = PipelineUtil::stateToIdMap;
     info.meshList = PipelineUtil::pipelineStateMeshList;
     info.setsPerPipeline = PipelineUtil::setsPerPipeline;
@@ -1046,6 +1047,83 @@ inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEven
     PipelineUtil::setsPerPipeline.clear();
     PipelineUtil::pipelineStateMeshList.clear();
     PipelineUtil::stateToIdMap.clear();
+}
+
+template<typename T>
+inline void GraphicsPipelineManager<T>::GenerateAllPipelines(std::vector<RenderingPassInfo> & passInfo)
+{
+    // traversal
+    //this->renderPassID = renderPassId;
+    //this->subPassId = subpassId;
+
+    // Get all the source states
+    std::vector<GraphNode<StateWrapperBase> * > sourceNodeList = stateToNodeMap[PipelineStates::VertexInputState];
+
+    // Get all the dest states
+    std::vector<GraphNode<StateWrapperBase> * > destNodeList = stateToNodeMap[PipelineStates::DynamicState];
+
+    // Execute Traversal, the above function TraversalEventHandler, gets triggered 
+    // for every path traversal.
+    for each(auto srcNode in sourceNodeList)
+        for each (auto destNode in destNodeList)
+        {
+            pipelineGraph->FindAllPaths(srcNode->GetNodeId(), destNode->GetNodeId());
+            // traversal event getting handled in TraversalEventHandler
+        }
+
+    // TraversalEventHandler gets triggered first
+
+    uint32_t numPipelines = (uint32_t)pipelineCreateInfoList.size();
+    uint32_t * ids = new uint32_t[numPipelines];
+
+    for (uint32_t i = 0; i < numPipelines; i++)
+    {
+        // Generate pipeline
+        PipelineWrapper wrapper = {};
+        wrapper.id = GeneratePipelineId();
+        wrapper.meshList = pipelineCreateInfoList[i].meshList;
+        pipelineList.push_back(wrapper);
+
+        ids[i] = wrapper.id;
+
+        DrawGraphNode * pipelineNode = new PipelineDrawNode;
+        pipelineNode->setWrapperList = pipelineCreateInfoList[i].setsPerPipeline;
+        pipelineNode->meshList = pipelineCreateInfoList[i].meshList;
+        ((PipelineDrawNode*)pipelineNode)->pipelineLayoutId = pipelineCreateInfoList[i].pipelineLayoutId;
+        ((PipelineDrawNode*)pipelineNode)->pipelineId = wrapper.id;
+
+        // TODO : find better design to tag and find pipeline node
+        {
+            uint32_t shaderStateId = pipelineCreateInfoList[i].statesToIdMap[PipelineStates::ShaderStage];
+            
+            for (auto info : passInfo)
+            {
+                std::vector<uint32_t> idList = renderPassToShaderStageIdMap[info.passTag];
+
+                std::vector<uint32_t>::iterator it;
+                it = std::find_if(idList.begin(), idList.end(), [&](uint32_t id) { return shaderStateId == id; });
+                if (it != idList.end())
+                {
+                    pipelineNode->tag = info.passTag;
+                    pipelineCreateInfoList[i].renderPassId = info.renderPassId;
+                    pipelineCreateInfoList[i].subpassId = info.subpassId;
+                    break;
+                }
+                /*else
+                {
+                    pipelineNode->tag = RenderPassTag::ColorPass;
+                }*/
+            }
+        }
+
+        GraphNode<DrawGraphNode> * pipelinGraphNode = new GraphNode<DrawGraphNode>(pipelineNode);
+        DrawGraphManager::GetInstance()->AddNode(pipelinGraphNode);
+        pipelineDrawNodeList.push_back(pipelinGraphNode);
+    }
+
+    apiInterface->CreatePipeline(&pipelineCreateInfoList[0], numPipelines, ids);
+
+    delete[] ids;
 }
 
 template<typename T>

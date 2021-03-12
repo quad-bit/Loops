@@ -28,6 +28,7 @@ namespace VulkanUnwrap
     Samples UnWrapSampleCount(VkSampleCountFlags vkSampleCount);
     VkImageType UnWrapImageType(ImageType type);
     VkImageUsageFlagBits UnwrapUsage(Usage usage);
+    VkImageUsageFlags UnwrapUsage(std::vector<Usage>& usage);
 
     VkRenderPassBeginInfo UnwrapRenderPassBeginInfo(RenderPassBeginInfo info);
 

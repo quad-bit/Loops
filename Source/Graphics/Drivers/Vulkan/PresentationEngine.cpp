@@ -55,6 +55,8 @@ void PresentationEngine::CreateSwapChain(VkSwapchainCreateInfoKHR swapChainCreat
 
 void PresentationEngine::CreateSwapChain(ImageInfo info)
 {
+    VkImageUsageFlags usageFlag = VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+
     VkSwapchainCreateInfoKHR swapChainCreateInfo{};
     swapChainCreateInfo.clipped = VK_TRUE; // dont render parts of swapchain image that are out of the frustrum
     swapChainCreateInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
