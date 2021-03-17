@@ -26,3 +26,10 @@ public:
     Light * light;
 };
 
+class DepthPassAttachmentCreationEvent : public Event
+{
+public:
+    std::vector<uint32_t> imageId;
+    std::vector<uint32_t> imageViewId;
+    std::vector<uint32_t> memoryId;
+};

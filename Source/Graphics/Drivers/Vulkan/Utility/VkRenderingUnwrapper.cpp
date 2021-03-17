@@ -259,35 +259,35 @@ VkImageType VulkanUnwrap::UnWrapImageType(ImageType type)
     return VkImageType::VK_IMAGE_TYPE_1D;
 }
 
-VkImageUsageFlagBits VulkanUnwrap::UnwrapUsage(Usage usage)
+VkImageUsageFlagBits VulkanUnwrap::UnwrapUsage(AttachmentUsage usage)
 {
     switch (usage)
     {
-    case Usage::USAGE_TRANSFER_DST_BIT:
+    case AttachmentUsage::USAGE_TRANSFER_DST_BIT:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 
-    case Usage::USAGE_SAMPLED_BIT:
+    case AttachmentUsage::USAGE_SAMPLED_BIT:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_SAMPLED_BIT;
 
-    case Usage::USAGE_STORAGE_BIT:
+    case AttachmentUsage::USAGE_STORAGE_BIT:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_STORAGE_BIT;
 
-    case Usage::USAGE_COLOR_ATTACHMENT_BIT:
+    case AttachmentUsage::USAGE_COLOR_ATTACHMENT_BIT:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
-    case Usage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT:
+    case AttachmentUsage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 
-    case Usage::USAGE_TRANSIENT_ATTACHMENT_BIT:
+    case AttachmentUsage::USAGE_TRANSIENT_ATTACHMENT_BIT:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
 
-    case Usage::USAGE_INPUT_ATTACHMENT_BIT:
+    case AttachmentUsage::USAGE_INPUT_ATTACHMENT_BIT:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
 
-    case Usage::USAGE_SHADING_RATE_IMAGE_BIT_NV:
+    case AttachmentUsage::USAGE_SHADING_RATE_IMAGE_BIT_NV:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_SHADING_RATE_IMAGE_BIT_NV;
 
-    case Usage::USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT:
+    case AttachmentUsage::USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT:
         return VkImageUsageFlagBits::VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT;
 
     default:
@@ -296,7 +296,7 @@ VkImageUsageFlagBits VulkanUnwrap::UnwrapUsage(Usage usage)
     }
 }
 
-VkImageUsageFlags VulkanUnwrap::UnwrapUsage(std::vector<Usage>& usage)
+VkImageUsageFlags VulkanUnwrap::UnwrapUsage(std::vector<AttachmentUsage>& usage)
 {
     VkImageUsageFlags flag = 0;
     for (uint32_t i = 0; i < usage.size(); i++)
@@ -772,3 +772,294 @@ VkDependencyFlags const VulkanUnwrap::UnwrapDependencyFlags(const DependencyFlag
 
     return flags;
 }
+
+VkBufferCreateInfo * const VulkanUnwrap::UnwrapBufferCreateInfo(const BufferCreateInfo * info, const uint32_t & count)
+{
+    VkBufferCreateInfo * vkInfo = new VkBufferCreateInfo[count];
+
+    for (uint32_t i = 0; i < count; i++)
+    {
+        vkInfo[i].flags = 0;
+        vkInfo[i].pNext = nullptr;
+        vkInfo[i].pQueueFamilyIndices = nullptr;
+        vkInfo[i].queueFamilyIndexCount = 0;
+        vkInfo[i].sharingMode = VkSharingMode::VK_SHARING_MODE_EXCLUSIVE;
+        vkInfo[i].size = info[i].size;
+        vkInfo[i].sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        vkInfo[i].usage = UnwrapBufferUsage(info[i].usage);
+    }
+
+    return vkInfo;
+}
+
+VkBufferUsageFlags const VulkanUnwrap::UnwrapBufferUsage(const std::vector<BufferUsage>& usage)
+{
+    VkBufferUsageFlags vkUsage = 0;
+
+    for each(auto obj in usage)
+    {
+        switch (obj)
+        {
+        case BufferUsage::BUFFER_USAGE_INDEX_BUFFER_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_INDIRECT_BUFFER_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_STORAGE_BUFFER_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_BUFFER_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_TRANSFER_DST_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_TRANSFER_SRC_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_UNIFORM_BUFFER_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT;
+            break;
+
+        case BufferUsage::BUFFER_USAGE_VERTEX_BUFFER_BIT:
+            vkUsage |= VkBufferUsageFlagBits::VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+            break;
+
+        default:
+            ASSERT_MSG(0, "invalid buffer usage");
+        }
+    }
+
+    return vkUsage;
+}
+
+VkMemoryPropertyFlags VulkanUnwrap::UnwrapMemoryProperty(const MemoryType * memType, const uint32_t & count)
+{
+    VkMemoryPropertyFlags memProp = 0;
+
+    for (uint32_t i = 0; i < count; i++)
+        switch (memType[i])
+        {
+        case MemoryType::DEVICE_LOCAL_BIT:
+            memProp |= VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+            break;
+
+        case MemoryType::HOST_VISIBLE_BIT:
+            memProp |= VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+            break;
+
+        case MemoryType::HOST_COHERENT_BIT:
+            memProp |= VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+            break;
+
+        case MemoryType::HOST_CACHED_BIT:
+            memProp |= VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_HOST_CACHED_BIT;
+            break;
+
+        case MemoryType::LAZILY_ALLOCATED_BIT:
+            memProp |= VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
+            break;
+
+        case MemoryType::PROTECTED_BIT:
+            memProp |= VkMemoryPropertyFlagBits::VK_MEMORY_PROPERTY_PROTECTED_BIT;
+            break;
+        }
+
+    return memProp;
+}
+
+VkSamplerCreateInfo const VulkanUnwrap::UnwrapSamplerCreateInfo(const SamplerCreateInfo & info)
+{
+    VkSamplerCreateInfo vkInfo = {};
+
+    vkInfo.addressModeU = UnwrapAddressMode(info.addressModeU);
+    vkInfo.addressModeV = UnwrapAddressMode(info.addressModeV);
+    vkInfo.addressModeW = UnwrapAddressMode(info.addressModeW);
+    vkInfo.anisotropyEnable = info.anisotropyEnable;
+    vkInfo.borderColor = UnwrapBorderColor(info.borderColor);
+    vkInfo.compareEnable = info.compareEnable;
+    vkInfo.compareOp = UnwrapCompareOp(info.compareOp);
+    vkInfo.magFilter = UnwrapFilter(info.magFilter);
+    vkInfo.maxAnisotropy = info.maxAnisotropy;
+    vkInfo.maxLod = info.maxLod;
+    vkInfo.minFilter = UnwrapFilter(info.minFilter);
+    vkInfo.minLod = info.minLod;
+    vkInfo.mipLodBias = info.mipLodBias;
+    vkInfo.mipmapMode = UnwrapMipMapMode(info.mipmapMode);
+    vkInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    vkInfo.unnormalizedCoordinates = info.unnormalizedCoordinates;
+
+    return vkInfo;
+}
+
+VkBorderColor const VulkanUnwrap::UnwrapBorderColor(const BorderColor & color)
+{
+    VkBorderColor vkColor;
+    switch (color)
+    {
+    case BorderColor::BORDER_COLOR_FLOAT_OPAQUE_BLACK :
+        vkColor = VkBorderColor::VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK;
+        break;
+
+    case BorderColor::BORDER_COLOR_FLOAT_OPAQUE_WHITE:
+        vkColor = VkBorderColor::VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
+        break;
+
+    case BorderColor::BORDER_COLOR_FLOAT_TRANSPARENT_BLACK:
+        vkColor = VkBorderColor::VK_BORDER_COLOR_FLOAT_TRANSPARENT_BLACK;
+        break;
+
+    case BorderColor::BORDER_COLOR_INT_OPAQUE_BLACK:
+        vkColor = VkBorderColor::VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+        break;
+
+    case BorderColor::BORDER_COLOR_INT_OPAQUE_WHITE:
+        vkColor = VkBorderColor::VK_BORDER_COLOR_INT_OPAQUE_WHITE;
+        break;
+
+    case BorderColor::BORDER_COLOR_INT_TRANSPARENT_BLACK:
+        vkColor = VkBorderColor::VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
+        break;
+
+    default:
+        ASSERT_MSG(0, "Invalid option");
+
+    }
+
+    return vkColor;
+}
+
+VkCompareOp const VulkanUnwrap::UnwrapCompareOp(const CompareOp  & op)
+{
+    VkCompareOp vkOp;
+    switch (op)
+    {
+    case CompareOp::COMPARE_OP_ALWAYS:
+        vkOp = VkCompareOp::VK_COMPARE_OP_ALWAYS;
+        break;
+
+    case CompareOp::COMPARE_OP_EQUAL:
+        vkOp = VkCompareOp::VK_COMPARE_OP_EQUAL;
+        break;
+
+    case CompareOp::COMPARE_OP_GREATER:
+        vkOp = VkCompareOp::VK_COMPARE_OP_GREATER;
+        break;
+
+    case CompareOp::COMPARE_OP_GREATER_OR_EQUAL:
+        vkOp = VkCompareOp::VK_COMPARE_OP_GREATER_OR_EQUAL;
+        break;
+
+    case CompareOp::COMPARE_OP_LESS:
+        vkOp = VkCompareOp::VK_COMPARE_OP_LESS;
+        break;
+
+    case CompareOp::COMPARE_OP_LESS_OR_EQUAL:
+        vkOp = VkCompareOp::VK_COMPARE_OP_LESS_OR_EQUAL;
+        break;
+
+    case CompareOp::COMPARE_OP_MAX_ENUM:
+        vkOp = VkCompareOp::VK_COMPARE_OP_MAX_ENUM;
+        break;
+
+    case CompareOp::COMPARE_OP_NEVER:
+        vkOp = VkCompareOp::VK_COMPARE_OP_NEVER;
+        break;
+
+    case CompareOp::COMPARE_OP_NOT_EQUAL:
+        vkOp = VkCompareOp::VK_COMPARE_OP_NOT_EQUAL;
+        break;
+
+    default: ASSERT_MSG_DEBUG(0, "Mode not found");
+
+    }
+    return vkOp;
+}
+
+VkFilter const VulkanUnwrap::UnwrapFilter(const Filter & filter)
+{
+    VkFilter vkFilter;
+    switch (filter)
+    {
+    case Filter::FILTER_LINEAR:
+        vkFilter = VkFilter::VK_FILTER_LINEAR;
+        break;
+
+    case Filter::FILTER_NEAREST:
+        vkFilter = VkFilter::VK_FILTER_NEAREST;
+        break;
+
+    default:
+        ASSERT_MSG_DEBUG(0, "invalide option");
+    }
+    return vkFilter;
+}
+
+VkSamplerMipmapMode const VulkanUnwrap::UnwrapMipMapMode(const SamplerMipmapMode & mode)
+{
+    VkSamplerMipmapMode vkMode;
+
+    switch(mode)
+    {
+    case SamplerMipmapMode::SAMPLER_MIPMAP_MODE_LINEAR:
+        vkMode = VkSamplerMipmapMode::VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        break;
+
+    case SamplerMipmapMode::SAMPLER_MIPMAP_MODE_NEAREST:
+        vkMode = VkSamplerMipmapMode::VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        break;
+
+    default:
+        ASSERT_MSG_DEBUG(0, "invalide option");
+    }
+
+    return vkMode;
+}
+
+VkSamplerAddressMode const VulkanUnwrap::UnwrapAddressMode(const SamplerAddressMode & mode)
+{
+    VkSamplerAddressMode vkMode;
+
+    switch (mode)
+    {
+    case SamplerAddressMode::SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER:
+        vkMode = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+        break;
+
+    case SamplerAddressMode::SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE:
+        vkMode = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        break;
+
+    case SamplerAddressMode::SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT:
+        vkMode = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT;
+        break;
+
+    case SamplerAddressMode::SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE:
+        vkMode = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE;
+        break;
+
+    case SamplerAddressMode::SAMPLER_ADDRESS_MODE_REPEAT:
+        vkMode = VkSamplerAddressMode::VK_SAMPLER_ADDRESS_MODE_REPEAT;
+        break;
+
+    default :
+        ASSERT_MSG_DEBUG(0, "invalide option");
+    }
+    return vkMode;
+}
+

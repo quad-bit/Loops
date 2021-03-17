@@ -17,6 +17,8 @@ layout (std140, set = 2, binding = 0) uniform Lights
     vec4 specular;
 } light;
 
+layout(set = 2, binding = 1) uniform sampler2D combined_shadowSampler;
+
 void main()
 {
    // ambient
@@ -37,9 +39,13 @@ void main()
    //specular       
    vec3 reflectDir = reflect(-lightDir, norm);  
    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-   vec3 specularVal = spec * specular.xyz; 
+   vec3 specularVal = spec * specular.xyz;
     
-   vec3 result = (ambient + diffuseVal + specularVal) * color.xyz;
+   vec2 inTextureCoordinate = vec2(0.5, 0.5);
+   vec4 shadowColor = vec4(texture(combined_shadowSampler, inTextureCoordinate).rgb, 1.0);
+    
+   vec3 result = shadowColor.xyz + (ambient + diffuseVal + specularVal) * color.xyz;
+   //vec3 result = (ambient + diffuseVal + specularVal) * color.xyz;
     
    outColor = vec4(result, 1.0); 
 }

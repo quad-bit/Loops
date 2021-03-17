@@ -23,7 +23,7 @@ void MeshRendererSystem::Init()
 {
     EventBus::GetInstance()->Subscribe<MeshRendererSystem, MeshRendererAdditionEvent>(this, &MeshRendererSystem::HandleMeshRendererAddition);
 
-    allocConfig.numDescriptors = Settings::maxFramesInFlight;
+    allocConfig.numDescriptorSets = Settings::maxFramesInFlight;
     allocConfig.numMemories = 1;
     allocConfig.numResources = 1;
 
@@ -74,8 +74,8 @@ void MeshRendererSystem::Update(float dt)
         obj.modelMat = transformObj->GetGlobalModelMatrix();
 
         ShaderBindingDescription * desc = transformToBindDescMap[transformObj];
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, memoryAlignedDataSize, memoryAlignedDataSize,
-            &obj, desc->offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->bufferBindingInfo.bufferIdList[0], memoryAlignedDataSize, memoryAlignedDataSize,
+            &obj, desc->bufferBindingInfo.info.offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
 
     }
 }
@@ -107,24 +107,52 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     desc->resourceType = DescriptorType::UNIFORM_BUFFER;
     desc->resParentId = inputEvent->renderer->componentId;
     desc->parentType = inputEvent->renderer->componentType;
-    desc->dataSizePerDescriptorAligned = memoryAlignedDataSize;
-    desc->dataSizePerDescriptor = sizeof(TransformUniform);
     desc->uniformId = inputEvent->renderer->componentId; 
-    desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(uniformSize, allocConfig, resourceSharingConfig);
-    desc->allocationConfig = allocConfig;
+    desc->bufferBindingInfo.info.dataSizePerDescriptorAligned = memoryAlignedDataSize;
+    desc->bufferBindingInfo.info.dataSizePerDescriptor = sizeof(TransformUniform);
+    desc->bufferBindingInfo.info.offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(uniformSize, allocConfig, resourceSharingConfig);
+    desc->bufferBindingInfo.info.allocationConfig = allocConfig;
+    desc->bufferBindingInfo.bufferIdList.resize(allocConfig.numResources);
+    desc->bufferBindingInfo.bufferMemoryId.resize(allocConfig.numResources);
+
+    transformSetWrapper = UniformFactory::GetInstance()->GetSetWrapper(desc, 1);
 
     // Check if it can be fit into an existing buffer
     if (AllocationUtility::IsNewAllocationRequired(resourceSharingConfig))
     {
         // True : Allocate new buffer
         size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(memoryAlignedDataSize, allocConfig, resourceSharingConfig);
-        transformSetWrapper = UniformFactory::GetInstance()->AllocateResource(desc, &totalSize, 1, AllocationMethod::LAZY);
+        transformSetWrapper = UniformFactory::GetInstance()->AllocateSetResource(desc, &totalSize, 1, AllocationMethod::LAZY);
+        
+        /*BufferCreateInfo info = {};
+        info.size = memoryAlignedDataSize;
+        info.usage.push_back(BufferUsage::BUFFER_USAGE_UNIFORM_BUFFER_BIT);
+        
+        uint32_t numBuf = allocConfig.numResources;
+        uint32_t * ids = new uint32_t[numBuf];
+        size_t * memSizes = new size_t[numBuf];
+
+        UniformFactory::GetInstance()->AllocateUniformBuffer(&info, numBuf, ids, memSizes);
+        for (uint32_t i = 0; i < allocConfig.numResources; i++)
+        {
+            desc->bufferBindingInfo.bufferIdList[i] = ids[i];
+
+            MemoryRequirementInfo info = {};
+            info.size = memSizes[i];
+
+            std::array<MemoryType, 2> memType{ MemoryType::HOST_VISIBLE_BIT, MemoryType::HOST_COHERENT_BIT };
+
+            desc->bufferBindingInfo.bufferMemoryId[i] = UniformFactory::GetInstance()->AllocateBufferMemory(ids[i], &info, memType.data(), memType.size(), memSizes[i]);
+        }
+
+        delete[] ids;
+        delete[] memSizes;*/
     }
     else
     {
         // False : Assign the buffer id to this shaderResourceDescription
-        desc->resourceId = resDescriptionList[resDescriptionList.size() - 1]->resourceId;
-        desc->resourceMemoryId = resDescriptionList[resDescriptionList.size() - 1]->resourceMemoryId;
+        desc->bufferBindingInfo.bufferIdList[0] = resDescriptionList[resDescriptionList.size() - 1]->bufferBindingInfo.bufferIdList[0];
+        desc->bufferBindingInfo.bufferMemoryId[0] = resDescriptionList[resDescriptionList.size() - 1]->bufferBindingInfo.bufferMemoryId[0];
     }
 
     resDescriptionList.push_back(desc);
@@ -136,13 +164,13 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     obj.modelMat = transform->GetGlobalModelMatrix();
 
     //upload data to buffers
-    for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
+    for (uint32_t i = 0; i < allocConfig.numDescriptorSets; i++)
     {
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->resourceId, memoryAlignedDataSize, memoryAlignedDataSize, &obj, desc->offsetsForEachDescriptor[i], false);
+        UniformFactory::GetInstance()->UploadDataToBuffers(desc->bufferBindingInfo.bufferIdList[0], memoryAlignedDataSize, memoryAlignedDataSize, &obj, desc->bufferBindingInfo.info.offsetsForEachDescriptor[i], false);
     }
     
     // allocate descriptors
-    UniformFactory::GetInstance()->AllocateDescriptors(transformSetWrapper, desc, 1, allocConfig.numDescriptors);
+    UniformFactory::GetInstance()->AllocateDescriptorSet(transformSetWrapper, desc, 1, allocConfig.numDescriptorSets);
     
     uint32_t meshId = inputEvent->renderer->geometry->componentId;
     
@@ -169,7 +197,7 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
         trfnode->setWrapperList.push_back(transformSetWrapper);
         trfnode->meshList.push_back(meshId);
         trfnode->setLevel = transformSetWrapper->setValue;
-        ((TransformNode*)trfnode)->descriptorSetIds = desc->descriptorIds;
+        ((TransformNode*)trfnode)->descriptorSetIds = desc->descriptorSetIds;
     }
 
     uint32_t indexCount = inputEvent->renderer->geometry->indexCount;

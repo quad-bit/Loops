@@ -38,6 +38,9 @@ public:
     static GraphicsManager* GetInstance();
     ~GraphicsManager();
 
+    void SetupRenderer();
+    void DislogeRenderer();
+
     void PreUpdate();
     void PostUpdate();
 

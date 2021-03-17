@@ -12,3 +12,6 @@ bool RendererSettings::sampleRateShadingEnabled;
 bool RendererSettings::multiSamplingAvailable;
 
 Samples * RendererSettings::sampleCount;
+
+std::vector<uint32_t> RendererSettings::depthPrepassImageId;
+

@@ -144,7 +144,7 @@ VkStencilOpState VulkanGraphicsPipelineFactory::UnwrapStencilOpState(StencilOpSt
 {
     VkStencilOpState vkState;
     vkState.compareMask = state.compareMask;
-    vkState.compareOp = UnwrapCompareOp(state.compareOp);
+    vkState.compareOp = VulkanUnwrap::UnwrapCompareOp(state.compareOp);
     vkState.depthFailOp = UnwrapStencilOp(state.depthFailOp);
     vkState.failOp = UnwrapStencilOp(state.failOp);
     vkState.passOp = UnwrapStencilOp(state.passOp);
@@ -154,52 +154,6 @@ VkStencilOpState VulkanGraphicsPipelineFactory::UnwrapStencilOpState(StencilOpSt
     return vkState;
 }
 
-VkCompareOp VulkanGraphicsPipelineFactory::UnwrapCompareOp(CompareOp op)
-{
-    VkCompareOp vkOp;
-    switch (op)
-    {
-    case CompareOp::COMPARE_OP_ALWAYS:
-        vkOp = VkCompareOp::VK_COMPARE_OP_ALWAYS;
-        break;
-
-    case CompareOp::COMPARE_OP_EQUAL:
-        vkOp = VkCompareOp::VK_COMPARE_OP_EQUAL;
-        break;
-
-    case CompareOp::COMPARE_OP_GREATER:
-        vkOp = VkCompareOp::VK_COMPARE_OP_GREATER;
-        break;
-
-    case CompareOp::COMPARE_OP_GREATER_OR_EQUAL:
-        vkOp = VkCompareOp::VK_COMPARE_OP_GREATER_OR_EQUAL;
-        break;
-
-    case CompareOp::COMPARE_OP_LESS:
-        vkOp = VkCompareOp::VK_COMPARE_OP_LESS;
-        break;
-
-    case CompareOp::COMPARE_OP_LESS_OR_EQUAL:
-        vkOp = VkCompareOp::VK_COMPARE_OP_LESS_OR_EQUAL;
-        break;
-
-    case CompareOp::COMPARE_OP_MAX_ENUM:
-        vkOp = VkCompareOp::VK_COMPARE_OP_MAX_ENUM;
-        break;
-
-    case CompareOp::COMPARE_OP_NEVER:
-        vkOp = VkCompareOp::VK_COMPARE_OP_NEVER;
-        break;
-
-    case CompareOp::COMPARE_OP_NOT_EQUAL:
-        vkOp = VkCompareOp::VK_COMPARE_OP_NOT_EQUAL;
-        break;
-
-    default: ASSERT_MSG_DEBUG(0, "Mode not found");
-
-    }
-    return vkOp;
-}
 
 VkStencilOp VulkanGraphicsPipelineFactory::UnwrapStencilOp(StencilOp op)
 {
@@ -935,7 +889,7 @@ void VulkanGraphicsPipelineFactory::CreateDepthStencilState(const DepthStencilSt
     VkPipelineDepthStencilStateCreateInfo * info = new VkPipelineDepthStencilStateCreateInfo;
     info->back = UnwrapStencilOpState( state->back);
     info->depthBoundsTestEnable = state->depthBoundsTestEnable;
-    info->depthCompareOp = UnwrapCompareOp( state->depthCompareOp);
+    info->depthCompareOp = VulkanUnwrap::UnwrapCompareOp( state->depthCompareOp);
     info->depthTestEnable = state->depthTestEnable;
     info->depthWriteEnable = state->depthWriteEnable;
     info->flags = 0;

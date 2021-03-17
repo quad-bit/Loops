@@ -10,15 +10,6 @@ enum class AllocationMethod
     IMMEDIATE,
     LAZY
 };
-//
-//enum class ShaderResourceSetClassification
-//{
-//    Camera = 0,
-//    Light = 1,
-//    PerMat = 2,
-//    ObjectSurface = 3
-//
-//};
 
 //overall config for the entire uniform list for a binding
 struct GlobalResourceSharingConfig
@@ -30,29 +21,67 @@ struct GlobalResourceSharingConfig
 
 struct GlobalResourceAllocationConfig
 {
-    uint32_t numDescriptors;
+    uint32_t numDescriptorSets; // should be same for all the bindings in a set
     uint32_t numResources;  // buffers/textures/samplers
     uint32_t numMemories;
+};
+
+struct BufferLayoutInfo
+{
+    // memory sizes
+    size_t totalSize;
+    size_t dataSizePerDescriptorAligned;
+    size_t dataSizePerDescriptor; // sizeOf(Uniform Struct)
+    std::vector<size_t> offsetsForEachDescriptor; // offset in memory, for buffer/image sharing
+    GlobalResourceSharingConfig sharingConfig;
+    GlobalResourceAllocationConfig allocationConfig;
+};
+
+struct ImageBindingInfo
+{
+    std::vector<uint32_t> imageId;
+    std::vector<uint32_t> imageViewId;
+    std::vector<uint32_t> memoryId;
+};
+
+struct SamplerBindingInfo
+{
+    std::vector<uint32_t> samplerId;
+};
+
+// many bufs, many mem || 1 buf, many memory || 1 buf, 1 mem
+struct BufferBindingInfo
+{
+    std::vector<uint32_t> bufferIdList;
+    std::vector<uint32_t> bufferMemoryId;
+    BufferLayoutInfo info;
 };
 
 //represent one binding, might have unique descriptor for each frame in flight
 struct ShaderBindingDescription
 {
+    uint32_t uniformId; // not getting used
+    uint32_t resParentId; // not getting used
+    COMPONENT_TYPE parentType; // not getting used
+
+    //size_t dataSizePerDescriptorAligned;
+    //size_t dataSizePerDescriptor; // sizeOf(Uniform Struct)
+    //std::vector<size_t> offsetsForEachDescriptor; // offset in memory, for buffer/image sharing
+    //GlobalResourceSharingConfig sharingConfig;
+    //GlobalResourceAllocationConfig allocationConfig;
+
     DescriptorType resourceType;
-    uint32_t resourceId; // buffer/texture/sampler id
-    uint32_t resourceMemoryId;
     uint32_t set;
     uint32_t binding;
     std::string resourceName;
     uint32_t numElements;
-    size_t dataSizePerDescriptorAligned;
-    size_t dataSizePerDescriptor; //sizeOf(Uniform Struct)
-    uint32_t uniformId;
-    uint32_t resParentId;
-    COMPONENT_TYPE parentType;
-    std::vector<size_t> offsetsForEachDescriptor;
-    std::vector<uint32_t> descriptorIds;
-    GlobalResourceSharingConfig sharingConfig;
-    GlobalResourceAllocationConfig allocationConfig;
+    std::vector<uint32_t> descriptorSetIds;
+
+    SamplerBindingInfo samplerBindingInfo;
+    ImageBindingInfo imageBindingInfo;
+    BufferBindingInfo bufferBindingInfo;
 };
+
+
+
 

@@ -60,6 +60,7 @@ private:
     VkCommandBufferUsageFlagBits UnwrapCommandBufferUsage(const CommandBufferUsage * info);
     VkSubmitInfo * UnwrapSubmitInfo(const SubmitInfo * info);
     VkPipelineStageFlags * UnwrapStageFlags(const PipelineStage * pipelineStage);
+    //deprecated
     VkMemoryPropertyFlags UnwrapMemoryProperty(const MemoryType * memType);
     VkBufferUsageFlags UnwrapBufferUsageFlags(const BufferType * type);
 
@@ -142,16 +143,21 @@ public:
 
     //Deprecated.
     //uint32_t * CreateBuffer(BufferInfo * info, const uint32_t & count);
+    //deprecated
     uint32_t * CreateBuffers(BufferInfo * info, const uint32_t & count);
+    void CreateBuffers(BufferCreateInfo * info, const uint32_t & count, uint32_t * out_buffIds, size_t * out_bufferMemRequirements);
+
     size_t GetMemoryAlignedDataSizeForBuffer(const size_t & dataSize);
     uint32_t * AllocateBufferMemory(uint32_t * bufferId, const uint32_t & bufCount);
+    //deprecated
     uint32_t AllocateMemory(MemoryRequirementInfo * memReq, MemoryType * userReq, const size_t & allocationSize);
+    uint32_t AllocateMemory(MemoryRequirementInfo * memReq, MemoryType * userReq, const uint32_t & numUserReq, const size_t & allocationSize);
     MemoryRequirementInfo GetImageMemoryRequirement(const uint32_t & imageId);
     void CopyBufferDataToMemory(const uint32_t & bufId, const VkDeviceSize & dataSize, const VkDeviceSize & memAlignedSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted);
     //void CopyBufferDataToMemory(const uint32_t & bufId, VkDeviceSize dataSize, void * data, VkDeviceSize memoryOffset, bool keepMemoryMounted = false);
     void DestroyBuffer(uint32_t * ids, const uint32_t & count);
     void FreeMemory(uint32_t * ids, const uint32_t & count);
-    uint32_t * AllocateDescriptorsForASet(SetWrapper * set, const uint32_t & numDescriptors);
+    uint32_t * AllocateDescriptorsSet(SetWrapper * set, const uint32_t & numDescriptors);
     void BindImageMemory(const uint32_t & imageId, const uint32_t & memId, const size_t & offset);
 
     void GetShaderIds(char ** shaderName, ShaderType * type, uint32_t * id, const uint32_t & shaderCount );
@@ -170,9 +176,11 @@ public:
     std::vector<SetWrapper *> GetSetsForShaders(const std::vector<std::string> & shaderNames);
     uint32_t CreatePipelineLayout(SetWrapper ** setWrapperList, const size_t & numSets);
     std::vector<SetWrapper*> * GetSetWrapperList();
-    void LinkSetBindingToResources(ShaderBindingDescription * desc);
+    void LinkSetBindingToResources(ShaderBindingDescription * desc, const uint32_t & numBindings);
 
     bool IsSampleRateShadingAvailable();
     Samples GetMaxUsableSampleCount();
+
+    uint32_t CreateSampler(const SamplerCreateInfo & info);
 };
 

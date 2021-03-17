@@ -105,7 +105,8 @@ public:
 
     float GetEffectiveRange()
     {
-        return glm::max(range, intensity * range);
+        ASSERT_MSG(0, "yet to be implemented");
+        return 0.0f;// glm::max(range, intensity * range);
     }
 
     Transform * const GetTransform()

@@ -63,7 +63,7 @@ private:
     void CreateUniqueSetLayoutWrapper(std::vector<BindingWrapper> & bindingList, std::string shaderName, uint32_t set);
     void AccumulateSetLayoutPerShader(std::string shaderName, SetWrapper * setWrapper);
 
-    VkDescriptorSetLayout * UnwrapSetwrapper(SetWrapper * setWrapper);
+    VkDescriptorSetLayout * CreateSetLayouts(SetWrapper * setWrapper);
     VkDescriptorType UnwrapDescriptorType(const DescriptorType & descType);
 
     ShaderType GetTypeFromName(const std::string & shaderName);
@@ -89,7 +89,8 @@ public:
     
     std::vector<VkDescriptorSet> GetDescriptors(uint32_t * ids, const uint32_t & count, const uint32_t & pipelineLayoutId);
     std::tuple<std::vector<VkDescriptorSet>, uint32_t> GetDescriptors(uint32_t * ids, const uint32_t & count, const uint32_t & pipelineLayoutId, const uint32_t & firstSet);
-    uint32_t * AllocateDescriptors(SetWrapper * set, const uint32_t & numDescriptors);
-    void LinkSetBindingToResources(ShaderBindingDescription * desc);
+    uint32_t * AllocateDescriptorSets(SetWrapper * set, const uint32_t & numDescriptors);
+    //void LinkSetBindingToResources(ShaderBindingDescription * desc);
+    void LinkSetBindingToResources(ShaderBindingDescription * desc, const uint32_t & numBindings);
     const std::vector<int> * GetSetValuesInPipelineLayout(const uint32_t & pipelineLayoutId);
 };

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdint.h>
+#include <vector>
+
 struct QueueWrapper;
 enum class Samples;
 
@@ -18,4 +20,6 @@ struct RendererSettings
     static bool sampleRateShadingEnabled;
     static bool multiSamplingAvailable;
     static Samples * sampleCount;
+
+    static std::vector<uint32_t> depthPrepassImageId;
 };

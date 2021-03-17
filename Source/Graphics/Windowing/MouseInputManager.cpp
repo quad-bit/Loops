@@ -155,8 +155,8 @@ void MouseInputManager::MouseButtonEventHandler(const char * buttonName, const c
 
     currentMouseButtonState = keyEvent->keyState;
     keyEvent->button = currentMouseButtonDown;
-    keyEvent->mouseX = mouseX;
-    keyEvent->mouseY = mouseY;
+    keyEvent->mouseX = (float)mouseX;
+    keyEvent->mouseY = (float)mouseY;
 
     EventBus::GetInstance()->Publish(keyEvent);
 }

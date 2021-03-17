@@ -80,7 +80,6 @@ private:
     VkFrontFace UnwrapFrontFace(FrontFace face);
     VkPolygonMode UnwrapPolygonMode(PolygonMode mode);
     VkStencilOpState UnwrapStencilOpState(StencilOpState state);
-    VkCompareOp UnwrapCompareOp(CompareOp op);
     VkStencilOp UnwrapStencilOp(StencilOp op);
     VkPipelineColorBlendAttachmentState * UnwrapColorBlendAttachment(PipelineColorBlendAttachmentState * state, const uint32_t & count);
     VkLogicOp UnwrapLogicOp(LogicOp op);

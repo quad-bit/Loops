@@ -15,6 +15,7 @@ class ComponentHandle;
 class Light;
 class Camera;
 class Material;
+class Transform;
 
 class LightSystem : public System
 {
@@ -22,8 +23,8 @@ private:
     std::vector<Light *> lightlist;
     std::vector<Camera *> cameralist;
     std::vector<ShaderBindingDescription *> resDescriptionList;
-    GlobalResourceAllocationConfig allocConfig;
-    GlobalResourceSharingConfig resourceSharingConfig;
+    GlobalResourceAllocationConfig lightUniformAllocConfig, shadowMapUniformAllocConfig;
+    GlobalResourceSharingConfig lightBufferSharingConfig;
 
     uint32_t idCounter = 0;
     uint32_t GeneratedLightId();
@@ -39,6 +40,11 @@ private:
     Material * shadowMappingMat = nullptr;
     System * cameraSystem;
 
+    void CreateLightUniformDescription(ShaderBindingDescription * desc, Light * light);
+    void CreateLightUniformBuffer(ShaderBindingDescription * desc, Light * light);
+    void CreateLightCamera(Transform * transform);
+    void CreateShadowMap(ShaderBindingDescription * desc);
+
 public:
     virtual void Init() override;
     virtual void DeInit() override;
@@ -47,7 +53,7 @@ public:
     void HandleLightAddition(LightAdditionEvent * lightAdditionEvent);
     void HandleMeshAddition(MeshToMatAdditionEvent *  meshAdditionEvent);
     void HandleRendererAddition(MeshRendererAdditionEvent *  rendererAdditionEvent);
-
+    void HandleDepthPrepassCreation(DepthPassAttachmentCreationEvent * evt);
     void AssignCameraSystem(System * camSystem);
 
     LightSystem();

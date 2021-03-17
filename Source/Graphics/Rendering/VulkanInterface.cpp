@@ -19,6 +19,7 @@
 #include <VkShaderResourceManager.h>
 #include <VulkanMemoryManager.h>
 #include <VkRenderingUnwrapper.h>
+#include <VkSamplerFactory.h>
 
 VkAttachmentDescription * VulkanInterface::UnwrapAttachmentDesc(const RenderPassAttachmentInfo * renderpassAttachmentList, const uint32_t & attachmentCount)
 {
@@ -145,8 +146,17 @@ VkSubpassDependency * VulkanInterface::UnwrapSubpassDependency(const SubpassDepe
         
         dependencies[i].srcStageMask = VulkanUnwrap::UnwrapPipelineStageFlags(dependencyList[i].srcStageMask.data(), (uint32_t)dependencyList[i].srcStageMask.size());
         dependencies[i].dstStageMask = VulkanUnwrap::UnwrapPipelineStageFlags(dependencyList[i].dstStageMask.data(), (uint32_t)dependencyList[i].dstStageMask.size());
-        dependencies[i].srcAccessMask = VulkanUnwrap::UnwrapAccessFlags(dependencyList[i].srcAccessMask.data(), (uint32_t)dependencyList[i].srcAccessMask.size());
-        dependencies[i].dstAccessMask = VulkanUnwrap::UnwrapAccessFlags(dependencyList[i].dstAccessMask.data(), (uint32_t)dependencyList[i].dstAccessMask.size());
+        
+        if (dependencyList[i].srcAccessMask.size() > 0)
+            dependencies[i].srcAccessMask = VulkanUnwrap::UnwrapAccessFlags(dependencyList[i].srcAccessMask.data(), (uint32_t)dependencyList[i].srcAccessMask.size());
+        else
+            dependencies[i].srcAccessMask = {};
+
+        if (dependencyList[i].dstAccessMask.size() > 0)
+            dependencies[i].dstAccessMask = VulkanUnwrap::UnwrapAccessFlags(dependencyList[i].dstAccessMask.data(), (uint32_t)dependencyList[i].dstAccessMask.size());
+        else
+            dependencies[i].dstAccessMask = {};
+
         dependencies[i].dependencyFlags = VulkanUnwrap::UnwrapDependencyFlags(dependencyList[i].dependencyFlags.data(), (uint32_t)dependencyList[i].dependencyFlags.size());
     }
     
@@ -315,6 +325,8 @@ VkMemoryPropertyFlags VulkanInterface::UnwrapMemoryProperty(const MemoryType * m
 
     return memProp;
 }
+
+
 
 VkBufferUsageFlags VulkanInterface::UnwrapBufferUsageFlags(const BufferType * type)
 {
@@ -736,12 +748,13 @@ uint32_t * VulkanInterface::CreateBuffer(BufferInfo * info, const uint32_t & cou
 }
 */
 
+//deprecated
 uint32_t * VulkanInterface::CreateBuffers(BufferInfo * info, const uint32_t & count)
 {
     VkBufferUsageFlags * bufferUsage = new VkBufferUsageFlags[count];
     VkMemoryPropertyFlags * memProp = new VkMemoryPropertyFlags[count];
     size_t * dataSizes = new size_t[count];
-    uint32_t * ids = new uint32_t[count];
+    uint32_t * ids;
 
     for (uint32_t i = 0; i < count; i++)
     {
@@ -762,6 +775,11 @@ uint32_t * VulkanInterface::CreateBuffers(BufferInfo * info, const uint32_t & co
     delete[] memProp;
     delete[] dataSizes;
     return ids;
+}
+
+void VulkanInterface::CreateBuffers(BufferCreateInfo * info, const uint32_t & count, uint32_t * out_buffIds, size_t * out_bufferMemRequirements)
+{
+    VkBufferFactory::GetInstance()->CreateBuffers(count, info, out_buffIds, out_bufferMemRequirements);
 }
 
 size_t VulkanInterface::GetMemoryAlignedDataSizeForBuffer(const size_t & dataSize)
@@ -795,9 +813,9 @@ void VulkanInterface::FreeMemory(uint32_t * ids, const uint32_t & count)
     }
 }
 
-uint32_t * VulkanInterface::AllocateDescriptorsForASet(SetWrapper * set, const uint32_t & numDescriptors)
+uint32_t * VulkanInterface::AllocateDescriptorsSet(SetWrapper * set, const uint32_t & numDescriptors)
 {
-    return VkShaderResourceManager::GetInstance()->AllocateDescriptors(set, numDescriptors);
+    return VkShaderResourceManager::GetInstance()->AllocateDescriptorSets(set, numDescriptors);
 }
 
 void VulkanInterface::BindImageMemory(const uint32_t & imageId, const uint32_t & memId, const size_t & offset)
@@ -809,6 +827,16 @@ uint32_t VulkanInterface::AllocateMemory(MemoryRequirementInfo * memReq, MemoryT
 {
     VkMemoryRequirements req = VulkanUnwrap::UnwrapMemoryRequirements(memReq);
     VkMemoryPropertyFlags flags = VulkanUnwrap::UnwrapMemoryProperty(userReq);
+
+    uint32_t memId = VulkanMemoryManager::GetSingleton()->AllocateMemory(&req, flags, allocationSize);
+
+    return memId;
+}
+
+uint32_t VulkanInterface::AllocateMemory(MemoryRequirementInfo * memReq, MemoryType * userReq, const uint32_t & numUserReq, const size_t & allocationSize)
+{
+    VkMemoryRequirements req = VulkanUnwrap::UnwrapMemoryRequirements(memReq);
+    VkMemoryPropertyFlags flags = VulkanUnwrap::UnwrapMemoryProperty(userReq, numUserReq);
 
     uint32_t memId = VulkanMemoryManager::GetSingleton()->AllocateMemory(&req, flags, allocationSize);
 
@@ -907,9 +935,9 @@ std::vector<SetWrapper*>* VulkanInterface::GetSetWrapperList()
     return VkShaderResourceManager::GetInstance()->GetSetWrapperList();
 }
 
-void VulkanInterface::LinkSetBindingToResources(ShaderBindingDescription * desc)
+void VulkanInterface::LinkSetBindingToResources(ShaderBindingDescription * desc, const uint32_t & numBindings)
 {
-    VkShaderResourceManager::GetInstance()->LinkSetBindingToResources(desc);
+    VkShaderResourceManager::GetInstance()->LinkSetBindingToResources(desc, numBindings);
 }
 
 bool VulkanInterface::IsSampleRateShadingAvailable()
@@ -920,6 +948,11 @@ bool VulkanInterface::IsSampleRateShadingAvailable()
 Samples VulkanInterface::GetMaxUsableSampleCount()
 {
     return VulkanManager::GetInstance()->GetMaxUsableSampleCount();
+}
+
+uint32_t VulkanInterface::CreateSampler(const SamplerCreateInfo & info)
+{
+    return VkSamplerFactory::GetInstance()->CreateSampler(info);
 }
 
 uint32_t VulkanInterface::CreateCommandPool(PipelineType * pipelineType, CommandPoolProperty * prop)

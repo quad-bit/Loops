@@ -46,14 +46,12 @@ void GraphicsManager::Init(uint32_t winWidth, uint32_t winHeight, std::string wi
 #endif
     
     renderingInterfaceObj->Init(apiInterface);
-    renderingInterfaceObj->SetupRenderer();
 }
 
 void GraphicsManager::DeInit()
 {
     PLOGD << "Graphics manager DeInit";
 
-    renderingInterfaceObj->DislogeRenderer();
     renderingInterfaceObj->DeInit();
     delete renderingInterfaceObj;
 
@@ -94,6 +92,16 @@ GraphicsManager * GraphicsManager::GetInstance()
 
 GraphicsManager::~GraphicsManager()
 {
+}
+
+void GraphicsManager::SetupRenderer()
+{
+    renderingInterfaceObj->SetupRenderer();
+}
+
+void GraphicsManager::DislogeRenderer()
+{
+    renderingInterfaceObj->DislogeRenderer();
 }
 
 void GraphicsManager::PreUpdate()

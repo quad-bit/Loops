@@ -3,6 +3,8 @@
 
 #include "VulkanInterface.h"
 #include "DxInterface.h"
+#include "ComponentAdditionEvent.h"
+#include "EventBus.h"
 
 template <typename T>
 class DrawCommandBuffer;
@@ -14,11 +16,11 @@ private:
     T * apiInterface;
     std::vector<uint32_t> defaultRenderTargetList, defaultDepthTargetList;
     std::vector<uint32_t> msaaRenderTargetList, msaaDepthTargetList;
-    std::vector<uint32_t> depthPrepassTargetList;
+    std::vector<uint32_t> depthPrepassTargetList, depthPrepassResolveList;
     uint32_t colorPassId, depthPrePassId;
     Format bestDepthFormat;
     std::vector<uint32_t> colorPassFbo, depthPassFbo;
-    uint32_t depthImageMemoryId;
+    uint32_t depthImageMemoryId, depthResolveImageMemoryId;
     uint32_t msaaColorMemId, msaaDepthMemId, depthPrepassImageMemId;
 
     /*
@@ -58,14 +60,16 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
 
     // depth pre pass attachment
     {
+        uint32_t depthPrepassBufferingCount = Settings::swapBufferCount;
+
         ImageInfo info;
         info.imageType = ImageType::IMAGE_TYPE_2D;
         info.format = bestDepthFormat;
         info.layers = 1;
         info.mips = 1;
         info.sampleCount = *RendererSettings::sampleCount;
-        info.usage.push_back(Usage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-        info.usage.push_back(Usage::USAGE_SAMPLED_BIT);
+        info.usage.push_back(AttachmentUsage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        //info.usage.push_back(AttachmentUsage::USAGE_SAMPLED_BIT);
         info.width = Settings::windowWidth;
         info.height = Settings::windowHeight;
         info.depth = 1;
@@ -79,15 +83,15 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
                 info.format == Format::D16_UNORM_S8_UINT)
                 stencilAvailable = true;
 
-        depthPrepassTargetList.resize(Settings::swapBufferCount);
-        apiInterface->CreateAttachment(&info, Settings::swapBufferCount, depthPrepassTargetList.data());
+        depthPrepassTargetList.resize(depthPrepassBufferingCount);
+        apiInterface->CreateAttachment(&info, depthPrepassBufferingCount, depthPrepassTargetList.data());
 
         {
             // Get the image memory req
             MemoryRequirementInfo req = apiInterface->GetImageMemoryRequirement(depthPrepassTargetList[0]);
 
             // Allocate the memory
-            size_t allocationSize = req.size * Settings::swapBufferCount;
+            size_t allocationSize = req.size * depthPrepassBufferingCount;
             MemoryType userReq[1]{ MemoryType::DEVICE_LOCAL_BIT };
             depthPrepassImageMemId = apiInterface->AllocateMemory(&req, &userReq[0], allocationSize);
 
@@ -111,73 +115,128 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
         viewInfo.levelCount = 1;
         viewInfo.viewType = ImageViewType::IMAGE_VIEW_TYPE_2D;
 
-        std::vector<ImageViewInfo> viewInfoList(Settings::swapBufferCount, viewInfo);// , viewInfo, viewInfo };
+        std::vector<ImageViewInfo> viewInfoList(depthPrepassBufferingCount, viewInfo);// , viewInfo, viewInfo };
         for (uint32_t i = 0; i < depthPrepassTargetList.size(); i++)
         {
             viewInfoList[i].imageId = depthPrepassTargetList[i];
         }
         uint32_t count = (uint32_t)viewInfoList.size();
         apiInterface->CreateImageView(viewInfoList.data(), count);
+
+        // =================================  resolve image
+
+        info.imageType = ImageType::IMAGE_TYPE_2D;
+        info.format = bestDepthFormat;
+        info.layers = 1;
+        info.mips = 1;
+        info.sampleCount = Samples::SAMPLE_COUNT_1_BIT;
+        info.usage.push_back(AttachmentUsage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        info.usage.push_back(AttachmentUsage::USAGE_SAMPLED_BIT);
+        info.width = Settings::windowWidth;
+        info.height = Settings::windowHeight;
+        info.depth = 1;
+        info.initialLayout = ImageLayout::LAYOUT_UNDEFINED;
+
+        depthPrepassResolveList.resize(depthPrepassBufferingCount);
+        apiInterface->CreateAttachment(&info, depthPrepassBufferingCount, depthPrepassResolveList.data());
+
+        {
+            // Get the image memory req
+            MemoryRequirementInfo req = apiInterface->GetImageMemoryRequirement(depthPrepassResolveList[0]);
+
+            // Allocate the memory
+            size_t allocationSize = req.size * depthPrepassBufferingCount;
+            MemoryType userReq[1]{ MemoryType::DEVICE_LOCAL_BIT };
+            depthResolveImageMemoryId = apiInterface->AllocateMemory(&req, &userReq[0], allocationSize);
+
+            // Bind the memory to the image
+            for (uint32_t i = 0; i < depthPrepassResolveList.size(); i++)
+                apiInterface->BindImageMemory(depthPrepassResolveList[i], depthResolveImageMemoryId, req.size * i);
+        }
+
+        {
+            std::vector<ImageViewInfo> viewInfoList(depthPrepassBufferingCount, viewInfo);// , viewInfo, viewInfo };
+            for (uint32_t i = 0; i < depthPrepassResolveList.size(); i++)
+            {
+                viewInfoList[i].imageId = depthPrepassResolveList[i];
+            }
+            uint32_t count = (uint32_t)viewInfoList.size();
+            apiInterface->CreateImageView(viewInfoList.data(), count);
+        }
+
+        RendererSettings::depthPrepassImageId = depthPrepassResolveList;
     }
 
     //depth pre pass
     {
-        uint32_t depthRenderTargetIndex = 0;
+        uint32_t depthRenderTargetIndex = 0, depthResolveRenderTargetIndex = 1;
 
-        RenderPassAttachmentInfo attchmentDescList[1];
+        RenderPassAttachmentInfo attchmentDescList[2];
 
         attchmentDescList[depthRenderTargetIndex].format = bestDepthFormat;
         attchmentDescList[depthRenderTargetIndex].initialLayout = ImageLayout::LAYOUT_UNDEFINED;
-        attchmentDescList[depthRenderTargetIndex].finalLayout = ImageLayout::LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attchmentDescList[depthRenderTargetIndex].finalLayout = ImageLayout::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         attchmentDescList[depthRenderTargetIndex].loadOp = LoadOperation::LOAD_OP_CLEAR;
         attchmentDescList[depthRenderTargetIndex].storeOp = StoreOperation::STORE_OP_STORE;
         attchmentDescList[depthRenderTargetIndex].sampleCount = *RendererSettings::sampleCount;
         attchmentDescList[depthRenderTargetIndex].stencilLoadOp = LoadOperation::LOAD_OP_DONT_CARE;
         attchmentDescList[depthRenderTargetIndex].stencilLStoreOp = StoreOperation::STORE_OP_DONT_CARE;
 
-        AttachmentRef depthAttachmentRef;
-        depthAttachmentRef.index = depthRenderTargetIndex;
-        depthAttachmentRef.layoutInSubPass = ImageLayout::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        attchmentDescList[depthResolveRenderTargetIndex].format = bestDepthFormat;
+        attchmentDescList[depthResolveRenderTargetIndex].initialLayout = ImageLayout::LAYOUT_UNDEFINED;
+        attchmentDescList[depthResolveRenderTargetIndex].finalLayout = ImageLayout::LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        attchmentDescList[depthResolveRenderTargetIndex].loadOp = LoadOperation::LOAD_OP_DONT_CARE;
+        attchmentDescList[depthResolveRenderTargetIndex].storeOp = StoreOperation::STORE_OP_STORE;
+        attchmentDescList[depthResolveRenderTargetIndex].sampleCount = Samples::SAMPLE_COUNT_1_BIT;
+        attchmentDescList[depthResolveRenderTargetIndex].stencilLoadOp = LoadOperation::LOAD_OP_DONT_CARE;
+        attchmentDescList[depthResolveRenderTargetIndex].stencilLStoreOp = StoreOperation::STORE_OP_DONT_CARE;
 
-        SubpassDependency dependency[1];
-        /*dependency[0].srcSubpass = -1;
+        AttachmentRef depthAttachmentRef[2];
+        depthAttachmentRef[0].index = depthRenderTargetIndex;
+        depthAttachmentRef[0].layoutInSubPass = ImageLayout::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        depthAttachmentRef[1].index = depthResolveRenderTargetIndex;
+        depthAttachmentRef[1].layoutInSubPass = ImageLayout::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        SubpassDependency dependency[2];
+        dependency[0].srcSubpass = -1;
         dependency[0].dstSubpass = 0;
         dependency[0].srcStageMask.push_back(PipelineStage::BOTTOM_OF_PIPE_BIT);
-        dependency[0].dstStageMask.push_back(PipelineStage::COLOR_ATTACHMENT_OUTPUT_BIT);
+        dependency[0].dstStageMask.push_back(PipelineStage::EARLY_FRAGMENT_TESTS_BIT);
         dependency[0].srcAccessMask.push_back(AccessFlagBits::ACCESS_MEMORY_READ_BIT);
-        dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_COLOR_ATTACHMENT_READ_BIT);
-        dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+        dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
         dependency[0].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
-*/
-        dependency[0].srcSubpass = 0;
-        dependency[0].dstSubpass = -1;
-        dependency[0].srcStageMask.push_back(PipelineStage::EARLY_FRAGMENT_TESTS_BIT);
-        dependency[0].dstStageMask.push_back(PipelineStage::FRAGMENT_SHADER_BIT);
-        dependency[0].srcAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-        dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_SHADER_READ_BIT);
-        dependency[0].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
+
+        dependency[1].srcSubpass = 0;
+        dependency[1].dstSubpass = -1;
+        dependency[1].srcStageMask.push_back(PipelineStage::EARLY_FRAGMENT_TESTS_BIT);
+        dependency[1].dstStageMask.push_back(PipelineStage::COLOR_ATTACHMENT_OUTPUT_BIT);
+        dependency[1].srcAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        dependency[1].dstAccessMask.push_back(AccessFlagBits::ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+        dependency[1].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
 
         SubpassInfo subpassInfo = {};
         subpassInfo.colorAttachmentCount = 0;
         subpassInfo.inputAttachmentCount = 0;
         subpassInfo.pColorAttachments = nullptr;
-        subpassInfo.pDepthStencilAttachment = &depthAttachmentRef;
+        subpassInfo.pDepthStencilAttachment = &depthAttachmentRef[0];
         subpassInfo.pInputAttachments = nullptr;
-        subpassInfo.pResolveAttachments = nullptr;
+        subpassInfo.pResolveAttachments = &depthAttachmentRef[1];
 
         apiInterface->CreateRenderPass(
-            attchmentDescList, 1,
+            attchmentDescList, 2,
             &subpassInfo, 1,
-            dependency, 1,
+            dependency, 2,
             depthPrePassId
         );
 
-        uint32_t imagesPerFbo = 1, numFbos = Settings::swapBufferCount;
+        uint32_t imagesPerFbo = 2, numFbos = Settings::swapBufferCount;
         uint32_t * imageIds = new uint32_t[numFbos * imagesPerFbo];
 
         for (uint32_t i = 0, j = 0; i < numFbos * imagesPerFbo; i++, j++)
         {
-            imageIds[i] = depthPrepassTargetList[j]; // default depth
+            imageIds[i++] = depthPrepassTargetList[j]; // default depth
+            imageIds[i] = depthPrepassResolveList[j]; // resolve depth
         }
 
         depthPassFbo.resize(numFbos);
@@ -198,7 +257,7 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
         info.layers = 1;
         info.mips = 1;
         info.sampleCount = *RendererSettings::sampleCount;
-        info.usage.push_back(Usage::USAGE_COLOR_ATTACHMENT_BIT);
+        info.usage.push_back(AttachmentUsage::USAGE_COLOR_ATTACHMENT_BIT);
         info.height = Settings::windowHeight;
         info.width = Settings::windowWidth;
         info.depth = 1;
@@ -254,7 +313,7 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
         info.layers = 1;
         info.mips = 1;
         info.sampleCount = *RendererSettings::sampleCount;
-        info.usage.push_back(Usage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+        info.usage.push_back(AttachmentUsage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
         info.width = Settings::windowWidth;
         info.height = Settings::windowHeight;
         info.depth = 1;
@@ -452,7 +511,7 @@ inline void ForwardRendering<T>::SetupRenderer()
         info.width = Settings::windowWidth;
         info.height = Settings::windowHeight;
         info.imageType = ImageType::IMAGE_TYPE_2D;
-        info.usage.push_back(Usage::USAGE_COLOR_ATTACHMENT_BIT);
+        info.usage.push_back(AttachmentUsage::USAGE_COLOR_ATTACHMENT_BIT);
 
         apiInterface->SetupPresentationEngine(info);
     }
@@ -471,7 +530,7 @@ inline void ForwardRendering<T>::SetupRenderer()
             info.layers = 1;
             info.mips = 1;
             info.sampleCount = Samples::SAMPLE_COUNT_1_BIT;
-            info.usage.push_back(Usage::USAGE_COLOR_ATTACHMENT_BIT);
+            info.usage.push_back(AttachmentUsage::USAGE_COLOR_ATTACHMENT_BIT);
             info.height = Settings::windowHeight;
             info.width = Settings::windowWidth;
             info.depth = 1;
@@ -503,7 +562,7 @@ inline void ForwardRendering<T>::SetupRenderer()
             info.layers = 1;
             info.mips = 1;
             info.sampleCount = Samples::SAMPLE_COUNT_1_BIT;
-            info.usage.push_back(Usage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+            info.usage.push_back(AttachmentUsage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
             info.width = Settings::windowWidth;
             info.height = Settings::windowHeight;
             info.depth = 1;
@@ -651,6 +710,7 @@ inline void ForwardRendering<T>::DislogeRenderer()
     apiInterface->DestroyRenderPass(depthPrePassId);
     
     {
+
         {
             bool viewDestroyList[3]{ true, true, true };
             bool freeMemoryList[3]{ false, false, false };
@@ -663,6 +723,13 @@ inline void ForwardRendering<T>::DislogeRenderer()
             bool freeMemoryList[3]{ false, false, false };
             apiInterface->DestroyAttachment(depthPrepassTargetList.data(), viewDestroyList, freeMemoryList, (uint32_t)depthPrepassTargetList.size());
             apiInterface->FreeAttachmentMemory(&depthPrepassTargetList[0], 1);
+        }
+
+        {
+            bool viewDestroyList[3]{ true, true, true };
+            bool freeMemoryList[3]{ false, false, false };
+            apiInterface->DestroyAttachment(depthPrepassResolveList.data(), viewDestroyList, freeMemoryList, (uint32_t)depthPrepassResolveList.size());
+            apiInterface->FreeAttachmentMemory(&depthPrepassResolveList[0], 1);
         }
 
         if (RendererSettings::MSAA_Enabled && RendererSettings::multiSamplingAvailable)
@@ -700,7 +767,6 @@ inline void ForwardRendering<T>::PostRender()
 template<typename T>
 inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBuffer, const uint32_t & activeSwapChainIndex)
 {
-
     // complete the depth pre pass
     {
         Viewport viewport;
@@ -743,8 +809,6 @@ inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBu
         drawCommandBuffer->EndRenderPass();
 
     }
-
-    
 }
 
 template<typename T>

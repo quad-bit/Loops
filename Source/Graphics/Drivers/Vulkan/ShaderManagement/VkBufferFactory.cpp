@@ -4,6 +4,7 @@
 #include "VulkanMemoryManager.h"
 #include <CorePrecompiled.h>
 #include "VulkanManager.h"
+#include "VkRenderingUnwrapper.h"
 
 VkBufferFactory* VkBufferFactory::instance = nullptr;
 
@@ -111,8 +112,51 @@ uint32_t * VkBufferFactory::CreateBuffers(const uint32_t & bufferCount, VkBuffer
         
         ids[i] = bufWrapper.id;
         bufferWrapperList.push_back(bufWrapper);
+        idToBufferMap.insert(std::pair<uint32_t, VkBuffer *>({bufWrapper.id, bufWrapper.buffer}));
     }
     return ids;
+}
+
+uint32_t * VkBufferFactory::CreateBuffers(const uint32_t & bufferCount, VkBufferCreateInfo * info)
+{
+    uint32_t * ids = new uint32_t[bufferCount];
+
+    for (uint32_t i = 0; i < bufferCount; i++)
+    {
+        VkBufferWrapper bufWrapper = {};
+        bufWrapper.id = GetId();
+        bufWrapper.buffer = new VkBuffer;
+        bufWrapper.bufferType = info[i].usage;
+        
+        ErrorCheck(vkCreateBuffer(*CoreObjects::logicalDeviceObj, &info[i], CoreObjects::pAllocator, bufWrapper.buffer));
+
+        ids[i] = bufWrapper.id;
+        bufferWrapperList.push_back(bufWrapper);
+        idToBufferMap.insert(std::pair<uint32_t, VkBuffer *>({ bufWrapper.id, bufWrapper.buffer }));
+
+    }
+
+    return ids;
+}
+
+void VkBufferFactory::CreateBuffers(const uint32_t & bufferCount, BufferCreateInfo * info, uint32_t * out_buffIds, size_t * out_bufferMemRequirementSize)
+{
+    VkBufferCreateInfo * vkInfo = VulkanUnwrap::UnwrapBufferCreateInfo(info, bufferCount);
+
+    uint32_t * ids = CreateBuffers(bufferCount, vkInfo);
+
+    for (uint32_t i = 0; i < bufferCount; i++)
+    {
+        out_buffIds[i] = ids[i];
+        VkBuffer * buf = idToBufferMap[ids[i]];
+        VkMemoryRequirements req;
+        vkGetBufferMemoryRequirements(*CoreObjects::logicalDeviceObj, *buf, &req);
+
+        out_bufferMemRequirementSize[i] = req.size;
+    }
+
+    delete[] ids;
+    delete[] vkInfo;
 }
 
 uint32_t * VkBufferFactory::AllocateBufferMemory(uint32_t * bufferId, const uint32_t & bufCount)
@@ -138,9 +182,9 @@ uint32_t * VkBufferFactory::AllocateBufferMemory(uint32_t * bufferId, const uint
 }
 
 // TODO : Needs to be tested
-uint32_t VkBufferFactory::AllocateSharedMemory(uint32_t * bufferId, const uint32_t & bufCount)
+uint32_t VkBufferFactory::AllocateSharedBufferMemory(uint32_t * bufferId, const uint32_t & bufCount)
 {
-    ASSERT_MSG_DEBUG(0, "Needs testing");
+    //ASSERT_MSG_DEBUG(0, "Needs testing");
 
     uint32_t id;
 

@@ -6,6 +6,7 @@
 #include <vector>
 #include <array>
 #include <bitset>
+#include "PlatformSettings.h"
 
 enum class ImageViewType
 {
@@ -64,7 +65,21 @@ enum class ComponentSwizzle
     COMPONENT_SWIZZLE_MAX_ENUM = 0x7FFFFFFF
 };
 
-enum class Usage
+enum class BufferUsage
+{
+    BUFFER_USAGE_TRANSFER_SRC_BIT = 0x00000001,
+    BUFFER_USAGE_TRANSFER_DST_BIT = 0x00000002,
+    BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT = 0x00000004,
+    BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT = 0x00000008,
+    BUFFER_USAGE_UNIFORM_BUFFER_BIT = 0x00000010,
+    BUFFER_USAGE_STORAGE_BUFFER_BIT = 0x00000020,
+    BUFFER_USAGE_INDEX_BUFFER_BIT = 0x00000040,
+    BUFFER_USAGE_VERTEX_BUFFER_BIT = 0x00000080,
+    BUFFER_USAGE_INDIRECT_BUFFER_BIT = 0x00000100,
+    BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT = 0x00020000,
+};
+
+enum class AttachmentUsage
 {
     USAGE_TRANSFER_SRC_BIT = 0x00000001,
     USAGE_TRANSFER_DST_BIT = 0x00000002,
@@ -87,6 +102,37 @@ enum class Samples
     SAMPLE_COUNT_16_BIT = 0x00000010,
     SAMPLE_COUNT_32_BIT = 0x00000020,
     SAMPLE_COUNT_64_BIT = 0x00000040,
+};
+
+enum class Filter 
+{
+    FILTER_NEAREST = 0,
+    FILTER_LINEAR = 1,
+};
+
+enum class SamplerMipmapMode 
+{
+    SAMPLER_MIPMAP_MODE_NEAREST = 0,
+    SAMPLER_MIPMAP_MODE_LINEAR = 1,
+};
+
+enum class SamplerAddressMode
+{
+    SAMPLER_ADDRESS_MODE_REPEAT = 0,
+    SAMPLER_ADDRESS_MODE_MIRRORED_REPEAT = 1,
+    SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE = 2,
+    SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER = 3,
+    SAMPLER_ADDRESS_MODE_MIRROR_CLAMP_TO_EDGE = 4,
+};
+
+enum class BorderColor
+{
+    BORDER_COLOR_FLOAT_TRANSPARENT_BLACK = 0,
+    BORDER_COLOR_INT_TRANSPARENT_BLACK = 1,
+    BORDER_COLOR_FLOAT_OPAQUE_BLACK = 2,
+    BORDER_COLOR_INT_OPAQUE_BLACK = 3,
+    BORDER_COLOR_FLOAT_OPAQUE_WHITE = 4,
+    BORDER_COLOR_INT_OPAQUE_WHITE = 5,
 };
 
 enum ImageAspectFlag
@@ -546,6 +592,23 @@ enum class DependencyFlagBits
     DEPENDENCY_VIEW_LOCAL_BIT = 0x00000002,
 };
 
+enum class DescriptorType
+{
+    SAMPLER = 0,
+    COMBINED_IMAGE_SAMPLER = 1,
+    SAMPLED_IMAGE = 2,
+    STORAGE_IMAGE = 3,
+    UNIFORM_TEXEL_BUFFER = 4,
+    STORAGE_TEXEL_BUFFER = 5,
+    UNIFORM_BUFFER = 6,
+    STORAGE_BUFFER = 7,
+    UNIFORM_BUFFER_DYNAMIC = 8,
+    STORAGE_BUFFER_DYNAMIC = 9,
+    INPUT_ATTACHMENT = 10,
+    NUM_TYPES = 11
+};
+
+
 #if (RENDERING_API == VULKAN)
 
     struct ImageInfo
@@ -556,7 +619,7 @@ enum class DependencyFlagBits
         ImageType imageType;
         //Dimensions degree;
         ColorSpace colorSpace;
-        std::vector<Usage> usage;
+        std::vector<AttachmentUsage> usage;
         Samples sampleCount;
         ImageLayout initialLayout;
     };
@@ -573,6 +636,36 @@ enum class DependencyFlagBits
         uint32_t              levelCount;
         uint32_t              baseArrayLayer;
         uint32_t              layerCount;
+    };
+
+
+    struct BufferCreateInfo
+    {
+        //VkBufferCreateFlags flags;
+        size_t size;
+        std::vector<BufferUsage> usage;
+        //SharingMode sharingMode;
+        //uint32_t queueFamilyIndexCount;
+        //const uint32_t* pQueueFamilyIndices;
+    };
+
+    struct SamplerCreateInfo
+    {
+        Filter magFilter;
+        Filter minFilter;
+        SamplerMipmapMode mipmapMode;
+        SamplerAddressMode addressModeU;
+        SamplerAddressMode addressModeV;
+        SamplerAddressMode addressModeW;
+        float mipLodBias;
+        bool anisotropyEnable;
+        float maxAnisotropy;
+        bool compareEnable;
+        CompareOp compareOp;
+        float minLod;
+        float maxLod;
+        BorderColor borderColor;
+        bool unnormalizedCoordinates;
     };
 
     struct MemoryRequirementInfo
@@ -872,22 +965,7 @@ enum class DependencyFlagBits
         const DynamicState*                pDynamicStates;
     };
 
-    enum class DescriptorType
-    {
-        SAMPLER = 0,
-        COMBINED_IMAGE_SAMPLER = 1,
-        SAMPLED_IMAGE = 2,
-        STORAGE_IMAGE = 3,
-        UNIFORM_TEXEL_BUFFER = 4,
-        STORAGE_TEXEL_BUFFER = 5,
-        UNIFORM_BUFFER = 6,
-        STORAGE_BUFFER = 7,
-        UNIFORM_BUFFER_DYNAMIC = 8,
-        STORAGE_BUFFER_DYNAMIC = 9,
-        INPUT_ATTACHMENT = 10,
-        NUM_TYPES = 11
-    };
-
+   
     struct DescriptorSetLayoutBinding 
     {
         uint32_t              binding;
@@ -934,6 +1012,7 @@ enum class DependencyFlagBits
         uint32_t pipelineLayoutId;
     };
 
+    // used for vkCmdBindDescriptorSets
     struct DescriptorSetBindingInfo
     {
         PipelineType* pipelineBindPoint;

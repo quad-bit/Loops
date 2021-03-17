@@ -9,6 +9,8 @@
 #include "VkShaderResourceAllocator.h"
 #include "VkDescriptorPoolFactory.h"
 #include "VkBufferFactory.h"
+#include "VkAttachmentFactory.h"
+#include "VkSamplerFactory.h"
 
 using namespace rapidjson;
 
@@ -20,12 +22,19 @@ uint32_t GetGPUAlignedSize(uint32_t unalignedSize)
     return static_cast<uint32_t>((unalignedSize / uboAlignment) * uboAlignment + ((unalignedSize % uboAlignment) > 0 ? uboAlignment : 0));
 }
 
-DescriptorType StringToDescType(const char* str)
+DescriptorType StringToDescType(const char* str, const char * bindingName)
 {
     if (!strcmp(str, "UNIFORM")) return DescriptorType::UNIFORM_BUFFER;
-    if (!strcmp(str, "SAMPLER")) return DescriptorType::SAMPLER;
-    if (!strcmp(str, "COMBINED_IMAGE_SAMPLER")) return DescriptorType::COMBINED_IMAGE_SAMPLER;
-    if (!strcmp(str, "SAMPLED_IMAGE")) return DescriptorType::SAMPLED_IMAGE;
+    if (!strcmp(str, "SAMPLER"))
+    {
+        const char * pch = strstr(bindingName, "combined_");
+        if (pch != NULL)
+            return DescriptorType::COMBINED_IMAGE_SAMPLER;
+        else
+            return DescriptorType::SAMPLER;
+    }
+
+    //if (!strcmp(str, "SAMPLED_IMAGE")) return DescriptorType::SAMPLED_IMAGE;
 
     ASSERT_MSG_DEBUG(0 , "trying to convert an invalid string to input type");
     return DescriptorType::NUM_TYPES;
@@ -98,7 +107,7 @@ void VkShaderResourceManager::CreateUniqueSetLayoutWrapper(std::vector<BindingWr
 
         // create vulkan descriptor set layout per set wrapper
         {
-            VkDescriptorSetLayout * setLayout = UnwrapSetwrapper(setWrapper);
+            VkDescriptorSetLayout * setLayout = CreateSetLayouts(setWrapper);
             uint32_t id = GetVkDescriptorSetLayoutWrapperID();
             idToSetLayoutMap.insert(std::pair<uint32_t, VkDescriptorSetLayout *>(id, setLayout));
             setWrapper->descriptorSetLayoutId = id;
@@ -137,7 +146,7 @@ void VkShaderResourceManager::AccumulateSetLayoutPerShader(std::string glslName,
 }
 
 
-VkDescriptorSetLayout * VkShaderResourceManager::UnwrapSetwrapper(SetWrapper * setWrapper)
+VkDescriptorSetLayout * VkShaderResourceManager::CreateSetLayouts(SetWrapper * setWrapper)
 {
     std::vector<VkDescriptorSetLayoutBinding> bindingList;
     uint32_t numBindings = (uint32_t)setWrapper->bindingWrapperList.size();
@@ -331,8 +340,8 @@ void VkShaderResourceManager::Init()
                 else
                     wrapper.bindingObj.descriptorCount = arraySize;
 
-                wrapper.bindingObj.descriptorType = StringToDescType(currentInputFromReflData["type"].GetString());
                 wrapper.bindingName = currentInputFromReflData["name"].GetString();
+                wrapper.bindingObj.descriptorType = StringToDescType(currentInputFromReflData["type"].GetString(), wrapper.bindingName.c_str());
                 //add all members to block definition
                 const Value& reflBlockMembers = currentInputFromReflData["members"];
                 for (SizeType m = 0; m < reflBlockMembers.Size(); m++)
@@ -721,11 +730,19 @@ std::tuple<std::vector<VkDescriptorSet>, uint32_t> VkShaderResourceManager::GetD
     return std::make_tuple(list, offset);
 }
 
-uint32_t * VkShaderResourceManager::AllocateDescriptors(SetWrapper * setwrapper, const uint32_t & numDescriptors)
+uint32_t * VkShaderResourceManager::AllocateDescriptorSets(SetWrapper * setwrapper, const uint32_t & numDescriptors)
 {
     uint32_t * ids = new uint32_t[numDescriptors];
     VkDescriptorPool * pool = VkDescriptorPoolFactory::GetInstance()->GetDescriptorPool();
-    VkDescriptorSetLayout * layout = idToSetLayoutMap[setwrapper->descriptorSetLayoutId];
+
+    auto it = idToSetLayoutMap.find(setwrapper->descriptorSetLayoutId);
+
+    if (it == idToSetLayoutMap.end())
+    {
+        ASSERT_MSG(0, "set layout not found");
+    }
+
+    VkDescriptorSetLayout * layout = (it)->second;// idToSetLayoutMap[setwrapper->descriptorSetLayoutId];
 
     std::vector<VkDescriptorSetLayout> setLayouts;
     std::vector<VkDescriptorSet> sets;
@@ -750,12 +767,13 @@ uint32_t * VkShaderResourceManager::AllocateDescriptors(SetWrapper * setwrapper,
 
     return ids;
 }
-
+/*
+// meant for single binding descriptor sets, should get deprecated
 void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription * desc)
 {
     VkDescriptorType descriptorType = UnwrapDescriptorType(desc->resourceType);
 
-    uint32_t numWrites = (uint32_t)desc->descriptorIds.size();
+    uint32_t numWrites = (uint32_t)desc->descriptorSetIds.size();
     uint32_t numDescriptors = numWrites;
 
     std::vector<VkDescriptorBufferInfo> bufferInfoList;
@@ -764,18 +782,42 @@ void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription
     switch (descriptorType)
     {
     case VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+    {
+        uint32_t numBuffers = desc->bufferBindingInfo.bufferIdList.size();
+        uint32_t bufferId;
+
+        if (numBuffers > 1)
+        {
+            ASSERT_MSG(numWrites != numBuffers, "Num writes != num buffers");
+        }
+
         for (uint32_t i = 0; i < numWrites; i++)
         {
+            VkBuffer * buf;
+
+            if (numBuffers == 1)
+                buf = VkBufferFactory::GetInstance()->GetBuffer(desc->bufferBindingInfo.bufferIdList[0]);
+            else
+                buf = VkBufferFactory::GetInstance()->GetBuffer(desc->bufferBindingInfo.bufferIdList[i]);
+
             VkDescriptorBufferInfo info = {};
-            info.buffer = *VkBufferFactory::GetInstance()->GetBuffer(desc->resourceId);
-            info.offset = desc->offsetsForEachDescriptor[i];
-            info.range = desc->dataSizePerDescriptorAligned;
+            info.buffer = *buf;
+            info.offset = desc->bufferBindingInfo.info.offsetsForEachDescriptor[i];
+            info.range = desc->bufferBindingInfo.info.dataSizePerDescriptorAligned;
             bufferInfoList.push_back(info);
         }
-        break;
+    }
+    break;
 
     case VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
-        ASSERT_MSG_DEBUG(0, "Yet to be implemented");
+        for (uint32_t i = 0; i < numWrites; i++)
+        {
+            //VkDescriptorImageInfo info = {};
+            //info.imageLayout = ;
+            //info.imageView = ;
+            //info.sampler = ;
+            //imageInfoList.push_back(info);
+        }
         break;
 
     case VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER:
@@ -797,12 +839,110 @@ void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription
         write.dstBinding = desc->binding;
         write.pBufferInfo = &bufferInfoList[i];
         write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        write.dstSet = GetDescriptorSet(desc->descriptorIds[i]);
+        write.dstSet = GetDescriptorSet(desc->descriptorSetIds[i]);
         writeList.push_back(write);
     }
 
     vkUpdateDescriptorSets(*CoreObjects::logicalDeviceObj, (uint32_t)writeList.size(), writeList.data(), 0, nullptr);
 }
+*/
+
+void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription * desc, const uint32_t & numBindings)
+{
+    // number of writes/set will equal to number of bindings in a set
+    uint32_t numWritesPerDescriptorSet = numBindings;
+    uint32_t numDescriptorSets = (uint32_t)desc->descriptorSetIds.size();
+
+    for (uint32_t i = 0; i < numDescriptorSets; i++)
+    {
+        // Create writes for various type of descriptors
+        std::vector<VkWriteDescriptorSet> writeList;
+        writeList.resize(numWritesPerDescriptorSet);
+
+        VkDescriptorBufferInfo bufferInfo = {};
+        VkDescriptorImageInfo imageInfo = {};
+
+        for (uint32_t k = 0; k < numWritesPerDescriptorSet; k++)
+        {
+            VkDescriptorType descriptorType = UnwrapDescriptorType(desc[k].resourceType);
+            
+            writeList[k].descriptorCount = 1;
+            writeList[k].descriptorType = descriptorType;
+            writeList[k].dstBinding = desc[k].binding;
+            writeList[k].dstSet = GetDescriptorSet(desc->descriptorSetIds[i]);
+            writeList[k].pBufferInfo = nullptr;
+            writeList[k].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            writeList[k].pImageInfo = nullptr;
+            writeList[k].pTexelBufferView = nullptr;
+
+            switch (descriptorType)
+            {
+            case VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
+            {
+                uint32_t numBuffers = desc[k].bufferBindingInfo.bufferIdList.size();
+
+                // if numBuffer == numDescriptors : no sharing
+                // if numBuffer < numDescriptors : sharing
+
+                VkBuffer * buf;
+
+                if (numBuffers == 1)
+                    buf = VkBufferFactory::GetInstance()->GetBuffer(desc[k].bufferBindingInfo.bufferIdList[0]);
+                else
+                    buf = VkBufferFactory::GetInstance()->GetBuffer(desc[k].bufferBindingInfo.bufferIdList[i]);
+
+                bufferInfo.buffer = *buf;
+                bufferInfo.offset = desc[k].bufferBindingInfo.info.offsetsForEachDescriptor[i];
+                bufferInfo.range = desc[k].bufferBindingInfo.info.dataSizePerDescriptorAligned;
+                writeList[k].pBufferInfo = &(bufferInfo);
+
+            }
+            break;
+
+            case VkDescriptorType::VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+            {
+                imageInfo.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                
+                uint32_t numViews = desc[k].imageBindingInfo.imageId.size();
+                VkImageView imageView;
+
+                if (numViews == 1)
+                    imageView = VkAttachmentFactory::GetInstance()->GetImageView(desc[k].imageBindingInfo.imageId[0]);
+                else
+                    imageView = VkAttachmentFactory::GetInstance()->GetImageView(desc[k].imageBindingInfo.imageId[i]);
+
+                imageInfo.imageView = imageView;
+                    
+                uint32_t numSamplers = desc[k].samplerBindingInfo.samplerId.size();
+                VkSampler * sampler;
+                if (numSamplers == 1)
+                    sampler = VkSamplerFactory::GetInstance()->GetSampler(desc[k].samplerBindingInfo.samplerId[0]);
+                else
+                    sampler = VkSamplerFactory::GetInstance()->GetSampler(desc[k].samplerBindingInfo.samplerId[i]);
+
+                imageInfo.sampler = *sampler;
+
+                writeList[k].pImageInfo = &(imageInfo);
+
+            }
+            break;
+
+            case VkDescriptorType::VK_DESCRIPTOR_TYPE_SAMPLER:
+                ASSERT_MSG_DEBUG(0, "Yet to be implemented");
+                break;
+
+            default:
+                ASSERT_MSG_DEBUG(0, "Yet to be implemented");
+            }
+
+        }
+
+        // update descriptor set
+        vkUpdateDescriptorSets(*CoreObjects::logicalDeviceObj, (uint32_t)writeList.size(), writeList.data(), 0, nullptr);
+
+    }
+}
+
 
 const std::vector<int>* VkShaderResourceManager::GetSetValuesInPipelineLayout(const uint32_t & pipelineLayoutId)
 {

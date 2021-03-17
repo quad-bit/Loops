@@ -16,6 +16,7 @@ void EngineManager::Init()
     Settings::maxFrameRate = 60;
     CoreManager::GetInstance()->Init();
     GraphicsManager::GetInstance()->Init(1200, 1000, "Loops");
+    GraphicsManager::GetInstance()->SetupRenderer();
     ECS_Manager::GetInstance()->Init();
     sceneManagerObj = new SceneManager();
     Timer::GetInstance()->Init();
@@ -31,6 +32,7 @@ void EngineManager::DeInit()
     ECS_Manager::GetInstance()->DeInit();
     delete ECS_Manager::GetInstance();
 
+    GraphicsManager::GetInstance()->DislogeRenderer();
     GraphicsManager::GetInstance()->DeInit();
     delete GraphicsManager::GetInstance();
 

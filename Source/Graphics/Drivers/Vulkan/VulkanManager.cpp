@@ -18,7 +18,7 @@
 #include "VkShaderResourceManager.h"
 #include "VkRenderingUnwrapper.h"
 #include "VkBufferFactory.h"
-
+#include "VkSamplerFactory.h"
 using namespace std;
 
 VulkanManager* VulkanManager::instance = nullptr;
@@ -313,11 +313,16 @@ void VulkanManager::InitializeFactories()
     VkDescriptorPoolFactory::GetInstance()->Init();
     VkBufferFactory::GetInstance()->Init();
     VkShaderResourceManager::GetInstance()->Init();
+    VkSamplerFactory::GetInstance()->Init();
 }
 
 void VulkanManager::DeInit()
 {
     PLOGD << "VulkanManager Deinit";
+
+    VkSamplerFactory::GetInstance()->DeInit();
+    delete VkSamplerFactory::GetInstance();
+    
 
     VkShaderResourceManager::GetInstance()->DeInit();
     delete VkShaderResourceManager::GetInstance();

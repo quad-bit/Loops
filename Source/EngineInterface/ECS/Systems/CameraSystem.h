@@ -49,6 +49,8 @@ private:
     std::map<DrawGraphNode *, ShaderBindingDescription *> nodeToDescriptionMap;
     std::map<Camera *, ShaderBindingDescription *> camToDescriptionMap;
     size_t memoryAlignedUniformSize;
+    
+    uint32_t numDescriptorSetsPerUniformSet;
 
 public:
     virtual void Init() override;

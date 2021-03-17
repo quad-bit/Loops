@@ -4,13 +4,13 @@ std::vector<size_t> AllocationUtility::CalculateOffsetsForDescInUniform(const si
     const GlobalResourceSharingConfig & resourceSharingConfig)
 {
     std::vector<size_t> offsets;
-    offsets.resize(allocConfig.numDescriptors);
+    offsets.resize(allocConfig.numDescriptorSets);
 
     uint32_t index = resourceSharingConfig.allocatedUniformCount % resourceSharingConfig.maxUniformPerResource;
 
-    for (uint32_t i = 0; i < allocConfig.numDescriptors; i++)
+    for (uint32_t i = 0; i < allocConfig.numDescriptorSets; i++)
     {
-        offsets[i] = index * allocConfig.numDescriptors * dataSizePerDescriptor + dataSizePerDescriptor * i;
+        offsets[i] = index * allocConfig.numDescriptorSets * dataSizePerDescriptor + dataSizePerDescriptor * i;
     }
     return offsets;
 }
@@ -27,5 +27,5 @@ bool AllocationUtility::IsNewAllocationRequired(const GlobalResourceSharingConfi
 size_t AllocationUtility::GetDataSizeMeantForSharing(const size_t & sizeSingleDescriptor, const GlobalResourceAllocationConfig & allocConfig,
     const GlobalResourceSharingConfig & resourceSharingConfig)
 {
-    return sizeSingleDescriptor * allocConfig.numDescriptors * resourceSharingConfig.maxUniformPerResource;
+    return sizeSingleDescriptor * allocConfig.numDescriptorSets * resourceSharingConfig.maxUniformPerResource;
 }
