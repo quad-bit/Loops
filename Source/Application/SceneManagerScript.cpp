@@ -36,7 +36,7 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
 
     lightHandle = worldObj->CreateEntity("light");
     ComponentHandle<Transform> lightTrfHandle = lightHandle->GetComponent<Transform>();
-    lightTrfHandle->SetLocalPosition(glm::vec3(10, 10, 0));
+    lightTrfHandle->SetLocalPosition(glm::vec3(15, 15, 0));
     lightTrfHandle->SetLocalEulerAngles(glm::vec3(glm::radians(-39.0f), glm::radians(90.0), 0));
 
     lightComponent = new Light(lightTrfHandle.GetComponent());
@@ -80,7 +80,7 @@ SceneManagerScript::SceneManagerScript() : Scriptable(false)
     floorHandle = worldObj->CreateEntity("floor");
     ComponentHandle<Transform> floorTrfHandle = floorHandle->GetComponent<Transform>();
     floorTrfHandle->SetLocalPosition(glm::vec3(0, -20, 0));
-    floorTrfHandle->SetLocalScale(glm::vec3(25, 25, 1));
+    floorTrfHandle->SetLocalScale(glm::vec3(200, 200, 1));
     floorTrfHandle->SetLocalEulerAngles(glm::vec3(glm::radians(90.0), 0, 0));
 
     {

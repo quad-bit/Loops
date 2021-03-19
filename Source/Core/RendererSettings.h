@@ -22,4 +22,5 @@ struct RendererSettings
     static Samples * sampleCount;
 
     static std::vector<uint32_t> depthPrepassImageId;
+    static uint32_t shadowMapWidth, shadowMapHeight;
 };

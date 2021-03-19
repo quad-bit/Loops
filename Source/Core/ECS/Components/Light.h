@@ -24,6 +24,8 @@ struct LightUniform
     glm::vec4 ambient;
     glm::vec4 diffuse;
     glm::vec4 specular;
+
+    glm::mat4 lightSpaceMat;
 };
 
 class Light : public Component<Light>

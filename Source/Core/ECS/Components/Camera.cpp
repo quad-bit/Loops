@@ -38,7 +38,9 @@ glm::mat4 Camera::GetProjectionMat()
     switch (projectionType)
     {
     case CameraType::ORTHOGONAL:
-        ASSERT_MSG_DEBUG(0, "Need the correct design");
+        //ASSERT_MSG_DEBUG(0, "Need the correct design");
+        //projectionMat = glm::ortho( (glm::radians(this->fov), this->aspect, this->zNear, this->zFar);
+
         break;
 
     case CameraType::PERSPECTIVE:
@@ -98,9 +100,19 @@ float& Camera::GetFOV()
     return this->fov;
 }
 
-void Camera::SetFOV(const float & FOV)
+void Camera::SetFOV(const float & fov)
 {
-    fov = FOV;
+    this->fov = fov;
+}
+
+void Camera::SetNearPlane(const float & near)
+{
+    this->zNear = near;
+}
+
+void Camera::SetFarPlane(const float & far)
+{
+    this->zFar = far;
 }
 
 void Camera::SetProjectionType(const CameraType & type)

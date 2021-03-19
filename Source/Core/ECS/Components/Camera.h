@@ -105,5 +105,9 @@ public:
 
     void SetFOV( const float & FOV);
 
+    void SetNearPlane(const float & near);
+
+    void SetFarPlane(const float & far);
+
     void SetProjectionType(const CameraType & type);
 };

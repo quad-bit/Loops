@@ -15,7 +15,7 @@ void EngineManager::Init()
     //PLOGD << "ENGINE MANAGER Init";
     Settings::maxFrameRate = 60;
     CoreManager::GetInstance()->Init();
-    GraphicsManager::GetInstance()->Init(1200, 1000, "Loops");
+    GraphicsManager::GetInstance()->Init(1024, 1024, "Loops");
     GraphicsManager::GetInstance()->SetupRenderer();
     ECS_Manager::GetInstance()->Init();
     sceneManagerObj = new SceneManager();

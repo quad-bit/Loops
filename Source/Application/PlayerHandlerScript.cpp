@@ -78,7 +78,7 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
     head->GetEntity()->entityName = "head";
     Transform * headTrf = head->GetTransform();
     headTrf->SetParent(torsoTrf);
-    headTrf->SetLocalPosition( glm::vec3(0, 3, 0));
+    headTrf->SetLocalPosition( glm::vec3(0, 5, 0));
     headTrf->SetLocalEulerAngles(glm::vec3(glm::radians(90.0), 0, 0));
     
     {

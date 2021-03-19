@@ -41,8 +41,8 @@ private:
     System * cameraSystem;
 
     void CreateLightUniformDescription(ShaderBindingDescription * desc, Light * light);
-    void CreateLightUniformBuffer(ShaderBindingDescription * desc, Light * light);
-    void CreateLightCamera(Transform * transform);
+    void CreateLightUniformBuffer(ShaderBindingDescription * desc, Light * light, Camera * cam);
+    Camera * CreateLightCamera(Transform * transform);
     void CreateShadowMap(ShaderBindingDescription * desc);
 
 public:

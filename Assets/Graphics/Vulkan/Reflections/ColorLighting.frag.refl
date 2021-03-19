@@ -4,7 +4,7 @@
             "set": 2,
             "binding": 0,
             "name": "Lights",
-            "size": 64,
+            "size": 128,
             "type": "UNIFORM",
             "ArraySize": 0,
             "members": [
@@ -27,6 +27,11 @@
                     "name": "lightPos",
                     "size": 16,
                     "offset": 0
+                },
+                {
+                    "name": "lightSpaceMat",
+                    "size": 64,
+                    "offset": 64
                 }
             ]
         },
@@ -45,7 +50,7 @@
         2
     ],
     "dynamic_sets": [],
-    "static_set_size": 64,
+    "static_set_size": 128,
     "dynamic_set_size": 0,
     "num_static_uniforms": 1,
     "num_static_textures": 1,

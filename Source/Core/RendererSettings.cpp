@@ -14,4 +14,6 @@ bool RendererSettings::multiSamplingAvailable;
 Samples * RendererSettings::sampleCount;
 
 std::vector<uint32_t> RendererSettings::depthPrepassImageId;
+uint32_t RendererSettings::shadowMapWidth, RendererSettings::shadowMapHeight;
+
 

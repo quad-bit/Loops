@@ -181,10 +181,14 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
 {
     PLOGD << "Rendering interface Init";
 
+
+    RendererSettings::shadowMapHeight = 2048;
+    RendererSettings::shadowMapWidth = 2048;
+    RendererSettings::MSAA_Enabled = false;// true;
+
     forwardRenderer = new ForwardRendering<T>();
     forwardRenderer->Init(apiInterface);
     
-    RendererSettings::MSAA_Enabled = true;
     CheckForMSAA();
 
     CommandBufferManager<T>::GetInstance()->Init(apiInterface);

@@ -16,7 +16,7 @@ private:
     T * apiInterface;
     std::vector<uint32_t> defaultRenderTargetList, defaultDepthTargetList;
     std::vector<uint32_t> msaaRenderTargetList, msaaDepthTargetList;
-    std::vector<uint32_t> depthPrepassTargetList, depthPrepassResolveList;
+    std::vector<uint32_t> depthPrepassTargetList, depthPrepassDefaultImageIdList;
     uint32_t colorPassId, depthPrePassId;
     Format bestDepthFormat;
     std::vector<uint32_t> colorPassFbo, depthPassFbo;
@@ -124,7 +124,7 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
         apiInterface->CreateImageView(viewInfoList.data(), count);
 
         // =================================  resolve image
-
+        /*
         info.imageType = ImageType::IMAGE_TYPE_2D;
         info.format = bestDepthFormat;
         info.layers = 1;
@@ -136,13 +136,13 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
         info.height = Settings::windowHeight;
         info.depth = 1;
         info.initialLayout = ImageLayout::LAYOUT_UNDEFINED;
-
-        depthPrepassResolveList.resize(depthPrepassBufferingCount);
-        apiInterface->CreateAttachment(&info, depthPrepassBufferingCount, depthPrepassResolveList.data());
+        
+        depthPrepassDefaultImageIdList.resize(depthPrepassBufferingCount);
+        apiInterface->CreateAttachment(&info, depthPrepassBufferingCount, depthPrepassDefaultImageIdList.data());
 
         {
             // Get the image memory req
-            MemoryRequirementInfo req = apiInterface->GetImageMemoryRequirement(depthPrepassResolveList[0]);
+            MemoryRequirementInfo req = apiInterface->GetImageMemoryRequirement(depthPrepassDefaultImageIdList[0]);
 
             // Allocate the memory
             size_t allocationSize = req.size * depthPrepassBufferingCount;
@@ -150,21 +150,22 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
             depthResolveImageMemoryId = apiInterface->AllocateMemory(&req, &userReq[0], allocationSize);
 
             // Bind the memory to the image
-            for (uint32_t i = 0; i < depthPrepassResolveList.size(); i++)
-                apiInterface->BindImageMemory(depthPrepassResolveList[i], depthResolveImageMemoryId, req.size * i);
+            for (uint32_t i = 0; i < depthPrepassDefaultImageIdList.size(); i++)
+                apiInterface->BindImageMemory(depthPrepassDefaultImageIdList[i], depthResolveImageMemoryId, req.size * i);
         }
 
         {
             std::vector<ImageViewInfo> viewInfoList(depthPrepassBufferingCount, viewInfo);// , viewInfo, viewInfo };
-            for (uint32_t i = 0; i < depthPrepassResolveList.size(); i++)
+            for (uint32_t i = 0; i < depthPrepassDefaultImageIdList.size(); i++)
             {
-                viewInfoList[i].imageId = depthPrepassResolveList[i];
+                viewInfoList[i].imageId = depthPrepassDefaultImageIdList[i];
             }
             uint32_t count = (uint32_t)viewInfoList.size();
             apiInterface->CreateImageView(viewInfoList.data(), count);
         }
 
-        RendererSettings::depthPrepassImageId = depthPrepassResolveList;
+        RendererSettings::depthPrepassImageId = depthPrepassDefaultImageIdList;
+        */
     }
 
     //depth pre pass
@@ -204,15 +205,15 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
         dependency[0].srcStageMask.push_back(PipelineStage::BOTTOM_OF_PIPE_BIT);
         dependency[0].dstStageMask.push_back(PipelineStage::EARLY_FRAGMENT_TESTS_BIT);
         dependency[0].srcAccessMask.push_back(AccessFlagBits::ACCESS_MEMORY_READ_BIT);
-        dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+        dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT);
         dependency[0].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
 
         dependency[1].srcSubpass = 0;
         dependency[1].dstSubpass = -1;
-        dependency[1].srcStageMask.push_back(PipelineStage::EARLY_FRAGMENT_TESTS_BIT);
-        dependency[1].dstStageMask.push_back(PipelineStage::COLOR_ATTACHMENT_OUTPUT_BIT);
+        dependency[1].srcStageMask.push_back(PipelineStage::LATE_FRAGMENT_TESTS_BIT);
+        dependency[1].dstStageMask.push_back(PipelineStage::FRAGMENT_SHADER_BIT);
         dependency[1].srcAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-        dependency[1].dstAccessMask.push_back(AccessFlagBits::ACCESS_COLOR_ATTACHMENT_WRITE_BIT);
+        dependency[1].dstAccessMask.push_back(AccessFlagBits::ACCESS_SHADER_READ_BIT);
         dependency[1].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
 
         SubpassInfo subpassInfo = {};
@@ -236,12 +237,12 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
         for (uint32_t i = 0, j = 0; i < numFbos * imagesPerFbo; i++, j++)
         {
             imageIds[i++] = depthPrepassTargetList[j]; // default depth
-            imageIds[i] = depthPrepassResolveList[j]; // resolve depth
+            imageIds[i] = depthPrepassDefaultImageIdList[j]; // resolve depth
         }
 
         depthPassFbo.resize(numFbos);
         apiInterface->CreateFrameBuffer(numFbos, imageIds, imagesPerFbo, depthPrePassId,
-            Settings::windowWidth, Settings::windowHeight, &depthPassFbo[0]);
+            RendererSettings::shadowMapWidth, RendererSettings::shadowMapHeight, &depthPassFbo[0]);
 
         delete[] imageIds;
     }
@@ -470,6 +471,7 @@ inline void ForwardRendering<T>::Init()
 
     apiInterface = new T();
     apiInterface->Init();
+
 }
 
 template<typename T>
@@ -516,11 +518,73 @@ inline void ForwardRendering<T>::SetupRenderer()
         apiInterface->SetupPresentationEngine(info);
     }
     
+    uint32_t depthPrepassBufferingCount = Settings::swapBufferCount;
+
     //if (RendererSettings::MSAA_Enabled && multiSamplingAvailable)
     //{
     //}
     //else
     {
+        // depth pre pass samplCount = 1
+        {
+            ImageInfo info;
+            info.imageType = ImageType::IMAGE_TYPE_2D;
+            info.format = bestDepthFormat;
+            info.layers = 1;
+            info.mips = 1;
+            info.sampleCount = Samples::SAMPLE_COUNT_1_BIT;
+            info.usage.push_back(AttachmentUsage::USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+            info.usage.push_back(AttachmentUsage::USAGE_SAMPLED_BIT);
+            info.width = RendererSettings::shadowMapWidth;
+            info.height = RendererSettings::shadowMapHeight;
+            info.depth = 1;
+            info.initialLayout = ImageLayout::LAYOUT_UNDEFINED;
+
+            depthPrepassDefaultImageIdList.resize(depthPrepassBufferingCount);
+            apiInterface->CreateAttachment(&info, depthPrepassBufferingCount, depthPrepassDefaultImageIdList.data());
+
+            {
+                // Get the image memory req
+                MemoryRequirementInfo req = apiInterface->GetImageMemoryRequirement(depthPrepassDefaultImageIdList[0]);
+
+                // Allocate the memory
+                size_t allocationSize = req.size * depthPrepassBufferingCount;
+                MemoryType userReq[1]{ MemoryType::DEVICE_LOCAL_BIT };
+                depthResolveImageMemoryId = apiInterface->AllocateMemory(&req, &userReq[0], allocationSize);
+
+                // Bind the memory to the image
+                for (uint32_t i = 0; i < depthPrepassDefaultImageIdList.size(); i++)
+                    apiInterface->BindImageMemory(depthPrepassDefaultImageIdList[i], depthResolveImageMemoryId, req.size * i);
+            }
+
+            // Create image View
+            ImageViewInfo viewInfo = {};
+            viewInfo.baseArrayLayer = 0;
+            viewInfo.baseMipLevel = 0;
+            viewInfo.components[0] = ComponentSwizzle::COMPONENT_SWIZZLE_IDENTITY;
+            viewInfo.components[1] = ComponentSwizzle::COMPONENT_SWIZZLE_IDENTITY;
+            viewInfo.components[2] = ComponentSwizzle::COMPONENT_SWIZZLE_IDENTITY;
+            viewInfo.components[3] = ComponentSwizzle::COMPONENT_SWIZZLE_IDENTITY;
+            viewInfo.format = bestDepthFormat;
+            // TODO : need to fix this OR thing
+            viewInfo.imageAspect = ImageAspectFlag::IMAGE_ASPECT_DEPTH_BIT;// | (stencilAvailable ? IMAGE_ASPECT_STENCIL_BIT : 0);
+            viewInfo.layerCount = 1;
+            viewInfo.levelCount = 1;
+            viewInfo.viewType = ImageViewType::IMAGE_VIEW_TYPE_2D;
+
+            {
+                std::vector<ImageViewInfo> viewInfoList(depthPrepassBufferingCount, viewInfo);// , viewInfo, viewInfo };
+                for (uint32_t i = 0; i < depthPrepassDefaultImageIdList.size(); i++)
+                {
+                    viewInfoList[i].imageId = depthPrepassDefaultImageIdList[i];
+                }
+                uint32_t count = (uint32_t)viewInfoList.size();
+                apiInterface->CreateImageView(viewInfoList.data(), count);
+            }
+
+            RendererSettings::depthPrepassImageId = depthPrepassDefaultImageIdList;
+        }
+
         // default render target setup
         {
             ImageInfo info;
@@ -697,6 +761,69 @@ inline void ForwardRendering<T>::SetupRenderer()
                 Settings::windowWidth, Settings::windowHeight, &colorPassFbo[0]);
 
             delete[] imageIds;
+
+            {
+                RenderPassAttachmentInfo depthPrepassAttchmentDescList[1];
+                depthPrepassAttchmentDescList[0].finalLayout = ImageLayout::LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                depthPrepassAttchmentDescList[0].format = bestDepthFormat;
+                depthPrepassAttchmentDescList[0].initialLayout = ImageLayout::LAYOUT_UNDEFINED;
+                depthPrepassAttchmentDescList[0].loadOp = LoadOperation::LOAD_OP_CLEAR;
+                depthPrepassAttchmentDescList[0].sampleCount = *RendererSettings::sampleCount;
+                depthPrepassAttchmentDescList[0].stencilLoadOp = LoadOperation::LOAD_OP_DONT_CARE;
+                depthPrepassAttchmentDescList[0].stencilLStoreOp = StoreOperation::STORE_OP_DONT_CARE;
+                depthPrepassAttchmentDescList[0].storeOp = StoreOperation::STORE_OP_STORE;
+
+                AttachmentRef depthPrepassAttachmentRef;
+                depthPrepassAttachmentRef.index = 0;
+                depthPrepassAttachmentRef.layoutInSubPass = ImageLayout::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+                
+                SubpassInfo subpassInfo;
+                subpassInfo.colorAttachmentCount = 0;
+                subpassInfo.inputAttachmentCount = 0;
+                subpassInfo.pColorAttachments = nullptr;
+                subpassInfo.pDepthStencilAttachment = &depthPrepassAttachmentRef;
+                subpassInfo.pInputAttachments = nullptr;
+                subpassInfo.pResolveAttachments = nullptr;
+
+                SubpassDependency dependency[2];
+                dependency[0].srcSubpass = -1;
+                dependency[0].dstSubpass = 0;
+                dependency[0].srcStageMask.push_back(PipelineStage::FRAGMENT_SHADER_BIT);
+                dependency[0].dstStageMask.push_back(PipelineStage::EARLY_FRAGMENT_TESTS_BIT);
+                dependency[0].srcAccessMask.push_back(AccessFlagBits::ACCESS_SHADER_READ_BIT);
+                dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+                dependency[0].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
+
+                dependency[1].srcSubpass = 0;
+                dependency[1].dstSubpass = -1;
+                dependency[1].srcStageMask.push_back(PipelineStage::LATE_FRAGMENT_TESTS_BIT);
+                dependency[1].dstStageMask.push_back(PipelineStage::FRAGMENT_SHADER_BIT);
+                dependency[1].srcAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+                dependency[1].dstAccessMask.push_back(AccessFlagBits::ACCESS_SHADER_READ_BIT);
+                dependency[1].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
+
+                apiInterface->CreateRenderPass(
+                    &depthPrepassAttchmentDescList[0], 1,
+                    &subpassInfo, 1,
+                    dependency, 2,
+                    depthPrePassId
+                );
+
+                uint32_t imagesPerFbo = 1, numFbos = Settings::swapBufferCount;
+                uint32_t * imageIds = new uint32_t[numFbos * imagesPerFbo];
+
+                for (uint32_t i = 0, j = 0; i < numFbos * imagesPerFbo; i++, j++)
+                {
+                    imageIds[i] = depthPrepassDefaultImageIdList[j];
+                }
+
+                depthPassFbo.resize(numFbos);
+                apiInterface->CreateFrameBuffer(numFbos, imageIds, imagesPerFbo, depthPrePassId,
+                    RendererSettings::shadowMapWidth, RendererSettings::shadowMapHeight, &depthPassFbo[0]);
+
+                delete[] imageIds;
+
+            }
         }
     }
 }
@@ -721,17 +848,11 @@ inline void ForwardRendering<T>::DislogeRenderer()
         {
             bool viewDestroyList[3]{ true, true, true };
             bool freeMemoryList[3]{ false, false, false };
-            apiInterface->DestroyAttachment(depthPrepassTargetList.data(), viewDestroyList, freeMemoryList, (uint32_t)depthPrepassTargetList.size());
-            apiInterface->FreeAttachmentMemory(&depthPrepassTargetList[0], 1);
+            apiInterface->DestroyAttachment(depthPrepassDefaultImageIdList.data(), viewDestroyList, freeMemoryList, (uint32_t)depthPrepassDefaultImageIdList.size());
+            apiInterface->FreeAttachmentMemory(&depthPrepassDefaultImageIdList[0], 1);
         }
 
-        {
-            bool viewDestroyList[3]{ true, true, true };
-            bool freeMemoryList[3]{ false, false, false };
-            apiInterface->DestroyAttachment(depthPrepassResolveList.data(), viewDestroyList, freeMemoryList, (uint32_t)depthPrepassResolveList.size());
-            apiInterface->FreeAttachmentMemory(&depthPrepassResolveList[0], 1);
-        }
-
+        
         if (RendererSettings::MSAA_Enabled && RendererSettings::multiSamplingAvailable)
         {
             bool viewDestroyList[3]{ true, true, true };
@@ -742,6 +863,12 @@ inline void ForwardRendering<T>::DislogeRenderer()
             apiInterface->FreeAttachmentMemory(&msaaDepthTargetList[0], 1);
             apiInterface->FreeAttachmentMemory(&msaaRenderTargetList[0], 1);
 
+            {
+                bool viewDestroyList[3]{ true, true, true };
+                bool freeMemoryList[3]{ false, false, false };
+                apiInterface->DestroyAttachment(depthPrepassTargetList.data(), viewDestroyList, freeMemoryList, (uint32_t)depthPrepassTargetList.size());
+                apiInterface->FreeAttachmentMemory(&depthPrepassTargetList[0], 1);
+            }
         }
 
         apiInterface->DestroySwapChainImageViews(defaultRenderTargetList.data(), (uint32_t)defaultRenderTargetList.size());
@@ -770,8 +897,8 @@ inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBu
     // complete the depth pre pass
     {
         Viewport viewport;
-        viewport.height = (float)Settings::windowHeight;
-        viewport.width = (float)Settings::windowWidth;
+        viewport.height = (float)RendererSettings::shadowMapHeight;
+        viewport.width = (float)RendererSettings::shadowMapWidth;
         viewport.minDepth = (float)0.0f;
         viewport.maxDepth = (float)1.0f;
         viewport.x = 0;
@@ -780,8 +907,8 @@ inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBu
         drawCommandBuffer->SetViewport(viewport.width, viewport.height, viewport.x, viewport.y, viewport.minDepth, viewport.maxDepth);
 
         Rect2D scissor;
-        scissor.lengthX = (float)Settings::windowWidth;
-        scissor.lengthY = (float)Settings::windowHeight;
+        scissor.lengthX = (float)RendererSettings::shadowMapWidth;
+        scissor.lengthY = (float)RendererSettings::shadowMapHeight;
         scissor.offsetX = 0;
         scissor.offsetY = 0;
         //vkCmdSetScissor(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), 0, 1, &scissor);
@@ -794,8 +921,8 @@ inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBu
         info.stencilClearValue = Settings::stencilClearValue;
 
         info.renderPassId = depthPrePassId;
-        info.renderAreaExtent[0] = (float)Settings::windowWidth;
-        info.renderAreaExtent[1] = (float)Settings::windowHeight;
+        info.renderAreaExtent[0] = (float)RendererSettings::shadowMapWidth;
+        info.renderAreaExtent[1] = (float)RendererSettings::shadowMapHeight;
         info.renderAreaPosition[0] = 0.0f;
         info.renderAreaPosition[1] = 0.0f;
 
@@ -807,7 +934,6 @@ inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBu
         DrawGraphManager::GetInstance()->Update(drawCommandBuffer, RenderPassTag::DepthPass);
 
         drawCommandBuffer->EndRenderPass();
-
     }
 }
 
@@ -848,25 +974,26 @@ inline void ForwardRendering<T>::Render(DrawCommandBuffer<T>* drawCommandBuffer,
 
     SubpassContentStatus subpassStatus = SubpassContentStatus::SUBPASS_CONTENTS_INLINE;
 
+    Viewport viewport;
+    viewport.height = (float)Settings::windowHeight;
+    viewport.width = (float)Settings::windowWidth;
+    viewport.minDepth = (float)0.0f;
+    viewport.maxDepth = (float)1.0f;
+    viewport.x = 0;
+    viewport.y = 0;
+    //vkCmdSetViewport(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), 0, 1, &viewport);
+    drawCommandBuffer->SetViewport(viewport.width, viewport.height, viewport.x, viewport.y, viewport.minDepth, viewport.maxDepth);
+
+    Rect2D scissor;
+    scissor.lengthX = (float)Settings::windowWidth;
+    scissor.lengthY = (float)Settings::windowHeight;
+    scissor.offsetX = 0;
+    scissor.offsetY = 0;
+    //vkCmdSetScissor(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), 0, 1, &scissor);
+    drawCommandBuffer->SetScissor(scissor.lengthX, scissor.lengthY, scissor.offsetX, scissor.offsetY);
+
+
     drawCommandBuffer->BeginRenderPass(&info, &subpassStatus);
-
-    //Viewport viewport;
-    //viewport.height = (float)Settings::windowHeight;
-    //viewport.width = (float)Settings::windowWidth;
-    //viewport.minDepth = (float)0.0f;
-    //viewport.maxDepth = (float)1.0f;
-    //viewport.x = 0;
-    //viewport.y = 0;
-    ////vkCmdSetViewport(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), 0, 1, &viewport);
-    //drawCommandBuffer->SetViewport(viewport.width, viewport.height, viewport.x, viewport.y, viewport.minDepth, viewport.maxDepth);
-
-    //Rect2D scissor;
-    //scissor.lengthX = (float)Settings::windowWidth;
-    //scissor.lengthY = (float)Settings::windowHeight;
-    //scissor.offsetX = 0;
-    //scissor.offsetY = 0;
-    ////vkCmdSetScissor(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), 0, 1, &scissor);
-    //drawCommandBuffer->SetScissor(scissor.lengthX, scissor.lengthY, scissor.offsetX, scissor.offsetY);
 
     DrawGraphManager::GetInstance()->Update(drawCommandBuffer, RenderPassTag::ColorPass);
 
