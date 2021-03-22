@@ -44,6 +44,7 @@ public:
 
     void SetViewport(const float & width, const float & height, const float & positionX, const float & positionY, const float & minDepth, const float & maxDepth);
     void SetScissor(const float & width, const float & height, const float & positionX, const float & positionY);
+    void SetDepthBias(const float & depthBiasConstant, const float & depthBiasClamp, const float & depthBiasSlope);
     void BeginRenderPass(RenderPassBeginInfo * renderPassBeginInfo, SubpassContentStatus * subpassContentStatus);
     void EndRenderPass();
 
@@ -125,6 +126,12 @@ template<typename T>
 inline void DrawCommandBuffer<T>::SetScissor(const float & width, const float & height, const float & positionX, const float & positionY)
 {
     commandInterface->SetScissor(width, height, positionX, positionY);
+}
+
+template<typename T>
+inline void DrawCommandBuffer<T>::SetDepthBias(const float & depthBiasConstant, const float & depthBiasClamp, const float & depthBiasSlope)
+{
+    commandInterface->SetDepthBias(depthBiasConstant, depthBiasClamp, depthBiasSlope);
 }
 
 template<typename T>

@@ -14,6 +14,8 @@ public:
 
     void SetViewport(const float & width, const float & height, const float & positionX, const float & positionY, const float & minDepth, const float & maxDepth);
     void SetScissor(const float & width, const float & height, const float & positionX, const float & positionY);
+    void SetDepthBias(const float & depthBiasConstant, const float & depthBiasClamp, const float & depthBiasSlope);
+
     void BeginRenderPass(RenderPassBeginInfo * renderPassBeginInfo, SubpassContentStatus * subpassContentStatus);
     void EndRenderPass();
 

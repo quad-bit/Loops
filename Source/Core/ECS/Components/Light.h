@@ -65,7 +65,7 @@ public:
         range = 5.0f;
         ambient = glm::vec3(0.6f, 0.6f, 0.6f);
         diffuse = glm::vec3(0.45f, 0.45f, 0.45f);
-        specular = glm::vec3(0.3f, 0.3f, 0.3f);
+        specular = glm::vec3(0.45f, 0.45f, 0.45f);
         this->beamRadius = 15.0;
         this->beamHeight = 20.0;
 

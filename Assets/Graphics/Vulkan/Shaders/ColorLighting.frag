@@ -26,36 +26,23 @@ layout(set = 2, binding = 1) uniform sampler2D combined_shadowSampler;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
-    /*
-    mat4 clip = mat4(
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, -1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.5f, 0.0f,
-        0.0f, 0.0f, 0.5f, 1.0f
-    );
-    fragPosLightSpace =  (clip * fragPosLightSpace);
-    */
-    
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
     
-    // transform to [0,1] range
-    projCoords = projCoords * 0.5 + 0.5;
-    //projCoords = vec3(projCoords.x, 1-projCoords.y, projCoords.z);
-
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
     float closestDepth = texture(combined_shadowSampler, projCoords.xy).r; 
     
+    float shadow = 0.0;
+
     // get depth of current fragment from light's perspective
     float currentDepth = projCoords.z;
-
+    
     // calculate bias (based on depth map resolution and slope)
     vec3 normal = normalize(normal);
     vec3 lightDir = normalize(light.lightPos - fragPos).xyz;
-    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
+    float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.003);
 
     // PCF
-    float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(combined_shadowSampler, 0);
     for(int x = -1; x <= 1; ++x)
     {
@@ -82,7 +69,14 @@ void main()
    vec3 specular = light.specular.xyz; 
    vec3 lightPos = light.lightPos.xyz; 
 
-   vec4 fragPosLightSpace = light.lightSpaceMat * vec4(fragPos.xyz, 1.0);
+   mat4 biasMatrix = mat4(
+    0.5, 0.0, 0.0, 0.0,
+    0.0, 0.5, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.5, 0.5, 0.0, 1.0
+    );
+  
+   vec4 fragPosLightSpace = biasMatrix * light.lightSpaceMat * vec4(fragPos.xyz, 1.0);
    float shadow = ShadowCalculation(fragPosLightSpace); 
 
    vec3 norm = normalize(normal);
@@ -119,7 +113,7 @@ void main()
            {
                //float mixPercentage = cosh(2 * pow(distanceFromAxis/radiusAtFragment, 2)) - 1;
                float mixPercentage = cosh(1.4 * pow(distanceFromAxis/radiusAtFragment, 2)) - 1;
-               diffuseVal = mix(diff * diffuse.xyz, vec3(0.0f), mixPercentage); 
+               diffuseVal = mix(diff * diffuse.xyz, vec3(0.04), mixPercentage); 
                specularVal = spec * specular.xyz; 
            }
            else

@@ -914,6 +914,8 @@ inline void ForwardRendering<T>::BeginRender(DrawCommandBuffer<T>* drawCommandBu
         //vkCmdSetScissor(CommandBufferManager::GetSingleton()->GetCommandBufferObj(), 0, 1, &scissor);
         drawCommandBuffer->SetScissor(scissor.lengthX, scissor.lengthY, scissor.offsetX, scissor.offsetY);
 
+        //drawCommandBuffer->SetDepthBias(1.25, 0.0, 1.75);
+
         RenderPassBeginInfo info = {};
         info.frameBufferId = depthPassFbo[activeSwapChainIndex];
 

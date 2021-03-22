@@ -26,6 +26,11 @@ void VkDrawCommandBuffer::SetScissor(const float & width, const float & height, 
     vkCmdSetScissor(*commandBuffer, 0, 1, &scissor);
 }
 
+void VkDrawCommandBuffer::SetDepthBias(const float & depthBiasConstant, const float & depthBiasClamp, const float & depthBiasSlope)
+{
+    vkCmdSetDepthBias(*commandBuffer, depthBiasConstant, depthBiasClamp, depthBiasSlope);
+}
+
 void VkDrawCommandBuffer::BeginRenderPass(RenderPassBeginInfo * renderPassBeginInfo, SubpassContentStatus * subpassContentStatus)
 {
     VkRenderPassBeginInfo vkRenderPassBeginInfo = VulkanUnwrap::UnwrapRenderPassBeginInfo(*renderPassBeginInfo);
