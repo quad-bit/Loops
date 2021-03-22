@@ -22,7 +22,7 @@ void LightSystem::CreateLightUniformDescription(ShaderBindingDescription * desc,
 {
     desc->set = (uint32_t)ResourceSets::LIGHT;
     desc->binding = 0;
-    desc->numElements = 5;
+    desc->numElements = 8;
     desc->resourceName = "Lights";
     desc->resourceType = DescriptorType::UNIFORM_BUFFER;
     desc->parentType = light->componentType;
@@ -60,14 +60,11 @@ void LightSystem::CreateLightUniformBuffer(ShaderBindingDescription * desc, Ligh
     obj.diffuse = Vec3ToVec4_0(light->GetDiffuse());
     obj.specular = Vec3ToVec4_0(light->GetSpecular());
     obj.lightPos = Vec3ToVec4_0(light->GetTransform()->GetGlobalPosition());
+    obj.lightDir = Vec3ToVec4_0(light->GetTransform()->GetForward());
+    obj.beamHeight = light->GetBeamHeight();
+    obj.beamRadius = light->GetBeamRadius();
 
-    glm::mat4 clip = glm::mat4(
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, -1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.5f, 0.5f,
-        0.0f, 0.0f, 0.0f, 1.0f);
-
-    obj.lightSpaceMat = cam->GetProjectionMat() * cam->GetViewMatrix() * light->GetTransform()->GetGlobalModelMatrix();
+    obj.lightSpaceMat = cam->GetProjectionMat() * cam->GetViewMatrix();// *light->GetTransform()->GetGlobalModelMatrix();
 
     //upload data to buffers
     for (uint32_t i = 0; i < lightUniformAllocConfig.numDescriptorSets; i++)
@@ -82,11 +79,11 @@ Camera *  LightSystem::CreateLightCamera(Transform * transform)
     // create a camera 
     Camera * lightCam = new Camera(transform);
     //lightCam->SetProjectionType(CameraType::ORTHOGONAL);
-    lightCam->SetFOV((60.0f));
-    lightCam->SetNearPlane(1.f);
-    lightCam->SetFarPlane(500.0f);
+    lightCam->SetFOV((90.0f));
+    lightCam->SetNearPlane(2.0f);
+    lightCam->SetFarPlane(1000.0f);
 
-    cameralist.push_back(lightCam);
+    //lightToCamList.push_back(lightCam);
 
     // create the camera draw node, node has been added to the graph in HandleCameraAddition
     GraphNode<DrawGraphNode> * cameraNode = ((CameraSystem*)cameraSystem)->HandleCameraAddition(lightCam, RenderPassTag::DepthPass);
@@ -125,12 +122,6 @@ void LightSystem::CreateShadowMap(ShaderBindingDescription * desc)
     desc->resourceType = DescriptorType::COMBINED_IMAGE_SAMPLER;
     desc->imageBindingInfo.imageId = RendererSettings::depthPrepassImageId;
     desc->samplerBindingInfo.samplerId.push_back(samplerId);
-    //desc->parentType = light->componentType;
-    //desc->dataSizePerDescriptorAligned = memoryAlignedUniformSize;
-    //desc->dataSizePerDescriptor = sizeof(LightUniform);
-    //desc->uniformId = light->componentId; // as one buffer is getting used to for all the descriptors
-    //desc->offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(memoryAlignedUniformSize, lightUniformAllocConfig, lightBufferSharingConfig);
-    //desc->allocationConfig = lightUniformAllocConfig;
 }
 
 void LightSystem::Init()
@@ -150,8 +141,6 @@ void LightSystem::Init()
     lightBufferSharingConfig.maxUniformPerResource = 1;
     lightBufferSharingConfig.allocatedUniformCount = 0;
 
-
-
     size_t uniformSize = sizeof(LightUniform);
     memoryAlignedUniformSize = UniformFactory::GetInstance()->GetMemoryAlignedDataSizeForBuffer(uniformSize);
 }
@@ -167,7 +156,6 @@ void LightSystem::DeInit()
 
 void LightSystem::Update(float dt)
 {
-    return;
     for (auto & entity : registeredEntities)
     {
         ComponentHandle<Light> * lightHandle;
@@ -179,105 +167,27 @@ void LightSystem::Update(float dt)
         obj.diffuse = Vec3ToVec4_0(light->GetDiffuse());
         obj.specular = Vec3ToVec4_0(light->GetSpecular());
         obj.lightPos = Vec3ToVec4_0(light->GetTransform()->GetGlobalPosition());
-        ASSERT_MSG(0, " Need to add camera matrix");
+        obj.lightDir = Vec3ToVec4_0(light->GetTransform()->GetForward());
+        obj.beamHeight = light->GetBeamHeight();
+        obj.beamRadius = light->GetBeamRadius();
+
+        Camera * cam = lightToCamList[light];
+        obj.lightSpaceMat = cam->GetProjectionMat() * cam->GetViewMatrix();// *light->GetTransform()->GetLocalModelMatrix();
 
         ShaderBindingDescription * desc = lightToDescriptionMap[lightHandle->GetComponent()];
 
         //upload data to buffers
         {
-            UniformFactory::GetInstance()->UploadDataToBuffers(desc->bufferBindingInfo.bufferIdList[0], 
-                sizeof(LightUniform), memoryAlignedUniformSize, &obj, 
-                desc->bufferBindingInfo.info.offsetsForEachDescriptor[Settings::currentFrameInFlight], false);
+            // using swapchainIndex as there are 3 descriptorSets because there are three depth images
+
+            UniformFactory::GetInstance()->UploadDataToBuffers(desc->bufferBindingInfo.bufferIdList[0], sizeof(LightUniform),
+                memoryAlignedUniformSize, &obj, desc->bufferBindingInfo.info.offsetsForEachDescriptor[Settings::currentSwapChainIndex], false);
+        
         }
 
         // TODO : write the uniform data of Camera to gpu memory via void*
     }
 }
-
-/*
-void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
-{
-    // recieved the light addition to the scene 
-    Light * light = lightAdditionEvent->light;
-
-    lightlist.push_back(light);
-    light->componentId = GeneratedLightId();
-
-    ShaderBindingDescription * desc = new ShaderBindingDescription;
-    desc->set = (uint32_t)ResourceSets::LIGHT;
-    desc->binding = 0;
-    desc->numElements = 4;
-    desc->resourceName = "Lights";
-    desc->resourceType = DescriptorType::UNIFORM_BUFFER;
-    desc->parentType = light->componentType;
-    desc->uniformId = light->componentId; // as one buffer is getting used to for all the descriptors
-    desc->bufferBindingInfo.info.dataSizePerDescriptorAligned = memoryAlignedUniformSize;
-    desc->bufferBindingInfo.info.dataSizePerDescriptor = sizeof(LightUniform);
-    desc->bufferBindingInfo.info.offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(memoryAlignedUniformSize, lightUniformAllocConfig, lightBufferSharingConfig);
-    desc->bufferBindingInfo.info.allocationConfig = lightUniformAllocConfig;
-    desc->bufferBindingInfo.bufferIdList.resize(lightUniformAllocConfig.numResources);
-    desc->bufferBindingInfo.bufferMemoryId.resize(lightUniformAllocConfig.numMemories);
-
-    // Check if it can be fit into an existing buffer
-    if (AllocationUtility::IsNewAllocationRequired(lightBufferSharingConfig))
-    {
-        size_t totalSize = AllocationUtility::GetDataSizeMeantForSharing(memoryAlignedUniformSize, lightUniformAllocConfig, lightBufferSharingConfig);
-        // True : Allocate new buffer
-        lightSetWrapper = UniformFactory::GetInstance()->AllocateSetResource(desc, &totalSize, 1, AllocationMethod::LAZY);
-    }
-    else
-    {
-        // False : Assign the buffer id to this shaderResourceDescription
-        desc->bufferBindingInfo.bufferIdList[0] = resDescriptionList[resDescriptionList.size() - 1]->bufferBindingInfo.bufferIdList[0];
-        desc->bufferBindingInfo.bufferMemoryId[0] = resDescriptionList[resDescriptionList.size() - 1]->bufferBindingInfo.bufferMemoryId[0];
-    }
-
-    resDescriptionList.push_back(desc);
-    lightBufferSharingConfig.allocatedUniformCount += 1;
-
-    LightUniform obj = {};
-    obj.ambient = Vec3ToVec4_0(light->GetAmbient());
-    obj.diffuse = Vec3ToVec4_0(light->GetDiffuse());
-    obj.specular = Vec3ToVec4_0(light->GetSpecular());
-    obj.lightPos = Vec3ToVec4_0(light->GetTransform()->GetGlobalPosition());
-    
-    //upload data to buffers
-    for (uint32_t i = 0; i < lightUniformAllocConfig.numDescriptorSets; i++)
-    {
-        UniformFactory::GetInstance()->UploadDataToBuffers(desc->bufferBindingInfo.bufferIdList[0], sizeof(LightUniform),
-            memoryAlignedUniformSize, &obj, desc->bufferBindingInfo.bufferIdList[0], false);
-    }
-
-    UniformFactory::GetInstance()->AllocateDescriptors(lightSetWrapper, desc, 1, lightUniformAllocConfig.numDescriptorSets);
-
-    lightToDescriptionMap.insert(std::pair<Light *, ShaderBindingDescription *>(
-    { light, desc }));
-
-    // draw graph node creation
-    // top level node as its Set 0
-    DrawGraphNode * lightNode = new LightDrawNode();
-    lightNode->meshList = MaterialFactory::GetInstance()->GetMeshList(lightSetWrapper, 1);
-    lightNode->setLevel = lightSetWrapper->setValue;
-    lightNode->setWrapperList.push_back(lightSetWrapper);
-    lightNode->tag = RenderPassTag::ColorPass;
-
-    ((LightDrawNode*)lightNode)->descriptorIds = desc->descriptorSetIds;
-
-    GraphNode<DrawGraphNode> * graphNode = new GraphNode<DrawGraphNode>(lightNode);
-    lightGraphNodeList.push_back(graphNode);
-
-    DrawGraphManager::GetInstance()->AddNode(graphNode);
-
-    // create a camera 
-    Camera * lightCam = new Camera(light->GetTransform());
-    //lightCam->SetProjectionType(CameraType::ORTHOGONAL);
-    cameralist.push_back(lightCam);
-
-    // create the camera draw node, node has been added to the graph in HandleCameraAddition
-    GraphNode<DrawGraphNode> * cameraNode = ((CameraSystem*)cameraSystem)->HandleCameraAddition(lightCam, RenderPassTag::DepthPass);
-    cameraNode->node->tag = RenderPassTag::DepthPass;
-}
-*/
 
 
 void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
@@ -294,6 +204,8 @@ void LightSystem::HandleLightAddition(LightAdditionEvent * lightAdditionEvent)
     CreateLightUniformDescription(&desc[0], light);
     CreateShadowMap(&desc[1]);
     Camera * cam = CreateLightCamera(light->GetTransform());
+
+    lightToCamList.insert(std::pair<Light* , Camera*>({light, cam}));
 
     lightSetWrapper = UniformFactory::GetInstance()->GetSetWrapper(desc, numBindingsInSet);
     CreateLightUniformBuffer(&desc[0], light, cam);

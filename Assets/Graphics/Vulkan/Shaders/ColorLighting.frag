@@ -11,11 +11,14 @@ layout (location = 0) out vec4 outColor;
 
 layout (std140, set = 2, binding = 0) uniform Lights
 {
-    vec4 lightPos; 
+    vec4 lightPos;
+    vec4 lightForward;
     vec4 ambient;
     vec4 diffuse;
     vec4 specular;
     mat4 lightSpaceMat;
+    float beamHeight;
+    float beamRadius; 
 } light;
 
 layout(set = 2, binding = 1) uniform sampler2D combined_shadowSampler;
@@ -23,14 +26,22 @@ layout(set = 2, binding = 1) uniform sampler2D combined_shadowSampler;
 
 float ShadowCalculation(vec4 fragPosLightSpace)
 {
+    /*
+    mat4 clip = mat4(
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, -1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.5f, 0.0f,
+        0.0f, 0.0f, 0.5f, 1.0f
+    );
+    fragPosLightSpace =  (clip * fragPosLightSpace);
+    */
+    
     // perform perspective divide
     vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-
+    
     // transform to [0,1] range
     projCoords = projCoords * 0.5 + 0.5;
-    
-         ////////  HACK HACK HACK HACK REMOVE this..!!!!! ////////
-    projCoords = vec3(projCoords.x, 1-projCoords.y, projCoords.z);
+    //projCoords = vec3(projCoords.x, 1-projCoords.y, projCoords.z);
 
     // get closest depth value from light's perspective (using [0,1] range fragPosLight as coords)
     float closestDepth = texture(combined_shadowSampler, projCoords.xy).r; 
@@ -43,8 +54,6 @@ float ShadowCalculation(vec4 fragPosLightSpace)
     vec3 lightDir = normalize(light.lightPos - fragPos).xyz;
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
 
-    // check whether current frag pos is in shadow
-    // float shadow = currentDepth - bias > closestDepth  ? 1.0 : 0.0;
     // PCF
     float shadow = 0.0;
     vec2 texelSize = 1.0 / textureSize(combined_shadowSampler, 0);
@@ -82,12 +91,49 @@ void main()
 
    // diffuse 
    float diff = max(dot(norm, lightDir), 0.0);
-   vec3 diffuseVal = diff * diffuse.xyz;  
+   vec3 diffuseVal;
    
    //specular       
    vec3 reflectDir = reflect(-lightDir, norm);  
    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
    vec3 specularVal = spec * specular.xyz;
+
+   // check if the fragment lies in the cone
+   float distanceOnAxis = max(dot(-lightDir, normalize(light.lightForward.xyz)), 0.0);
+   
+   bool spotLight = true;
+
+   if(!spotLight)
+   {
+       diffuseVal = diff * diffuse.xyz; 
+       specularVal = spec * specular.xyz; 
+   }
+   else
+   {
+       if(distanceOnAxis > 0 && distanceOnAxis < light.beamHeight)
+       {
+           float distanceFromAxis = length(light.lightForward.xyz * distanceOnAxis - ( -lightDir));
+           float radiusAtFragment = (distanceOnAxis * light.beamRadius)/light.beamHeight;
+
+           if(distanceFromAxis < radiusAtFragment)
+           {
+               //float mixPercentage = cosh(2 * pow(distanceFromAxis/radiusAtFragment, 2)) - 1;
+               float mixPercentage = cosh(1.4 * pow(distanceFromAxis/radiusAtFragment, 2)) - 1;
+               diffuseVal = mix(diff * diffuse.xyz, vec3(0.0f), mixPercentage); 
+               specularVal = spec * specular.xyz; 
+           }
+           else
+           {
+               diffuseVal = vec3(0.0f);
+               specularVal = vec3(0.0f, 0.0, 0.0);
+           }
+       }
+       else
+       {
+           diffuseVal = vec3(0.0f, 0.0, 0.0);
+           specularVal = vec3(0.0f, 0.0, 0.0);
+       }
+   }
    
    vec3 result = (ambient + (1.0 - shadow) * (diffuseVal + specularVal)) * color.xyz;
     

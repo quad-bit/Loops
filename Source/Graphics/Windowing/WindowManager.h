@@ -10,7 +10,7 @@
     #include <GLFW/glfw3.h>
 #endif
 
-using namespace std;
+//using namespace std;
 class WindowManager
 {
 private:

@@ -21,7 +21,7 @@ class LightSystem : public System
 {
 private:
     std::vector<Light *> lightlist;
-    std::vector<Camera *> cameralist;
+    std::map<Light *, Camera *> lightToCamList;
     std::vector<ShaderBindingDescription *> resDescriptionList;
     GlobalResourceAllocationConfig lightUniformAllocConfig, shadowMapUniformAllocConfig;
     GlobalResourceSharingConfig lightBufferSharingConfig;

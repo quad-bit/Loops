@@ -8,11 +8,13 @@ void Transform::Init()
     up = glm::vec3(0, 1, 0);
     right = glm::vec3(1, 0, 0);
     forward = glm::vec3(0, 0, -1);
+    parent = nullptr;
 
     localPosition = glm::vec3(0, 0, 0);
     localScale = glm::vec3(1, 1, 1);
     localEulerAngle = glm::vec3(0, 0, 0);
     localModelMatrix = glm::identity<glm::mat4>();
+    UpdateLocalParams();
 
     globalPosition = glm::vec3(0, 0, 0);
     globalScale = glm::vec3(1, 1, 1);
@@ -20,7 +22,6 @@ void Transform::Init()
     globalModelMatrix = glm::identity<glm::mat4>();
     UpdateGlobalParams();
 
-    parent = nullptr;
     //parentNode = nullptr;
     nodeType = NODE_TYPE::TRANSFORM;
 
@@ -62,6 +63,7 @@ void Transform::SetParent(Transform * transform)
 
 void Transform::UpdateGlobalParams()
 {
+    GetGlobalPosition();
     this->translationMat = glm::translate(this->globalPosition);
     this->scaleMat = glm::scale(this->globalScale);
 
@@ -189,18 +191,21 @@ void Transform::SetLocalPosition(const glm::vec3 & pos)
 {
     localPosition = pos;
     UpdateLocalParams();
+    UpdateGlobalParams();
 }
 
 void Transform::SetLocalEulerAngles(const glm::vec3 & angle)
 {
     localEulerAngle = angle;
     UpdateLocalParams();
+    UpdateGlobalParams();
 }
 
 void Transform::SetLocalScale(const glm::vec3 & scale)
 {
     localScale = scale;
     UpdateLocalParams();
+    UpdateGlobalParams();
 }
 
 void Transform::SetLocalModelMatrix(const glm::mat4 & mat)
@@ -243,7 +248,6 @@ void Transform::Entry()
         accumulateMatrix = mat * accumulateMatrix;
     }
 
-    //UpdateGlobalParams();
 
     // Push the global matrix into the transformation Matrix stack
     //this->localModelMatrix = accumulateMatrix * this->globalModelMatrix;
@@ -251,6 +255,7 @@ void Transform::Entry()
     //UpdateLocalParams();
     
     UpdateLocalParams();
+    UpdateGlobalParams();
     //this->globalModelMatrix = accumulateMatrix * this->localModelMatrix;
     this->SetGlobalModelMatrix(accumulateMatrix * this->GetLocalModelMatrix());
 

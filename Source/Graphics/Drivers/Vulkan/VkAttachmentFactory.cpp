@@ -81,7 +81,7 @@ int VkAttachmentFactory::FindBestDepthFormat(Format * imageFormat, uint32_t coun
     return -1;
 }
 
-void VkAttachmentFactory::CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids)
+void VkAttachmentFactory::CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, std::vector<uint32_t>* ids)
 {
     /*
     AttachmentInfo * attachmentInfo = UnwrapImageInfo(info);
@@ -217,7 +217,7 @@ void VkAttachmentFactory::CreateImageView(VkImageViewCreateInfo * info, const ui
     }
 }
 //deprecated.
-void VkAttachmentFactory::DestroyAttachment(vector<uint32_t> ids, bool defaultTarget)
+void VkAttachmentFactory::DestroyAttachment(std::vector<uint32_t> ids, bool defaultTarget)
 {
     DEPRECATED;
     std::reverse(std::begin(ids), std::end(ids));

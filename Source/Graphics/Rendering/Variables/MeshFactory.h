@@ -41,7 +41,7 @@ private:
     std::bitset<(uint32_t)ATTRIBUTES::NUM_ATTRIBUTES> pcnMask;
 
     template<typename AttribType>
-    void FillMeshAttrib(AttribStructBase * wrapper, MESH_TYPE * meshType, Mesh * mesh);
+    void FillMeshAttrib(AttribStructBase * wrapper, MESH_TYPE * meshType, Mesh * mesh, const MeshInfo * meshInfo);
 
 public:
     void Init(ApiInterface * obj);
@@ -59,16 +59,24 @@ public:
 #include "AttributeHelper.h"
 
 template<typename AttribType>
-inline void MeshFactory::FillMeshAttrib(AttribStructBase * wrapper, MESH_TYPE * meshType, Mesh * mesh)
+inline void MeshFactory::FillMeshAttrib(AttribStructBase * wrapper, MESH_TYPE * meshType, Mesh * mesh, const MeshInfo * meshInfo)
 {
     switch (*meshType)
     {
     case MESH_TYPE::CUBE:
-        ((AttribType*)wrapper)->FillData<CubeIndexed>(mesh);
+        
+        if(meshInfo->overrideColor)
+            ((AttribType*)wrapper)->FillData<CubeIndexed>(mesh, meshInfo->color);
+        else
+            ((AttribType*)wrapper)->FillData<CubeIndexed>(mesh);
         break;
 
     case MESH_TYPE::QUAD:
-        ((AttribType*)wrapper)->FillData<QuadIndexed>(mesh);
+
+        if (meshInfo->overrideColor)
+            ((AttribType*)wrapper)->FillData<QuadIndexed>(mesh, meshInfo->color);
+        else
+            ((AttribType*)wrapper)->FillData<QuadIndexed>(mesh);
         break;
     }
 }

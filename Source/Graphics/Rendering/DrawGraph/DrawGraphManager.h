@@ -39,7 +39,7 @@ private:
     ForwardGraph<ApiInterface> * fwdGraph = nullptr;
     DeferredGraph<ApiInterface> * dfrdGraph = nullptr;
 
-    int maxDrawNodes = 30;
+    int maxDrawNodes = 90;
 
     std::vector<DrawGraphNode *> drawGraphNodeList;
     Graph<DrawGraphNode> * drawGraph;

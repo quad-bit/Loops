@@ -38,6 +38,7 @@ void main()
     outColor = inColor;
     fragPos = transform.model * vec4(pos.xyz, 1.0);
     gl_Position = clip * view.projection * view.view * fragPos;
+    //fragPos = clip * fragPos;
     outNormal = normalMat * inNormal;
     viewPos = view.cameraPos;
 }

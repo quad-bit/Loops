@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "VkRenderingUnwrapper.h"
 
-using namespace std;
+//using namespace std;
 
 enum class Format;
 struct ImageInfo;
@@ -55,10 +55,10 @@ private:
     static uint32_t imageId;
     VkFormat bestDepthFormat;
 
-    vector<AttachmentWrapper * > attachmentList;
-    vector<VkImage* > imageList;
-    vector<VkImageView* > imageViewList;
-    vector<VkDeviceMemory* > memoryList;
+    std::vector<AttachmentWrapper * > attachmentList;
+    std::vector<VkImage* > imageList;
+    std::vector<VkImageView* > imageViewList;
+    std::vector<VkDeviceMemory* > memoryList;
 
     AttachmentInfo* UnwrapImageInfo(ImageInfo * imageInfo);
     uint32_t GetId();
@@ -73,7 +73,7 @@ public:
     int FindBestDepthFormat(Format * format, uint32_t count);
     
     // deprecated.
-    void CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, vector<uint32_t>* ids);
+    void CreateColorAttachment(ImageInfo * info, uint32_t count, bool defaultTarget, std::vector<uint32_t>* ids);
     void CreateSwapChainImage(VkImageCreateInfo imageCreateinfo, VkImageViewCreateInfo imageViewCreateinfo, const uint32_t & count, uint32_t * ids);
     
     void CreateAttachment(VkImageCreateInfo * info, uint32_t count, uint32_t * ids);
@@ -84,7 +84,7 @@ public:
     void CreateImageView(VkImageViewCreateInfo * info, const uint32_t & count, AttachmentWrapper ** wrappers);
 
     //deprecated
-    void DestroyAttachment(vector<uint32_t> ids, bool defaultTarget);
+    void DestroyAttachment(std::vector<uint32_t> ids, bool defaultTarget);
     void DestroyAttachment(uint32_t * ids, bool * destroyImageView, bool * freeImageMemory, const uint32_t & count);
     void FreeAttachmentMemory(uint32_t * imageIds, const uint32_t & count);
     void DestroySwapChainImageViews(uint32_t * ids, const uint32_t & count);

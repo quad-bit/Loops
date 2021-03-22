@@ -38,7 +38,7 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
         std::bitset<(unsigned int)ATTRIBUTES::NUM_ATTRIBUTES> req;
         req.set((unsigned int)ATTRIBUTES::POSITION);
         req.set((unsigned int)ATTRIBUTES::COLOR);
-        //req.set((unsigned int)ATTRIBUTES::NORMAL);
+        req.set((unsigned int)ATTRIBUTES::NORMAL);
 
         PrimtiveType * prim = new PrimtiveType{ PrimtiveType::TOPOLOGY_TRIANGLE_LIST};
         MeshInfo meshInfo{};
@@ -52,20 +52,22 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
         Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
         torso->AddComponent<Mesh>(torsoMesh);
 
+        /*
         ShaderDescription shaders[2];
         shaders[0].type = ShaderType::VERTEX;
         shaders[0].shaderName = "PC.vert";
 
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "Color.frag";
-    
-        /*ShaderDescription shaders[2];
+        */
+
+        ShaderDescription shaders[2];
         shaders[0].type = ShaderType::VERTEX;
         shaders[0].shaderName = "PCN_Lighting.vert";
 
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "ColorLighting.frag";
-        */
+        
         colMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
         torso->AddComponent<Material>(colMat);
 
@@ -94,6 +96,9 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
         meshInfo.isIndexed = true; // needs to be corrected, as we are using indexed mesh but not the index buffer
         meshInfo.isPrimitiveRestartEnabled = false;
         meshInfo.primitive = prim;
+        meshInfo.overrideColor = true;
+        meshInfo.color = glm::vec4(.8, .8, .8, 1.0);
+
         MESH_TYPE meshType = MESH_TYPE::CUBE;
 
         Mesh * headMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
@@ -156,14 +161,14 @@ void PlayerHandlerScript::Update(float dt)
 {
     // head rotation
     {
-        Transform * headTrf = head->GetTransform();
+        Transform * transform = torso->GetTransform();
         
         currentAngle = glm::sin(counter++ / 300.0f);
 
         float angle = MathUtil::lerp(prevAngle, currentAngle, dt);
         prevAngle = currentAngle;
 
-        headTrf->SetLocalEulerAngles(glm::vec3(0, angle, 0));
+        transform->SetLocalEulerAngles(glm::vec3(0, angle, 0));
     }
 }
 

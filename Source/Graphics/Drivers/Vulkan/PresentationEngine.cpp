@@ -7,7 +7,7 @@
 #include <CorePrecompiled.h>
 #include "VkRenderingUnwrapper.h"
 
-using namespace std;
+//using namespace std;
 
 PresentationEngine* PresentationEngine::instance = nullptr;
 
@@ -79,7 +79,7 @@ void PresentationEngine::CreateSwapChain(ImageInfo info)
     CreateSwapChain(swapChainCreateInfo);
 }
 
-vector<VkImage>* PresentationEngine::CreateSwapchainImage(AttachmentInfo * info, uint32_t count)
+std::vector<VkImage>* PresentationEngine::CreateSwapchainImage(AttachmentInfo * info, uint32_t count)
 {
     VkSwapchainCreateInfoKHR swapChainCreateInfo{};
     swapChainCreateInfo.clipped = VK_TRUE; // dont render parts of swapchain image that are out of the frustrum
@@ -113,7 +113,7 @@ vector<VkImage>* PresentationEngine::CreateSwapchainImage(AttachmentInfo * info,
     return &swapChainImageList;
 }
 
-vector<VkImageView>* PresentationEngine::CreateSwapchainImageViews(AttachmentInfo * info, uint32_t count)
+std::vector<VkImageView>* PresentationEngine::CreateSwapchainImageViews(AttachmentInfo * info, uint32_t count)
 {
     for (uint32_t i = 0; i <swapChainImageCount; i++)
     {
@@ -135,7 +135,7 @@ vector<VkImageView>* PresentationEngine::CreateSwapchainImageViews(AttachmentInf
     return &swapChainImageViewList;
 }
 
-vector<VkImage> PresentationEngine::CreateSwapchainImages(const VkImageCreateInfo & info, uint32_t count)
+std::vector<VkImage> PresentationEngine::CreateSwapchainImages(const VkImageCreateInfo & info, uint32_t count)
 {
     std::vector<VkImage> imageList;
 
@@ -153,7 +153,7 @@ vector<VkImage> PresentationEngine::CreateSwapchainImages(const VkImageCreateInf
     return imageList;
 }
 
-vector<VkImageView> PresentationEngine::CreateSwapchainImageViews(VkImageViewCreateInfo info, VkImage * images, uint32_t count)
+std::vector<VkImageView> PresentationEngine::CreateSwapchainImageViews(VkImageViewCreateInfo info, VkImage * images, uint32_t count)
 {
     std::vector<VkImageView> imageviewList;
     imageviewList.resize(count);

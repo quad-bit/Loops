@@ -20,12 +20,13 @@ enum class SpreadEquation
 struct LightUniform
 {
     glm::vec4 lightPos;
-
+    glm::vec4 lightDir;
     glm::vec4 ambient;
     glm::vec4 diffuse;
     glm::vec4 specular;
-
     glm::mat4 lightSpaceMat;
+    float beamHeight;
+    float beamRadius;
 };
 
 class Light : public Component<Light>
@@ -39,7 +40,7 @@ private:
     SpreadEquation equation;
     
     float beamRadius;
-    float beamWidth;
+    float beamHeight;
 
     float intensity;
     // meant to be used on c++ side to check if the object should be lit or not
@@ -62,9 +63,11 @@ public:
         this->lightType = lightType;
         intensity = 0.5f;
         range = 5.0f;
-        ambient = glm::vec3(0.4f, 0.4f, 0.4f);
-        diffuse = glm::vec3(0.4f, 0.4f, 0.4f);
-        specular = glm::vec3(0.6f, 0.6f, 0.6f);
+        ambient = glm::vec3(0.6f, 0.6f, 0.6f);
+        diffuse = glm::vec3(0.45f, 0.45f, 0.45f);
+        specular = glm::vec3(0.3f, 0.3f, 0.3f);
+        this->beamRadius = 15.0;
+        this->beamHeight = 20.0;
 
         componentType = COMPONENT_TYPE::LIGHT;
     }
@@ -81,7 +84,7 @@ public:
 
     void SetWidth(const float & beamWidth)
     {
-        this->beamWidth = beamWidth;
+        this->beamHeight = beamWidth;
     }
 
     void SetDiffuse(const glm::vec3 & strength)
@@ -129,5 +132,15 @@ public:
     glm::vec3 GetDiffuse()
     {
         return this->diffuse;
+    }
+
+    float GetBeamRadius()
+    {
+        return this->beamRadius;
+    }
+
+    float GetBeamHeight()
+    {
+        return this->beamHeight;
     }
 };

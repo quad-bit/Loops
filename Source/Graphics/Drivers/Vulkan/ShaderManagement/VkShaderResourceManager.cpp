@@ -879,7 +879,7 @@ void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription
             {
             case VkDescriptorType::VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
             {
-                uint32_t numBuffers = desc[k].bufferBindingInfo.bufferIdList.size();
+                uint32_t numBuffers = (uint32_t)desc[k].bufferBindingInfo.bufferIdList.size();
 
                 // if numBuffer == numDescriptors : no sharing
                 // if numBuffer < numDescriptors : sharing
@@ -903,7 +903,7 @@ void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription
             {
                 imageInfo.imageLayout = VkImageLayout::VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                 
-                uint32_t numViews = desc[k].imageBindingInfo.imageId.size();
+                uint32_t numViews = (uint32_t)desc[k].imageBindingInfo.imageId.size();
                 VkImageView imageView;
 
                 if (numViews == 1)
@@ -913,7 +913,7 @@ void VkShaderResourceManager::LinkSetBindingToResources(ShaderBindingDescription
 
                 imageInfo.imageView = imageView;
                     
-                uint32_t numSamplers = desc[k].samplerBindingInfo.samplerId.size();
+                uint32_t numSamplers = (uint32_t)desc[k].samplerBindingInfo.samplerId.size();
                 VkSampler * sampler;
                 if (numSamplers == 1)
                     sampler = VkSamplerFactory::GetInstance()->GetSampler(desc[k].samplerBindingInfo.samplerId[0]);

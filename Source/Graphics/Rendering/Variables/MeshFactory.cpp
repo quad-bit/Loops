@@ -137,7 +137,7 @@ Mesh * MeshFactory::CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType)
         wrapper = new AttribPC();
         if (meshInfo->isIndexed)
         {
-            FillMeshAttrib<AttribPC>(wrapper, meshType, mesh);
+            FillMeshAttrib<AttribPC>(wrapper, meshType, mesh, meshInfo);
         }
     }
     else if ((meshInfo->attribMaskReq | pcnMask) == pcnMask)
@@ -145,7 +145,7 @@ Mesh * MeshFactory::CreateMesh(const MeshInfo * meshInfo, MESH_TYPE * meshType)
         wrapper = new AttribPCN();
         if (meshInfo->isIndexed)
         {
-            FillMeshAttrib<AttribPCN>(wrapper, meshType, mesh);
+            FillMeshAttrib<AttribPCN>(wrapper, meshType, mesh, meshInfo);
         }
     }
         mesh->vertexAttributeCount = wrapper->metaData.attribCount;

@@ -4,7 +4,7 @@
 #include <vulkan\vulkan.h>
 #include "RenderingWrapper.h"
 
-using namespace std;
+//using namespace std;
 
 struct ImageInfo;
 struct RenderPassAttachmentInfo;

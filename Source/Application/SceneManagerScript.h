@@ -10,7 +10,7 @@ class Light;
 class SceneManagerScript : public Scriptable
 {
 private:
-    EntityHandle* mainObject;
+    EntityHandle* playerObject;
 
     EntityHandle* camHandle0;
     EntityHandle* camHandle1;
@@ -25,6 +25,10 @@ private:
     
     EntityHandle* floorHandle, *wallHandle;
     MeshRenderer * floorRenderer, *wallRenderer;
+
+    std::vector<EntityHandle*> boxHandles;
+    std::vector<MeshRenderer*> boxRenderer;
+    const uint32_t numBoxes = 10;
 
     float prevAngle, currentAngle;
 

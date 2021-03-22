@@ -78,7 +78,7 @@ inline void RenderingInterface<T>::BeginRenderLoop()
     currentPresentationSemaphoreId = presentationSemaphores[currentFrameIndex];
 
     currentSwapchainIndex = apiInterface->GetAvailableSwapchainIndex(currentFenceId, currentRenderSemaphoreId);
-
+    Settings::currentSwapChainIndex = currentSwapchainIndex;
     activeDrawCommandBuffer = drawCommandBufferList[currentSwapchainIndex];
 
     DrawGraphNode::dcb = activeDrawCommandBuffer;

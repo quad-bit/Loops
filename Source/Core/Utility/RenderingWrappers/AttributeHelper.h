@@ -92,13 +92,13 @@ struct AttribPC : public AttribStructBase
 
     ~AttribPC()
     {
-        //metaData.locations.clear();
-        //metaData.offets.clear();
-        //metaData.attribInfoList.clear();
     }
 
     template<typename T>
     void FillData(Mesh * mesh);
+
+    template<typename T>
+    void FillData(Mesh * mesh, const glm::vec4 & color);
 };
 
 struct AttribPCN : public AttribStructBase
@@ -152,6 +152,9 @@ struct AttribPCN : public AttribStructBase
 
     template<typename T>
     void FillData(Mesh * mesh);
+
+    template<typename T>
+    void FillData(Mesh * mesh, const glm::vec4 & color);
 };
 
 
@@ -198,6 +201,46 @@ inline void AttribPC::FillData(Mesh * mesh)
 }
 
 template<typename T>
+inline void AttribPC::FillData(Mesh * mesh, const glm::vec4 & color)
+{
+    T obj;
+
+    size_t numVertices = obj.positions.size();
+    posColList.resize(numVertices);
+
+    mesh->positions.resize(numVertices);
+    mesh->colors.resize(numVertices);
+
+    for (uint32_t i = 0; i < numVertices; i++)
+    {
+        posColList[i].position = obj.positions[i];
+        posColList[i].color = color;
+
+        mesh->positions[i] = &posColList[i].position;
+        mesh->colors[i] = &posColList[i].color;
+    }
+
+    vertexData = posColList.data();
+    vertexDataSize = (uint32_t)posColList.size() * sizeof(PC);
+    vertexCount = (uint32_t)numVertices;
+
+    size_t numIndicies = obj.indices.size();
+
+    indicies.resize(numIndicies);
+    mesh->indicies.resize(numIndicies);
+
+    for (uint32_t i = 0; i < numIndicies; i++)
+    {
+        indicies[i] = obj.indices[i];
+        mesh->indicies[i] = &indicies[i];
+    }
+
+    indexData = indicies.data();
+    indexDataSize = (uint32_t)indicies.size() * sizeof(uint32_t);
+    indexCount = (uint32_t)numIndicies;
+}
+
+template<typename T>
 inline void AttribPCN::FillData(Mesh * mesh)
 {
     T obj;
@@ -223,6 +266,47 @@ inline void AttribPCN::FillData(Mesh * mesh)
     for (int i = 0; i < numVertices; i++)
     {
         posColList[i].normal = obj.normals[obj.indices[i/6]];
+        mesh->normals[i] = &posColList[i].normal;
+    }
+
+    vertexData = posColList.data();
+    vertexDataSize = (uint32_t)posColList.size() * sizeof(PCN);
+    vertexCount = (uint32_t)numVertices;
+
+    // not going to use indicies as normals need to be present for each vertex, 
+    // indexing won't allow it
+
+    size_t numIndicies = 0;
+    indicies.resize(numIndicies);
+    mesh->indicies.resize(numIndicies);
+}
+
+template<typename T>
+inline void AttribPCN::FillData(Mesh * mesh, const glm::vec4 & color)
+{
+    T obj;
+
+    size_t numVertices = obj.indices.size();
+    posColList.resize(numVertices);
+
+    mesh->positions.resize(numVertices);
+    mesh->colors.resize(numVertices);
+
+    // position and color
+    for (int i = 0; i < numVertices; i++)
+    {
+        posColList[i].position = obj.positions[obj.indices[i]];
+        posColList[i].color = color;
+
+        mesh->positions[i] = &posColList[i].position;
+        mesh->colors[i] = &posColList[i].color;
+    }
+
+    // normals
+    mesh->normals.resize(numVertices);
+    for (int i = 0; i < numVertices; i++)
+    {
+        posColList[i].normal = obj.normals[obj.indices[i / 6]];
         mesh->normals[i] = &posColList[i].normal;
     }
 

@@ -1,6 +1,6 @@
 #pragma once
 #include <stdint.h>
-//#include <BitArray.h>
+#include <glm\glm.hpp>
 #include <string>
 #include <map>
 #include <vector>
@@ -377,6 +377,8 @@ struct MeshInfo
     bool bufferPerAttribRequired;
     PrimtiveType * primitive = nullptr;
     bool isPrimitiveRestartEnabled;
+    glm::vec4 color;
+    bool overrideColor = false;
 };
 
 enum class IndexType {

@@ -1,3 +1,5 @@
+#define NOMINMAX
+
 #include "VulkanManager.h"
 #include "ValidationManager.h"
 #include "VulkanUtility.h"
@@ -16,10 +18,12 @@
 #include "VkShaderFactory.h"
 #include "VkDescriptorPoolFactory.h"
 #include "VkShaderResourceManager.h"
-#include "VkRenderingUnwrapper.h"
 #include "VkBufferFactory.h"
 #include "VkSamplerFactory.h"
-using namespace std;
+#include "VkRenderingUnwrapper.h"
+#include <algorithm>
+
+//using namespace std;
 
 VulkanManager* VulkanManager::instance = nullptr;
 
@@ -141,7 +145,7 @@ bool VulkanManager::IsSampleRateShadingAvailable()
 
 VkSampleCountFlagBits VulkanManager::GetMaxUsableVKSampleCount()
 {
-    VkSampleCountFlags counts = std::min(physicalDeviceProps.limits.framebufferColorSampleCounts, physicalDeviceProps.limits.framebufferDepthSampleCounts);
+    VkSampleCountFlags counts =  std::min(physicalDeviceProps.limits.framebufferColorSampleCounts, physicalDeviceProps.limits.framebufferDepthSampleCounts);
     if (counts & VK_SAMPLE_COUNT_64_BIT) { return VK_SAMPLE_COUNT_64_BIT; }
     if (counts & VK_SAMPLE_COUNT_32_BIT) { return VK_SAMPLE_COUNT_32_BIT; }
     if (counts & VK_SAMPLE_COUNT_16_BIT) { return VK_SAMPLE_COUNT_16_BIT; }

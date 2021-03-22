@@ -3,7 +3,7 @@
 #include <Assertion.h>
 #include <iostream>
 
-using namespace std;
+//using namespace std;
 
 VkInstance * CoreObjects::instanceObj = nullptr;
 VkPhysicalDevice * CoreObjects::physicalDeviceObj = nullptr;

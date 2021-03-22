@@ -26,5 +26,5 @@ void main()
         0.0f, 0.0f, 0.5f, 1.0f
     );
    vec3 temp = view.cameraPos;
-   gl_Position = clip * view.projection * view.view * transform.model * vec4(pos.xyz, 1.0);
+   gl_Position = view.projection * view.view * transform.model * vec4(pos.xyz, 1.0);
 }
