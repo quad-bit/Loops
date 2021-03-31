@@ -83,6 +83,9 @@ private:
     // connects all the src state state node to the give dest node
     void CreateGraphEdges(GraphNode<StateWrapperBase> * destNode, PipelineStates src, PipelineStates dest); 
 
+    // connects all destination state nodes to the src node
+    void CreateGraphEdges(PipelineStates src, GraphNode<StateWrapperBase> * srcNode, PipelineStates dest);
+
     // connects all the src state state node to the give dest node
     void CreateGraphEdges(GraphNode<StateWrapperBase> * srcNode, GraphNode<StateWrapperBase> * destNode);
     
@@ -120,8 +123,10 @@ public:
 
     void CreateVertexInputState(const uint32_t & meshId, VertexInputState * inputStateInfo );
     void CreateVertexAssemblyState(const uint32_t & meshId, InputAssemblyState * assembly);
+    void CreateMultiSampleState(MultiSampleState * multiSample, const uint16_t & tagMask);
     void AssignDefaultState(const uint32_t & meshId, const PipelineStates & state);
     void CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount, const RenderPassTag & tag = RenderPassTag::ColorPass);
+    void CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount, const uint16_t & tagMask);
     std::vector<SetWrapper*> CreatResourceLayoutState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
 
     void TraversalEventHandler(GraphTraversalEvent * event);
@@ -254,6 +259,7 @@ inline void GraphicsPipelineManager<T>::CreateMultiSampleDefault()
     multisample->sampleShadingEnable = RendererSettings::sampleRateShadingEnabled;
     multisample->minSampleShading = 0.5f;
     wrapper->multiSampleState = multisample;
+    wrapper->tagMask = (uint16_t)RenderPassTag::ColorPass;
     
     multisampleStateWrapperList.push_back(wrapper);
     
@@ -648,10 +654,26 @@ inline void GraphicsPipelineManager<T>::CreateGraphEdges(GraphNode<StateWrapperB
     }
 
     // Get all the node of the source state and connect it to destNode
-    //uint32_t numNodes = (uint32_t)stateToNodeMap[src].size();
+    // uint32_t numNodes = (uint32_t)stateToNodeMap[src].size();
     for each (auto var in stateToNodeMap[src])
     {
         pipelineGraph->AttachDirectedEdge(var, destNode);
+    }
+}
+
+template<typename T>
+inline void GraphicsPipelineManager<T>::CreateGraphEdges(PipelineStates src, GraphNode<StateWrapperBase>* srcNode, PipelineStates dest)
+{
+    auto it = stateToNodeMap.find(dest);
+    if (it == stateToNodeMap.end())
+    {
+        ASSERT_MSG_DEBUG(0, "node not found");
+    }
+
+    // Get all the node of the destination state and connect it to srcNode
+    for each (auto var in stateToNodeMap[dest])
+    {
+        pipelineGraph->AttachDirectedEdge(srcNode, var);
     }
 }
 
@@ -872,6 +894,55 @@ inline void GraphicsPipelineManager<T>::CreateVertexAssemblyState(const uint32_t
 }
 
 template<typename T>
+inline void GraphicsPipelineManager<T>::CreateMultiSampleState(MultiSampleState * multiSample, const uint16_t & tagMask)
+{
+    PipelineStates currentState = PipelineStates::MultisampleState;
+
+    MultiSampleStateWrapper * wrapper = new MultiSampleStateWrapper;
+    wrapper->multiSampleState = multiSample;
+    wrapper->tagMask = tagMask;
+
+    int id = HashManager::GetInstance()->FindMultiSampleHash(multiSample, wrapper->GetId());
+    GraphNode<StateWrapperBase> * node;
+
+    if (id == -1)
+    {
+        multisampleStateWrapperList.push_back(wrapper);
+
+        // create a new pipeline node encapsulate in graph node, add it to graph
+        // TODO : Create pipeline node, done.
+        node = CreateGraphNode(wrapper);
+
+        // TODO : Create vulkan inputAssembly object, done.
+        apiInterface->CreateMultiSampleState(wrapper);
+
+        CreateGraphEdges(node, PipelineStates((uint32_t)currentState - 1), currentState);
+        CreateGraphEdges(currentState, node, PipelineStates((uint32_t)currentState + 1));
+
+    }
+    else
+    {
+        // reduce meshid counter by 1
+        DecrementIdCounter<MultiSampleStateWrapper>();
+
+        // delete input info
+        delete multiSample;
+        delete wrapper;
+
+        // this wont happen as meshId is not provided
+        // add the mesh id to the existing wrapper obj in the list
+        /*std::vector<MultiSampleStateWrapper*>::iterator it;
+        it = std::find_if(multisampleStateWrapperList.begin(), multisampleStateWrapperList.end(), [&](MultiSampleStateWrapper * e) { return e->GetId() == id; });
+
+        ASSERT_MSG_DEBUG(it != multisampleStateWrapperList.end(), "wrapper not found");
+
+        (*it)->meshIdList.push_back(meshId);
+        node = GetNode((*it)->state, (*it));*/
+    }
+    
+}
+
+template<typename T>
 inline void GraphicsPipelineManager<T>::AssignDefaultState(const uint32_t & meshId, const PipelineStates & state)
 {
     switch (state)
@@ -938,6 +1009,69 @@ inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t 
         ASSERT_MSG_DEBUG(it != shaderStateWrapperList.end(), "wrapper not found");
         (*it)->meshIdList.push_back(meshId);
         
+        node = GetNode((*it)->state, (*it));
+
+    }
+
+    InsertToMeshList(meshId, PipelineStates::ShaderStage, node);
+    CreateGraphEdges(meshId, PipelineStates::InputAssemblyState, PipelineStates::ShaderStage);
+
+    //pipelineGraph->PrintAdjMatrix();
+}
+
+template<typename T>
+inline void GraphicsPipelineManager<T>::CreatShaderPipelineState(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount, const uint16_t & tagMask)
+{
+    ShaderStateWrapper * wrapper = new ShaderStateWrapper;
+    wrapper->shader = shaders;
+    wrapper->shaderCount = shaderCount;
+    //wrapper->tag = tag;
+    wrapper->tagMask = tagMask;
+
+    // check if the hash exist for the above object
+    int id = HashManager::GetInstance()->FindShaderStateHash(shaders, shaderCount, wrapper->GetId(), &wrapper->state);
+    GraphNode<StateWrapperBase> * node;
+
+    // if not add the wrapper to the list
+    if (id == -1)
+    {
+        // add wrapper to list
+        wrapper->meshIdList.push_back(meshId);
+        shaderStateWrapperList.push_back(wrapper);
+        // create a new pipeline node encapsulate in graph node, add it to graph
+        // TODO : Create pipeline node , done.
+        node = CreateGraphNode(wrapper);
+
+        // Create vulkan pipeline shader stage object 
+        apiInterface->CreateShaderState(wrapper);
+
+        /*auto it = renderPassToShaderStageIdMap.find(tag);
+
+        if (it != renderPassToShaderStageIdMap.end())
+        {
+            it->second.push_back(wrapper->GetId());
+        }
+        else
+        {
+            renderPassToShaderStageIdMap.insert(std::pair< RenderPassTag, std::vector<uint32_t>>({
+                tag, std::vector<uint32_t>{ wrapper->GetId()} }));
+        }*/
+    }
+    else
+    {
+        // if it exists push the mesh id to the list of the object
+        // reduce meshid counter by 1
+        DecrementIdCounter<ShaderStateWrapper>();
+
+        // delete input info
+        delete wrapper;
+
+        // add the mesh id to the existing wrapper obj in the list
+        std::vector<ShaderStateWrapper*>::iterator it;
+        it = std::find_if(shaderStateWrapperList.begin(), shaderStateWrapperList.end(), [&](ShaderStateWrapper* e) { return e->GetId() == id; });
+        ASSERT_MSG_DEBUG(it != shaderStateWrapperList.end(), "wrapper not found");
+        (*it)->meshIdList.push_back(meshId);
+
         node = GetNode((*it)->state, (*it));
 
     }
@@ -1026,11 +1160,17 @@ inline std::vector<SetWrapper*> GraphicsPipelineManager<T>::CreatResourceLayoutS
 template<typename T>
 inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEvent * event)
 {
-    if (PipelineUtil::pipelineStateMeshList.size() == 0)
+    //pipelineGraph->PrintAdjMatrix();
+
+    uint16_t tag = PipelineUtil::globalTagMask;
+    bool valid = PipelineUtil::tagValidity;
+    if (PipelineUtil::pipelineStateMeshList.size() == 0 || PipelineUtil::tagValidity == false)
     {
         PipelineUtil::setsPerPipeline.clear();
         PipelineUtil::pipelineStateMeshList.clear();
         PipelineUtil::stateToIdMap.clear();
+        PipelineUtil::globalTagMask = 0;
+        PipelineUtil::tagValidity = true;
         return;
     }
 
@@ -1042,11 +1182,14 @@ inline void GraphicsPipelineManager<T>::TraversalEventHandler(GraphTraversalEven
     info.meshList = PipelineUtil::pipelineStateMeshList;
     info.setsPerPipeline = PipelineUtil::setsPerPipeline;
     info.pipelineLayoutId = PipelineUtil::pipelineLayoutId;
+    info.tagMask = PipelineUtil::globalTagMask;
     pipelineCreateInfoList.push_back(info);
     
     PipelineUtil::setsPerPipeline.clear();
     PipelineUtil::pipelineStateMeshList.clear();
     PipelineUtil::stateToIdMap.clear();
+    PipelineUtil::globalTagMask = 0;
+    PipelineUtil::tagValidity = true;
 }
 
 template<typename T>
@@ -1093,7 +1236,7 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(std::vector<Renderi
         ((PipelineDrawNode*)pipelineNode)->pipelineId = wrapper.id;
 
         // TODO : find better design to tag and find pipeline node
-        {
+        /*{
             uint32_t shaderStateId = pipelineCreateInfoList[i].statesToIdMap[PipelineStates::ShaderStage];
             
             for (auto info : passInfo)
@@ -1109,11 +1252,26 @@ inline void GraphicsPipelineManager<T>::GenerateAllPipelines(std::vector<Renderi
                     pipelineCreateInfoList[i].subpassId = info.subpassId;
                     break;
                 }
-                /*else
-                {
-                    pipelineNode->tag = RenderPassTag::ColorPass;
-                }*/
             }
+        }*/
+
+        {
+            bool passTagMatch = false;
+
+            for (auto info : passInfo)
+            {
+                // need to remove info.tag and tag should get derived from mask
+                if (info.tagMask == pipelineCreateInfoList[i].tagMask)
+                {
+                    passTagMatch = true;
+                    pipelineNode->tag = info.passTag;
+                    pipelineCreateInfoList[i].renderPassId = info.renderPassId;
+                    pipelineCreateInfoList[i].subpassId = info.subpassId;
+                    break;
+                }
+            }
+
+            ASSERT_MSG(passTagMatch == true, "Pass tag mismatch");
         }
 
         GraphNode<DrawGraphNode> * pipelinGraphNode = new GraphNode<DrawGraphNode>(pipelineNode);

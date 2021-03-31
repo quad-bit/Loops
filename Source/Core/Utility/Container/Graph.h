@@ -5,6 +5,7 @@
 #include "Stack.h"
 #include <queue>
 #include <deque>
+#include <map>
 
 template <class T>
 class Graph;
@@ -54,6 +55,8 @@ private:
     char **adjMatrix;
     char ** localMat;
     char *visitedVertices;
+    
+    void ValidateVisitation(std::map<std::uint32_t, std::uint32_t> & visitedMap);
 
 public:
     Graph(int numVerts) : maxVertices(numVerts), adjMatrix(NULL)
@@ -294,7 +297,7 @@ inline bool Graph<T>::BreadthFirstTraversal(GraphNode<T>* srcNode, GraphNode<T>*
     visitedVertices[startIndex] = 1;
 
     //std::cout << *vertices[startIndex]->GetNodeData(); // REMOVE>>!!!
-    srcNode->node->Execute();
+    srcNode->node->Entry();
 
     Stack<int> searchStack;
     int vert = 0;
@@ -313,7 +316,7 @@ inline bool Graph<T>::BreadthFirstTraversal(GraphNode<T>* srcNode, GraphNode<T>*
             visitedVertices[vert] = 1;
 
             //std::cout << *vertices[vert]->GetNodeData(); // REMOVE>>!!!
-            vertices[vert]->node->Execute();
+            vertices[vert]->node->Entry();
             searchStack.Push(vert);
         }
 
@@ -430,6 +433,40 @@ inline bool Graph<T>::DepthFirstTraversal(const uint32_t & srcNodeId, const uint
 
 }
 
+
+template<class T>
+inline void Graph<T>::ValidateVisitation(std::map<std::uint32_t, std::uint32_t> & visitedMap)
+{
+    if (visitedMap.size() <= 1)
+        return;
+
+    std::vector<std::uint32_t> visitedKeys;
+
+    // for each key in map, search its corresponding value in the map
+    // if found then it can be marked as unvisited as its immediate parent is no more
+    // in search stack
+
+    for each(auto obj in visitedMap)
+    {
+        auto parent = obj.second;
+
+        auto it = (visitedMap.find(parent));
+
+        if (it != visitedMap.end())
+        {
+            // parent found
+            visitedKeys.push_back(obj.first);
+        }
+    }
+
+    for (auto obj : visitedKeys)
+    {
+        visitedVertices[obj] = 0;
+        visitedMap.erase(obj);
+    }
+}
+
+
 template<class T>
 inline void Graph<T>::FindAllPaths(int startIndex, int endIndex)
 {
@@ -437,11 +474,11 @@ inline void Graph<T>::FindAllPaths(int startIndex, int endIndex)
     assert(adjMatrix != NULL);
     assert(localMat != NULL);
 
-    CopyMat(adjMatrix, localMat);
-
     visitedVertices[startIndex] = 1;
 
-    std::deque<int> searchStack, visitedStack;
+    std::deque<int> searchStack;
+    std::map<std::uint32_t, std::uint32_t> visitedMap;
+
     int vert = 0;
     searchStack.push_back(startIndex);
 
@@ -452,23 +489,16 @@ inline void Graph<T>::FindAllPaths(int startIndex, int endIndex)
 
         if (vert == -1)
         {
-            visitedStack.push_back(top);
             searchStack.pop_back();
+            
+            // store the top and it immediate parent node index
+            // Check ValidateVisitation funciont documentation 
+            if (searchStack.size() > 0)
+                visitedMap.insert(std::pair<std::uint32_t, std::uint32_t>({ top, searchStack.back() }));
+            ValidateVisitation(visitedMap);
         }
         else
         {
-            if (visitedStack.size() != 0)
-            {
-                int indexToBeBroken = visitedStack[visitedStack.size() - 1];
-                adjMatrix[top][indexToBeBroken] = 0;
-                for (std::uint32_t i = 0; i < visitedStack.size(); i++)
-                {
-                    visitedVertices[visitedStack[i]] = 0;
-                }
-
-                visitedStack.clear();
-            }
-
             visitedVertices[vert] = 1;
 
             searchStack.push_back(vert);
@@ -477,10 +507,9 @@ inline void Graph<T>::FindAllPaths(int startIndex, int endIndex)
         if (vert == endIndex)
         {
             //path found
-            //std::cout << "\n";
             for (std::size_t i = 0; i < searchStack.size(); i++)
             {
-                vertices[searchStack[i]]->GetNodeData()->Execute(); // REMOVE>>!!!
+                vertices[searchStack[i]]->GetNodeData()->Execute(); 
             }
 
             bool pathFound = true;
@@ -488,7 +517,6 @@ inline void Graph<T>::FindAllPaths(int startIndex, int endIndex)
     }
 
     memset(visitedVertices, 0, maxVertices);
-    CopyMat(localMat, adjMatrix);
 }
 
 template<class T>
@@ -525,11 +553,12 @@ inline void Graph<T>::CopyMat(char ** src, char ** dest)
 template<class T>
 inline void Graph<T>::PrintAdjMatrix()
 {
-    for (std::uint32_t i = 0; i < (std::uint32_t)maxVertices; i++)
+    std::cout << std::endl;
+    for (std::uint32_t i = 0; i < (std::uint32_t)numOfExistingVerts; i++)
     {
-        for (std::uint32_t j = 0; j < (std::uint32_t)maxVertices; j++)
+        for (std::uint32_t j = 0; j < (std::uint32_t)numOfExistingVerts; j++)
         {
-            std::cout << (int)adjMatrix[i][j] ;
+            std::cout << "  " << (int)adjMatrix[i][j] ;
         }
         std::cout << std::endl;
     }

@@ -6,6 +6,11 @@
 #include "MeshAdditionEvent.h"
 #include "ComponentAdditionEvent.h"
 
+#if (RENDERING_API == VULKAN)
+class VulkanInterface;
+#elif (RENDERING_API == DX)
+
+#endif
 template <typename T>
 class GraphNode;
 

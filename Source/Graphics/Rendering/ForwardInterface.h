@@ -57,7 +57,7 @@ template<typename T>
 inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
 {
     // ===================================depth prepass ============================
-
+#if  0
     // depth pre pass attachment
     {
         uint32_t depthPrepassBufferingCount = Settings::swapBufferCount;
@@ -246,6 +246,7 @@ inline void ForwardRendering<T>::SetupAttachmentsForMSAA(Samples sampleCount)
 
         delete[] imageIds;
     }
+#endif
     // ===================================depth prepass ============================
 
     // ===================================Color prepass ============================
@@ -761,69 +762,69 @@ inline void ForwardRendering<T>::SetupRenderer()
                 Settings::windowWidth, Settings::windowHeight, &colorPassFbo[0]);
 
             delete[] imageIds;
+        }
 
+        // depth pre pass
+        {
+            RenderPassAttachmentInfo depthPrepassAttchmentDescList[1];
+            depthPrepassAttchmentDescList[0].finalLayout = ImageLayout::LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            depthPrepassAttchmentDescList[0].format = bestDepthFormat;
+            depthPrepassAttchmentDescList[0].initialLayout = ImageLayout::LAYOUT_UNDEFINED;
+            depthPrepassAttchmentDescList[0].loadOp = LoadOperation::LOAD_OP_CLEAR;
+            depthPrepassAttchmentDescList[0].sampleCount = Samples::SAMPLE_COUNT_1_BIT;
+            depthPrepassAttchmentDescList[0].stencilLoadOp = LoadOperation::LOAD_OP_DONT_CARE;
+            depthPrepassAttchmentDescList[0].stencilLStoreOp = StoreOperation::STORE_OP_DONT_CARE;
+            depthPrepassAttchmentDescList[0].storeOp = StoreOperation::STORE_OP_STORE;
+
+            AttachmentRef depthPrepassAttachmentRef;
+            depthPrepassAttachmentRef.index = 0;
+            depthPrepassAttachmentRef.layoutInSubPass = ImageLayout::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+            SubpassInfo subpassInfo;
+            subpassInfo.colorAttachmentCount = 0;
+            subpassInfo.inputAttachmentCount = 0;
+            subpassInfo.pColorAttachments = nullptr;
+            subpassInfo.pDepthStencilAttachment = &depthPrepassAttachmentRef;
+            subpassInfo.pInputAttachments = nullptr;
+            subpassInfo.pResolveAttachments = nullptr;
+
+            SubpassDependency dependency[2];
+            dependency[0].srcSubpass = -1;
+            dependency[0].dstSubpass = 0;
+            dependency[0].srcStageMask.push_back(PipelineStage::FRAGMENT_SHADER_BIT);
+            dependency[0].dstStageMask.push_back(PipelineStage::EARLY_FRAGMENT_TESTS_BIT);
+            dependency[0].srcAccessMask.push_back(AccessFlagBits::ACCESS_SHADER_READ_BIT);
+            dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+            dependency[0].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
+
+            dependency[1].srcSubpass = 0;
+            dependency[1].dstSubpass = -1;
+            dependency[1].srcStageMask.push_back(PipelineStage::LATE_FRAGMENT_TESTS_BIT);
+            dependency[1].dstStageMask.push_back(PipelineStage::FRAGMENT_SHADER_BIT);
+            dependency[1].srcAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
+            dependency[1].dstAccessMask.push_back(AccessFlagBits::ACCESS_SHADER_READ_BIT);
+            dependency[1].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
+
+            apiInterface->CreateRenderPass(
+                &depthPrepassAttchmentDescList[0], 1,
+                &subpassInfo, 1,
+                dependency, 2,
+                depthPrePassId
+            );
+
+            uint32_t imagesPerFbo = 1, numFbos = Settings::swapBufferCount;
+            uint32_t * imageIds = new uint32_t[numFbos * imagesPerFbo];
+
+            for (uint32_t i = 0, j = 0; i < numFbos * imagesPerFbo; i++, j++)
             {
-                RenderPassAttachmentInfo depthPrepassAttchmentDescList[1];
-                depthPrepassAttchmentDescList[0].finalLayout = ImageLayout::LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                depthPrepassAttchmentDescList[0].format = bestDepthFormat;
-                depthPrepassAttchmentDescList[0].initialLayout = ImageLayout::LAYOUT_UNDEFINED;
-                depthPrepassAttchmentDescList[0].loadOp = LoadOperation::LOAD_OP_CLEAR;
-                depthPrepassAttchmentDescList[0].sampleCount = *RendererSettings::sampleCount;
-                depthPrepassAttchmentDescList[0].stencilLoadOp = LoadOperation::LOAD_OP_DONT_CARE;
-                depthPrepassAttchmentDescList[0].stencilLStoreOp = StoreOperation::STORE_OP_DONT_CARE;
-                depthPrepassAttchmentDescList[0].storeOp = StoreOperation::STORE_OP_STORE;
-
-                AttachmentRef depthPrepassAttachmentRef;
-                depthPrepassAttachmentRef.index = 0;
-                depthPrepassAttachmentRef.layoutInSubPass = ImageLayout::LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                
-                SubpassInfo subpassInfo;
-                subpassInfo.colorAttachmentCount = 0;
-                subpassInfo.inputAttachmentCount = 0;
-                subpassInfo.pColorAttachments = nullptr;
-                subpassInfo.pDepthStencilAttachment = &depthPrepassAttachmentRef;
-                subpassInfo.pInputAttachments = nullptr;
-                subpassInfo.pResolveAttachments = nullptr;
-
-                SubpassDependency dependency[2];
-                dependency[0].srcSubpass = -1;
-                dependency[0].dstSubpass = 0;
-                dependency[0].srcStageMask.push_back(PipelineStage::FRAGMENT_SHADER_BIT);
-                dependency[0].dstStageMask.push_back(PipelineStage::EARLY_FRAGMENT_TESTS_BIT);
-                dependency[0].srcAccessMask.push_back(AccessFlagBits::ACCESS_SHADER_READ_BIT);
-                dependency[0].dstAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-                dependency[0].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
-
-                dependency[1].srcSubpass = 0;
-                dependency[1].dstSubpass = -1;
-                dependency[1].srcStageMask.push_back(PipelineStage::LATE_FRAGMENT_TESTS_BIT);
-                dependency[1].dstStageMask.push_back(PipelineStage::FRAGMENT_SHADER_BIT);
-                dependency[1].srcAccessMask.push_back(AccessFlagBits::ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT);
-                dependency[1].dstAccessMask.push_back(AccessFlagBits::ACCESS_SHADER_READ_BIT);
-                dependency[1].dependencyFlags.push_back(DependencyFlagBits::DEPENDENCY_BY_REGION_BIT);
-
-                apiInterface->CreateRenderPass(
-                    &depthPrepassAttchmentDescList[0], 1,
-                    &subpassInfo, 1,
-                    dependency, 2,
-                    depthPrePassId
-                );
-
-                uint32_t imagesPerFbo = 1, numFbos = Settings::swapBufferCount;
-                uint32_t * imageIds = new uint32_t[numFbos * imagesPerFbo];
-
-                for (uint32_t i = 0, j = 0; i < numFbos * imagesPerFbo; i++, j++)
-                {
-                    imageIds[i] = depthPrepassDefaultImageIdList[j];
-                }
-
-                depthPassFbo.resize(numFbos);
-                apiInterface->CreateFrameBuffer(numFbos, imageIds, imagesPerFbo, depthPrePassId,
-                    RendererSettings::shadowMapWidth, RendererSettings::shadowMapHeight, &depthPassFbo[0]);
-
-                delete[] imageIds;
-
+                imageIds[i] = depthPrepassDefaultImageIdList[j];
             }
+
+            depthPassFbo.resize(numFbos);
+            apiInterface->CreateFrameBuffer(numFbos, imageIds, imagesPerFbo, depthPrePassId,
+                RendererSettings::shadowMapWidth, RendererSettings::shadowMapHeight, &depthPassFbo[0]);
+
+            delete[] imageIds;
         }
     }
 }
@@ -862,13 +863,6 @@ inline void ForwardRendering<T>::DislogeRenderer()
 
             apiInterface->FreeAttachmentMemory(&msaaDepthTargetList[0], 1);
             apiInterface->FreeAttachmentMemory(&msaaRenderTargetList[0], 1);
-
-            {
-                bool viewDestroyList[3]{ true, true, true };
-                bool freeMemoryList[3]{ false, false, false };
-                apiInterface->DestroyAttachment(depthPrepassTargetList.data(), viewDestroyList, freeMemoryList, (uint32_t)depthPrepassTargetList.size());
-                apiInterface->FreeAttachmentMemory(&depthPrepassTargetList[0], 1);
-            }
         }
 
         apiInterface->DestroySwapChainImageViews(defaultRenderTargetList.data(), (uint32_t)defaultRenderTargetList.size());
@@ -879,7 +873,8 @@ template<typename T>
 inline void ForwardRendering<T>::PreRender()
 {
     std::vector<RenderingPassInfo> infoList{
-        {RenderPassTag::DepthPass, depthPrePassId, 0},{ RenderPassTag::ColorPass, colorPassId, 0 }
+        {RenderPassTag::DepthPass, (uint16_t)RenderPassTag::DepthPass, depthPrePassId, 0},
+        {RenderPassTag::ColorPass, (uint16_t)RenderPassTag::ColorPass, colorPassId, 0 }
     };
     
     GraphicsPipelineManager<T>::GetInstance()->GenerateAllPipelines(infoList);

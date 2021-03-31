@@ -496,17 +496,34 @@ inline void ForwardGraph<T>::AddNode(GraphNode<DrawGraphNode> * node)
     RenderPassTag passTag = node->node->tag;
 
     NodeSetPerPass * dataSetPerPass;
-
-    switch (passTag)
+    //TODO : remove this, its bad, replace with a switch
+    if ((((uint32_t)passTag | (uint32_t)RenderPassTag::ColorPass) == (uint32_t)RenderPassTag::ColorPass) ||
+        (((uint32_t)passTag | (uint32_t)RenderPassTag::DepthPass) == (uint32_t)RenderPassTag::DepthPass))
     {
-    case RenderPassTag::ColorPass:
-    case RenderPassTag::DepthPass:
+        dataSetPerPass = nodeDataPerPassMap[passTag];
+        CreateConnections(node, dataSetPerPass);
+    }
+    else if ((uint32_t)passTag == ((uint32_t)RenderPassTag::DepthPass | (uint32_t)RenderPassTag::ColorPass))
+    {
+        // perform the connections for both the passes
+        dataSetPerPass = nodeDataPerPassMap[RenderPassTag::ColorPass];
+        CreateConnections(node, dataSetPerPass);
+
+        dataSetPerPass = nodeDataPerPassMap[RenderPassTag::DepthPass];
+        CreateConnections(node, dataSetPerPass);
+    }
+
+    /*
+    switch ((uint32_t)passTag)
+    {
+    case (uint32_t)RenderPassTag::ColorPass:
+    case (uint32_t)RenderPassTag::DepthPass:
         // perform the normal connections
         dataSetPerPass = nodeDataPerPassMap[passTag];
         CreateConnections(node, dataSetPerPass);
         break;
 
-    case RenderPassTag::Color_Depth:
+    case ((uint32_t)(RenderPassTag::ColorPass | RenderPassTag::DepthPass)):
         // perform the connections for both the passes
         dataSetPerPass = nodeDataPerPassMap[RenderPassTag::ColorPass];
         CreateConnections(node, dataSetPerPass);
@@ -515,8 +532,10 @@ inline void ForwardGraph<T>::AddNode(GraphNode<DrawGraphNode> * node)
         CreateConnections(node, dataSetPerPass);
         break;
 
-    case RenderPassTag::None:
+    case ((uint32_t)RenderPassTag::None):
     default:
         ASSERT_MSG(0, "Invalid renderPass");
     }
+    */
+
 }

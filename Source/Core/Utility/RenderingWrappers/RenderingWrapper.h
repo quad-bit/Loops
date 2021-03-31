@@ -225,10 +225,10 @@ enum class SubpassContentStatus
 
 enum class RenderPassTag
 {
+    None = 0,
     ColorPass = 1,
     DepthPass = 2,
-    Color_Depth = 3,
-    None = 0
+    NUM_PASSES = 3,
 };
 
 inline RenderPassTag operator | (const RenderPassTag & lhs, const RenderPassTag & rhs)
@@ -761,6 +761,7 @@ enum class DescriptorType
     struct RenderingPassInfo
     {
         RenderPassTag passTag;
+        uint16_t tagMask;
         uint32_t renderPassId;
         uint32_t subpassId;
     };
@@ -1012,6 +1013,7 @@ enum class DescriptorType
         std::vector<uint32_t> meshList;
         std::vector<SetWrapper*> setsPerPipeline;
         uint32_t pipelineLayoutId;
+        uint16_t tagMask;
     };
 
     // used for vkCmdBindDescriptorSets

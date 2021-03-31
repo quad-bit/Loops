@@ -184,7 +184,7 @@ inline void RenderingInterface<T>::Init(T * apiInterface)
 
     RendererSettings::shadowMapHeight = 2048;
     RendererSettings::shadowMapWidth = 2048;
-    RendererSettings::MSAA_Enabled = false;// true;
+    RendererSettings::MSAA_Enabled = true;
 
     forwardRenderer = new ForwardRendering<T>();
     forwardRenderer->Init(apiInterface);

@@ -36,9 +36,13 @@ public:
     static MaterialFactory* GetInstance();
     ~MaterialFactory();
 
-    //Material * CreateMaterial(Shader * shaders, const uint32_t & shaderCount, const uint32_t & meshId);
+    //deprecated
     Material * CreateMaterial(ShaderDescription * shaders, const uint32_t & shaderCount, 
-        const uint32_t & meshId, const RenderPassTag & tag = RenderPassTag::ColorPass);
+        const uint32_t & meshId, const RenderPassTag & tag);
+
+    Material * CreateMaterial(ShaderDescription * shaderDescriptions, const uint32_t & shaderCount,
+        const uint32_t & meshId, const uint16_t & tagMask = (uint16_t)RenderPassTag::ColorPass);
+
     void AddMeshIds(Material * mat, const uint32_t & meshId);
 
     std::vector<uint32_t> GetMeshList(SetWrapper * setwrapper, const uint32_t & setWrapperCount);

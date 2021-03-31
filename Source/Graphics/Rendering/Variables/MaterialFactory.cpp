@@ -125,6 +125,74 @@ Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescription
     return mat;
 }
 
+Material * MaterialFactory::CreateMaterial(ShaderDescription * shaderDescriptions, const uint32_t & shaderCount, const uint32_t & meshId, const uint16_t & tagMask)
+{
+    std::vector<std::string> shaderNames;
+    shaderNames.resize(shaderCount);
+
+    for (uint32_t i = 0; i < shaderCount; i++)
+    {
+        shaderNames[i] = shaderDescriptions[i].shaderName;
+    }
+
+    uint32_t matId = GetMatId();
+
+    // check for hash (shader names)
+    int id = HashManager::GetInstance()->FindMaterialHash(&shaderNames, matId);
+    Material * mat;
+    MatSetWrapper matSetWrapper;
+
+    if (id == -1)
+    {
+        // use matid and create a material
+        Shader * shaders = new Shader[shaderCount];
+        for (uint32_t i = 0; i < shaderCount; i++)
+        {
+            shaders[i].shaderType = shaderDescriptions[i].type;
+            shaders[i].shaderName = shaderDescriptions[i].shaderName;
+        }
+
+        std::vector<SetWrapper*> setWrapperList = ShaderFactory::GetInstance()->CreateShader(meshId, shaders, shaderCount, tagMask);
+
+        mat = new Material(shaders, shaderCount);
+        idToMaterialMap.insert(std::pair<uint32_t, Material*>(
+        { matId, mat }));
+
+        // get the setWrappers for the shader combination
+        mat->resourceLayoutList = setWrapperList;
+        mat->meshList.push_back(meshId);
+        // using the set wrappers create shader resources
+        CreateSetResources(setWrapperList);
+        mat->componentId = matId;
+
+        matSetWrapper.mat = mat;
+        matSetWrapper.wrapperList = setWrapperList;
+        matSetWrapperList.push_back(matSetWrapper);
+
+        MeshToMatAdditionEvent event;
+        event.meshId = meshId;
+        event.setWrapperList = mat->resourceLayoutList;
+        EventBus::GetInstance()->Publish(&event);
+    }
+    else
+    {
+        if (idToMaterialMap.find(id) != idToMaterialMap.end())
+        {
+            mat = idToMaterialMap[id];
+        }
+        else
+        {
+            ASSERT_MSG_DEBUG(0, "Mat not found");
+        }
+
+        DecrementMatCounter();
+        // if it exists then add the meshid to the list
+        AddMeshIds(mat, meshId);
+    }
+
+    return mat;
+}
+
 void MaterialFactory::AddMeshIds(Material * mat, const uint32_t & meshId)
 {
     ShaderFactory::GetInstance()->AddMeshToShader(meshId, mat->shaders, mat->numShaders);

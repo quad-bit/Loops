@@ -52,21 +52,21 @@ PlayerHandlerScript::PlayerHandlerScript() : Scriptable(false)
         Mesh * torsoMesh = MeshFactory::GetInstance()->CreateMesh(&meshInfo, &meshType);
         torso->AddComponent<Mesh>(torsoMesh);
 
-        /*
         ShaderDescription shaders[2];
         shaders[0].type = ShaderType::VERTEX;
         shaders[0].shaderName = "PC.vert";
 
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "Color.frag";
-        */
-
+        
+        /*
         ShaderDescription shaders[2];
         shaders[0].type = ShaderType::VERTEX;
         shaders[0].shaderName = "PCN_Lighting.vert";
 
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "ColorLighting.frag";
+        */
         
         colMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, torsoMesh->componentId);
         torso->AddComponent<Material>(colMat);

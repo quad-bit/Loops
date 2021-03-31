@@ -5,8 +5,9 @@
 #include "Shader.h"
 #include <map>
 #include <EventBus.h>
-
+#include <BitArray.h>
 #include <Event.h>
+#include "RenderingWrapper.h"
 
 struct GraphTraversalEvent : public Event
 {
@@ -23,8 +24,11 @@ namespace PipelineUtil
     extern std::vector<uint32_t> pipelineStateMeshList;
     extern std::vector<SetWrapper *>  setsPerPipeline;
     extern uint32_t pipelineLayoutId;
+    extern bool tagValidity;
+    extern uint16_t globalTagMask;
 
     void FillGlobalMeshList(std::vector<uint32_t> & meshList, const PipelineStates & currentState);
+    void const CheckTagValidity(const uint16_t & tag);
 }
 
 struct StateWrapperBase
@@ -35,6 +39,13 @@ protected:
 public:
     PipelineStates state;
     std::vector<uint32_t> meshIdList;
+    
+    uint16_t tagMask;
+
+    StateWrapperBase()
+    {
+        tagMask = (uint16_t)RenderPassTag::None;
+    }
 
     const uint32_t & GetId() const
     {
@@ -42,6 +53,9 @@ public:
     }
 
     virtual void Execute() = 0;
+    
+    // no concept of Entry, Exit, see function FindAllPaths
+    // virtual void Exit() = 0;
 };
 
 template<typename T>
@@ -70,10 +84,12 @@ struct VertexInputWrapper : public StateWrapperBase
     virtual void Execute() override
     {
 #if PRINT_STATE 
+        PLOGD << std::endl << std::endl;
         PLOGD << std::to_string(this->GetId())  + " PipelineStates::VertexInputState " ;
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::VertexInputState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
     }
 };
 
@@ -95,6 +111,7 @@ struct InputAssemblyWrapper : public StateWrapperBase
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::InputAssemblyState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask); 
     }
 };
 
@@ -122,10 +139,11 @@ struct ShaderStateWrapper : public StateWrapperBase
             meshIds += (std::to_string(id) + " ");
         }
 
-        PLOGD << meshIds + " PipelineStates::ShaderStateWrapper";
+        //PLOGD << meshIds + " PipelineStates::ShaderStateWrapper";
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderStage, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
     }
 };
 
@@ -155,10 +173,11 @@ struct ShaderResourceStateWrapper : public StateWrapperBase
             meshIds += (std::to_string(id) + " ");
         }
 
-        PLOGD << meshIds + " PipelineStates::ShaderResourcesLayout";
+        //PLOGD << meshIds + " PipelineStates::ShaderResourcesLayout";
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ShaderResourcesLayout, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
         PipelineUtil::setsPerPipeline = resourcesSetList;
         PipelineUtil::pipelineLayoutId = pipelineLayoutId;
     }
@@ -181,6 +200,7 @@ struct TessellationStateWrapper : public StateWrapperBase
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::TessellationState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
     }
 };
 
@@ -201,6 +221,7 @@ struct ColorBlendStateWrapper : public StateWrapperBase
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ColorBlendState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
     }
 };
 
@@ -221,6 +242,7 @@ struct ViewPortStateWrapper : public StateWrapperBase
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::ViewportState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
     }
 };
 
@@ -241,6 +263,7 @@ struct RasterizationStateWrapper : public StateWrapperBase
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::RasterizationState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
     }
 };
 
@@ -261,6 +284,7 @@ struct MultiSampleStateWrapper : public StateWrapperBase
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::MultisampleState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
     }
 };
 
@@ -281,6 +305,7 @@ struct DepthStencilStateWrapper : public StateWrapperBase
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DepthStencilState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
     }
 };
 
@@ -301,6 +326,7 @@ struct DynamicStateWrapper : public StateWrapperBase
 #endif
         PipelineUtil::stateToIdMap.insert(std::pair<PipelineStates, uint32_t>({ PipelineStates::DynamicState, id }));
         PipelineUtil::FillGlobalMeshList(meshIdList, state);
+        PipelineUtil::CheckTagValidity(tagMask);
         GraphTraversalEvent event;
         EventBus::GetInstance()->Publish(&event);
     }

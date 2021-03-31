@@ -38,8 +38,12 @@ public:
     static ShaderFactory* GetInstance();
     ~ShaderFactory();
 
+    //deprecated
     std::vector<SetWrapper*> CreateShader(const uint32_t & meshId, Shader * shaders, 
         const uint32_t & shaderCount, const RenderPassTag & tag);
+    std::vector<SetWrapper*> CreateShader(const uint32_t & meshId, Shader * shaders,
+        const uint32_t & shaderCount, const uint16_t & tagMask);
+
     void AddMeshToShader(const uint32_t & meshId, Shader * shaders, const uint32_t & shaderCount);
 };
 

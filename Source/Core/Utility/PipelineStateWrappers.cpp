@@ -4,6 +4,9 @@ std::map<PipelineStates, uint32_t> PipelineUtil::stateToIdMap;
 std::vector<uint32_t> PipelineUtil::pipelineStateMeshList;
 std::vector<SetWrapper *>  PipelineUtil::setsPerPipeline;
 uint32_t PipelineUtil::pipelineLayoutId;
+bool PipelineUtil::tagValidity = true;
+uint16_t PipelineUtil::globalTagMask = 0;
+
 
 uint32_t VertexInputWrapper::idCounter = 0;
 uint32_t InputAssemblyWrapper::idCounter = 0;
@@ -45,9 +48,7 @@ void PipelineUtil::FillGlobalMeshList(std::vector<uint32_t>& meshList, const Pip
                         //itt = pipelineStateMeshList.erase(itt);
                         indicesToBeErased.push_back(pipelineStateMeshList[i]);
                     }
-
-                    //if (pipelineStateMeshList.size() == 0)
-                        //break;
+                    
                 }
 
                 for (auto index : indicesToBeErased)
@@ -59,6 +60,38 @@ void PipelineUtil::FillGlobalMeshList(std::vector<uint32_t>& meshList, const Pip
                     pipelineStateMeshList.erase(it);
                 }
             }
+        }
+    }
+}
+
+void const PipelineUtil::CheckTagValidity(const uint16_t & tag)
+{
+    // if pipeline tag mask == 0 skip
+    if ((tag == 0 ) || PipelineUtil::tagValidity == false)
+        return;
+
+    // if pipeline tag mask != 0 && global mask == 0 then global <- pipelineMask
+    if (tag != 0 && PipelineUtil::globalTagMask == 0)
+    {
+        PipelineUtil::globalTagMask = tag;
+        return;
+    }
+
+    // if  both != 0 then
+    if (tag != 0 && PipelineUtil::globalTagMask != 0)
+    {
+        // bitwise AND with global mask == 0 then invalid pipeline else global <- result of AND
+        
+        uint16_t result = tag & PipelineUtil::globalTagMask;
+        
+        if ((result) == 0)
+        {
+            PipelineUtil::tagValidity = false;
+            PipelineUtil::globalTagMask = 0;
+        }
+        else
+        {
+            PipelineUtil::globalTagMask = result;
         }
     }
 }

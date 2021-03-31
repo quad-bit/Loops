@@ -4,7 +4,7 @@
 #if (RENDERING_API == VULKAN)
 class VkDrawCommandBuffer;
 #elif (RENDERING_API == DX)
-apiInterface = new DxInterface();
+
 #endif
 
 enum class CommandBufferLevel;
@@ -62,7 +62,7 @@ public:
 #if (RENDERING_API == VULKAN)
 #include <VkDrawCommandBuffer.h>
 #elif (RENDERING_API == DX)
-apiInterface = new DxInterface();
+
 #endif
 #include <CorePrecompiled.h>
 

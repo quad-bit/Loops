@@ -12,6 +12,8 @@
 #include "Camera.h"
 #include "CameraSystem.h"
 #include "RendererSettings.h"
+#include "GraphicsPipelineManager.h"
+
 
 uint32_t LightSystem::GeneratedLightId()
 {
@@ -282,7 +284,16 @@ void LightSystem::HandleRendererAddition(MeshRendererAdditionEvent * rendererAdd
         shaders[1].type = ShaderType::FRAGMENT;
         shaders[1].shaderName = "ShadowMapping.frag";
 
-        shadowMappingMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, meshId, RenderPassTag::DepthPass);
+        shadowMappingMat = MaterialFactory::GetInstance()->CreateMaterial(shaders, 2, meshId, (uint16_t)RenderPassTag::DepthPass);
+        
+        MultiSampleState * multiSampleState = new MultiSampleState;
+        multiSampleState->alphaToCoverageEnable = false;
+        multiSampleState->alphaToOneEnable = false;
+        multiSampleState->sampleCount = Samples::SAMPLE_COUNT_1_BIT;
+        multiSampleState->sampleShadingEnable = false;// RendererSettings::sampleRateShadingEnabled;
+        multiSampleState->minSampleShading = 0.0f;
+
+        GraphicsPipelineManager<VulkanInterface>::GetInstance()->CreateMultiSampleState(multiSampleState, (uint16_t)RenderPassTag::DepthPass);
     }
     else
     {
