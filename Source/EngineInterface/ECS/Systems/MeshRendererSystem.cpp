@@ -110,7 +110,7 @@ void MeshRendererSystem::HandleMeshRendererAddition(MeshRendererAdditionEvent * 
     desc->uniformId = inputEvent->renderer->componentId; 
     desc->bufferBindingInfo.info.dataSizePerDescriptorAligned = memoryAlignedDataSize;
     desc->bufferBindingInfo.info.dataSizePerDescriptor = sizeof(TransformUniform);
-    desc->bufferBindingInfo.info.offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(uniformSize, allocConfig, resourceSharingConfig);
+    desc->bufferBindingInfo.info.offsetsForEachDescriptor = AllocationUtility::CalculateOffsetsForDescInUniform(memoryAlignedDataSize, allocConfig, resourceSharingConfig);
     desc->bufferBindingInfo.info.allocationConfig = allocConfig;
     desc->bufferBindingInfo.bufferIdList.resize(allocConfig.numResources);
     desc->bufferBindingInfo.bufferMemoryId.resize(allocConfig.numResources);
