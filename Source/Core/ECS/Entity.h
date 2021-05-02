@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
+//using namespace std;
 
 class Transform;
 class Entity
@@ -13,9 +13,9 @@ public:
     uint32_t id;
 
     Transform * transform;
-    string entityName;
-    string entityTag ;
-    string entityLayer ;
+    std::string entityName;
+	std::string entityTag ;
+	std::string entityLayer ;
     bool isStatic;
 
     // To put it in maps

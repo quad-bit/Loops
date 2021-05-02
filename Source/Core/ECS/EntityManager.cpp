@@ -38,7 +38,7 @@ Entity * EntityManager::CreateEntity()
     lastEntity++;
     Entity * obj = new Entity();
     obj->id = lastEntity;
-    string name = "Entity" + std::to_string(obj->id);
+    std::string name = "Entity" + std::to_string(obj->id);
     
     obj->entityName = name;
 	entityList.push_back(obj);

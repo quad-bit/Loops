@@ -16,7 +16,7 @@ private:
     std::vector<Transform*> childrenList;
 
     Entity * owner;
-    string * entityName;
+    std::string * entityName;
 
     void Init();
     Transform();

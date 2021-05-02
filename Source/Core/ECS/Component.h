@@ -4,7 +4,7 @@
 #include <vector>
 #include "ECS_Helper.h"
 
-using namespace std;
+//using namespace std;
 
 struct ComponentCounter {
     static int counter;

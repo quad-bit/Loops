@@ -5,7 +5,7 @@
 #include <functional>
 #include "ECS_Setting.h"
 #include "CorePrecompiled.h"
-using namespace std;
+//using namespace std;
 
 class EntityMap;
 class Entity;

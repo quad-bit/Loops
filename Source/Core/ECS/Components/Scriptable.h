@@ -11,7 +11,7 @@ private:
 public:
     //Entity * entity;
     EntityHandle * entityHandle;
-    string scriptName;
+    std::string scriptName;
     bool runInEditMode = false;
     virtual void Activated() {};
     virtual void Init() {};
