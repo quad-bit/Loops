@@ -40,8 +40,10 @@ IF(NOT ${size} EQUAL 0)
 ENDIF()
 
 ##  file list creation ends
+
+find_package(glm REQUIRED)
 IF( glm_FOUND )
-  message (" found glm ")
+  message (" found glm : ${glm_INCLUDE_DIR} ")
 ELSE()
   SET( glm_DIR "$ENV{GLM_PATH}" )
   SET ( glm_INCLUDE_DIR "${glm_DIR}")
@@ -72,15 +74,17 @@ ELSE()
 ENDIF()
 
 #create library
-add_library(Core
-${SourceList})
+add_library(Core ${SourceList})
+
+target_link_libraries(Core PUBLIC glfw)
+target_link_libraries(Core PRIVATE glm::glm)
 
 # forces anyone who uses this lib to include the below mentioned source dir into their project props
 target_include_directories(Core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(Core PUBLIC ${SUBDIRS})
-target_include_directories(Core PUBLIC ${glm_INCLUDE_DIR})
+# target_include_directories(Core PUBLIC ${glm_INCLUDE_DIR})
 target_include_directories(Core PUBLIC ${plog_INCLUDE_DIR})
-target_include_directories(Core PUBLIC ${glfw3_INCLUDE_DIR})
+# target_include_directories(Core PUBLIC ${glfw3_INCLUDE_DIR})
 
 if (MSVC)
     # For precompiled header.

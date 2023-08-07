@@ -73,10 +73,12 @@ set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/Rendering/RenderingPrec
     COMPILE_FLAGS "/YcRenderingPrecompiled.h"
 )
 
-ADD_GLFW(includeDir libDir libraries)
-target_include_directories(Renderer PUBLIC includeDir)
-link_directories(${libDir})
-target_link_libraries(Renderer PUBLIC Core Vulkan ${libraries})
+find_package(glfw3 REQUIRED)
+
+# ADD_GLFW(includeDir libDir libraries)
+# target_include_directories(Renderer PUBLIC includeDir)
+# link_directories(${libDir})
+target_link_libraries(Renderer PUBLIC Core Vulkan glfw)
 
 IF( APPLE )
   MESSAGE( STATUS "Running under MacOS X" )

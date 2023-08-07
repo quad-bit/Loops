@@ -43,7 +43,7 @@ MACRO(ADD_GLFW includeDir libDir libraries)
     ENDIF()
 
     #find_package(glfw HINTS "${glfw_DIR}")
-    find_package(glfw3 3.3)
+    find_package(glfw3 3.3 REQUIRED)
 
     IF( glfw3_FOUND )
       message (" found glfw ")

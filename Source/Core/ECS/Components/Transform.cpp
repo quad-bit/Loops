@@ -243,7 +243,7 @@ void Transform::Entry()
     //PLOGD << "entry " << *entityName;
 
     glm::mat4 accumulateMatrix = glm::identity<glm::mat4>();
-    for each(auto mat in SceneTreeUtil::matrixList)
+    for(auto mat : SceneTreeUtil::matrixList)
     {
         accumulateMatrix = mat * accumulateMatrix;
     }

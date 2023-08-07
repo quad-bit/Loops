@@ -83,7 +83,7 @@ StyleCopReport.xml
 *.pidb
 *.svclog
 *.scc
-
+*.spv
 # Chutzpah Test files
 _Chutzpah*
 
@@ -229,7 +229,7 @@ orleans.codegen.cs
 #bower_components/
 
 # IDE Project Files
-Build/
+[Bb]uild*/
 
 # Backup & report files from converting an old project file
 # to a newer Visual Studio version. Backup files are not needed,

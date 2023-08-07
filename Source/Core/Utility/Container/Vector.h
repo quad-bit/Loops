@@ -119,7 +119,7 @@ inline T & Vector<T>::operator[](int index)
 	}
     
     ASSERT_MSG_DEBUG(0, "invalid vector type");
-    //return T();
+    return array[0];
 }
 
 template<typename T>

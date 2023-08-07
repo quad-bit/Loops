@@ -82,7 +82,7 @@ IF( DEFINED ENV{GLM_PATH} )
   SET( glm_DIR "$ENV{GLM_PATH}" )
 ENDIF()
 
-find_package(glm HINTS "${glm_DIR}")
+find_package(glm REQUIRED HINTS "${glm_DIR}")
 
 IF( glm_FOUND )
   message (" found glm ")
@@ -92,26 +92,25 @@ ELSE()
   message (" glm include directory set to : ${glm_INCLUDE_DIR}")
 ENDIF()
 
-#find glfw
-IF( DEFINED ENV{GLFW_PATH} )
-  SET( glfw_DIR "$ENV{GLFW_PATH}" )
-ENDIF()
+# #find glfw
+# IF( DEFINED ENV{GLFW_PATH} )
+#   SET( glfw_DIR "$ENV{GLFW_PATH}" )
+# ENDIF()
 
-#find_package(glfw HINTS "${glfw_DIR}")
-find_package(glfw3 3.3)
+# #find_package(glfw HINTS "${glfw_DIR}")
+# find_package(glfw3 3.3)
 
-IF( glfw3_FOUND )
-  message (" found glfw ")
-ELSE()
-  message (" not found glfw ")
-  SET ( glfw3_INCLUDE_DIR "${glfw_DIR}/include")
-  SET ( glfw3_LIBRARY_DIR "${glfw_DIR}/Build/src/Debug")
-  SET ( glfw3_LIBRARIES "${glfw3_LIBRARY_DIR}/glfw3.lib")
-ENDIF()
+# IF( glfw3_FOUND )
+#   message (" found glfw ")
+# ELSE()
+#   message (" not found glfw ")
+#   SET ( glfw3_INCLUDE_DIR "${glfw_DIR}/include")
+#   SET ( glfw3_LIBRARY_DIR "${glfw_DIR}/Build/src/Debug")
+#   SET ( glfw3_LIBRARIES "${glfw3_LIBRARY_DIR}/glfw3.lib")
+# ENDIF()
 
 #create library
-add_library(Vulkan
-${SourceList})
+add_library(Vulkan ${SourceList})
 
 add_compile_definitions(VULKAN_ASSETS_PATH="${VulkanDataPath}")
 
@@ -126,10 +125,8 @@ target_include_directories(Vulkan PUBLIC ${Json_INCLUDE_DIR})
 #include directories
 message ("include directories ${Vulkan_INCLUDE_DIR} ${glm_INCLUDE_DIR}")
 target_include_directories(Vulkan PUBLIC
-${Vulkan_INCLUDE_DIR}
-${glm_INCLUDE_DIR}
-${glfw3_INCLUDE_DIR}
-${CMAKE_CURRENT_SOURCE_DIR}
+    ${Vulkan_INCLUDE_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 
@@ -139,7 +136,8 @@ link_directories(${glfw3_LIBRARY_DIR} ${vulkan_LIBRARY_DIR})
 #trying to add the vulkan lib to this lib : NOT WORKING
 message ("vulkan library ${Vulkan_LIBRARIES}")
 message ("glfw3 library ${glfw3_LIBRARIES}")
-target_link_libraries(Vulkan PUBLIC ${Vulkan_LIBRARIES} ${glfw3_LIBRARIES} Core)
+target_link_libraries(Vulkan PUBLIC ${Vulkan_LIBRARIES} Core)
+target_link_libraries(Vulkan PRIVATE glm::glm)
 
 IF( APPLE )
   MESSAGE( STATUS "Running under MacOS X" )

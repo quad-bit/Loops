@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-void GetFilesInFolder(const fs::v1::path & folderPath, std::vector<std::string> & result)
+void GetFilesInFolder(const fs::path & folderPath, std::vector<std::string> & result)
 {
     for (const auto & entry : fs::directory_iterator(folderPath))
     {
